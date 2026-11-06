@@ -16,7 +16,7 @@ Riot interdit les appels directs depuis un navigateur, donc l'app passe par un p
 
 1. Crée un compte gratuit sur https://dash.cloudflare.com, puis **Workers & Pages > Create > Worker**. Nomme-le `lol-relais`, déploie, puis **Edit code** : colle le contenu de `worker/riot-proxy.js` et **Deploy**.
 2. Dans le Worker : **Settings > Variables and Secrets** :
-   - `RIOT_KEY` (type *Secret*) : ta clé Riot (Personal API Key).
+   - `RIOT_KEY` : ta clé Riot (Personal API Key). **Type Secret obligatoire** : une variable de type Text est effacée à chaque déploiement depuis GitHub.
    - `ALLOWED_ORIGIN` (texte) : `https://nanileb.github.io`
 3. Copie l'adresse du Worker (ex. `https://lol-relais.ton-nom.workers.dev`) dans l'app : **Réglages > Adresse du relais Riot**.
 
