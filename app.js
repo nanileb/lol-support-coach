@@ -4,6 +4,7 @@
 'use strict';
 
 const DD = 'https://ddragon.leagueoflegends.com';
+const RELAY = 'https://lol-support-coach.62z7h87vzm.workers.dev';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -462,7 +463,7 @@ document.addEventListener('visibilitychange', async () => { if (document.visibil
 
 /* ---------------- Partie en direct ---------------- */
 async function loadLive() {
-  const st = $('#liveStatus'), proxy = (S.settings.proxy || '').replace(/\/+$/, '');
+  const st = $('#liveStatus'), proxy = (S.settings.proxy || RELAY).replace(/\/+$/, '');
   if (!proxy) { st.className = 'status err'; st.innerHTML = "Pas encore de relais Riot configuré (onglet Réglages). En attendant : ouvre OP.GG et saisis l'équipe adverse ci-dessous."; return; }
   if (!/.+#.+/.test(S.settings.riotId || '')) { st.className = 'status err'; st.textContent = 'Renseigne ton Riot ID (Pseudo#TAG) dans les Réglages.'; return; }
   st.className = 'status'; st.textContent = 'Recherche de ta partie…';
@@ -534,7 +535,7 @@ function editPool() { openPicker({ title: 'Mon pool (touche pour ajouter / retir
 /* ---------------- Réglages ---------------- */
 function renderSettings() {
   $('#poolView').innerHTML = S.settings.pool.length ? S.settings.pool.map(id => `<div class="pick on" style="cursor:default">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : ''}<span>${esc(cname(id))}</span></div>`).join('') : '<p class="note">Aucun champion pour l\'instant.</p>';
-  $('#riotId').value = S.settings.riotId || ''; $('#platform').value = S.settings.platform; $('#proxy').value = S.settings.proxy || '';
+  $('#riotId').value = S.settings.riotId || ''; $('#platform').value = S.settings.platform;
   $('#optSound').checked = S.settings.sound; $('#optVibrate').checked = S.settings.vibrate; $('#optNotif').checked = S.settings.notif; $('#optLead').value = String(S.settings.lead);
   const live = gamePatch(S.version);
   $('#metaInfo').innerHTML = `Patch en jeu : <b>${esc(live || 'inconnu')}</b> (Data Dragon ${esc(S.version || '?')}). Données méta : patch <b>${esc(S.meta.patch)}</b>, mises à jour le ${esc(S.meta.updated || '?')}.` + (live && live !== S.meta.patch ? `<br><span style="color:var(--warn)">Nouveau patch détecté : les champions et objets sont déjà à jour, les tiers et timings le seront à la prochaine mise à jour des données.</span>` : '');
@@ -543,7 +544,6 @@ function renderSettings() {
 $('#editPool').onclick = editPool;
 $('#riotId').addEventListener('change', e => { S.settings.riotId = e.target.value.trim(); save(); renderBuild(); });
 $('#platform').addEventListener('change', e => { S.settings.platform = e.target.value; save(); renderBuild(); });
-$('#proxy').addEventListener('change', e => { S.settings.proxy = e.target.value.trim(); save(); });
 $('#optSound').addEventListener('change', e => { S.settings.sound = e.target.checked; save(); });
 $('#optVibrate').addEventListener('change', e => { S.settings.vibrate = e.target.checked; save(); });
 $('#optNotif').addEventListener('change', e => { S.settings.notif = e.target.checked; save(); if (e.target.checked && 'Notification' in window) Notification.requestPermission().catch(() => { }); });
