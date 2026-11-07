@@ -1,5 +1,5 @@
 // Coach Support — service worker : app hors-ligne, méta toujours rafraîchie, images Data Dragon en cache.
-const SHELL = 'cs-shell-v11', IMG = 'cs-img-v1';
+const SHELL = 'cs-shell-v12', IMG = 'cs-img-v1';
 const FILES = ['./', 'index.html', 'app.js', 'analyse.js', 'meta.json', 'manifest.webmanifest', 'map-sr.jpg', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => ![SHELL, IMG].includes(k)).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -12,6 +12,6 @@ self.addEventListener('fetch', e => {
   }
   if (u.origin !== location.origin) return;
   // réseau d'abord (pour suivre les mises à jour du patch), cache si hors-ligne
-  e.respondWith(fetch(e.request).then(r => { const cp = r.clone(); caches.open(SHELL).then(c => c.put(e.request, cp)); return r; }).catch(() => caches.match(e.request, { ignoreSearch: true })));
+  e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(r => { const cp = r.clone(); caches.open(SHELL).then(c => c.put(e.request, cp)); return r; }).catch(() => caches.match(e.request, { ignoreSearch: true })));
 });
 self.addEventListener('notificationclick', e => { e.notification.close(); e.waitUntil(self.clients.matchAll({ type: 'window' }).then(cs => cs[0] ? cs[0].focus() : self.clients.openWindow('./'))); });

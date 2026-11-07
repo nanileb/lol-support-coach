@@ -446,7 +446,7 @@ function mapSVG(keys) {
   const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
   const st = x => { const c = x[0] === 'b' ? '#3a8fe0' : '#e0463a'; return x[1] === 't' ? `<rect x="${x[2] - 1.4}" y="${x[3] - 1.4}" width="2.8" height="2.8" rx=".4" fill="${c}" stroke="#010a13" stroke-width=".5"/>` : `<circle cx="${x[2]}" cy="${x[3]}" r="1.5" fill="none" stroke="${c}" stroke-width=".8"/>`; };
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec tours, buissons et emplacements de ward">
-    <image href="map-sr.jpg" x="0" y="0" width="100" height="100"/>
+    <image href="map-sr.jpg?v=12" x="0" y="0" width="100" height="100"/>
     ${STRUCTS.map(st).join('')}
     <text x="66.2" y="77" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
     <text x="42" y="30.5" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
@@ -702,5 +702,5 @@ function renderAll() {
   renderAll();
   if (S.timer.start) markPastFired();
   setInterval(() => tick(false), 500);
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+  if ('serviceWorker' in navigator && location.protocol === 'https:') { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => { }); let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (!rl && navigator.serviceWorker.controller) { rl = true; location.reload(); } }); }
 })();
