@@ -428,12 +428,19 @@ function renderBot() {
 }
 
 /* ---------------- Chronologie ---------------- */
+// Positions en % de la minimap (0,0 = haut gauche). 4e valeur = c'est un buisson.
 const SPOTS = {
-  riverBot: [76, 77, 'Buisson rivière bot'], pit: [62, 71, 'Entrée du pit drake'],
-  triBlue: [60, 88, 'Tri-bush bleu'], triRed: [88, 60, 'Tri-bush rouge'],
-  deepRed: [76, 42, 'Jungle rouge côté bot'], deepBlue: [54, 74, 'Jungle bleue côté bot'],
-  pitTop: [37, 28, 'Pit des larves / Baron'], riverTop: [22, 30, 'Rivière top'],
-  midBlue: [57, 58, 'Rivière mid (sud)'], midRed: [43, 41, 'Rivière mid (nord)']
+  riverBot: [78.9, 77.7, 'Buisson de rivière bot', 1], pit: [68.8, 67.6, 'Entrée du pit drake'],
+  triBlue: [72.7, 85.2, 'Tri-bush bleu (bot)', 1], triRed: [85.2, 72.7, 'Tri-bush rouge (bot)', 1],
+  deepRed: [76.6, 41.8, 'Jungle rouge côté bot'], deepBlue: [53.9, 75.0, 'Jungle bleue côté bot'],
+  pitTop: [32.4, 31.2, 'Entrée du pit Baron / larves'], riverTop: [21.5, 23.0, 'Buisson de rivière top', 1],
+  midBlue: [55.9, 57.0, 'Buisson rivière mid (sud)', 1], midRed: [44.1, 43.4, 'Buisson rivière mid (nord)', 1]
+};
+// Tours : coordonnées du jeu converties en % de la minimap
+const gx = x => (x + 120) / 149.9, gy = y => 100 - (y + 120) / 151;
+const TOWERS = {
+  blue: [[10504, 1029], [6919, 1483], [4281, 1253], [5846, 6396], [5048, 4812], [3651, 3696], [981, 10441], [1512, 6699], [1169, 4287], [1748, 2270], [2177, 1807]],
+  red: [[4318, 13875], [7943, 13411], [10481, 13650], [8955, 8510], [9767, 10113], [11134, 11207], [13866, 4505], [13327, 8226], [13624, 10572], [12611, 13084], [13052, 12612]]
 };
 function wardSpots(key, side) {
   const enemyTri = side === 'blue' ? 'triRed' : 'triBlue', enemyDeep = side === 'blue' ? 'deepRed' : 'deepBlue';
@@ -441,11 +448,17 @@ function wardSpots(key, side) {
 }
 function mapSVG(keys) {
   const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
-  return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec emplacements de ward">
+  const bush = (x, y) => `<g transform="translate(${x} ${y})"><ellipse rx="4.6" ry="3.4" fill="#2f7d3a" stroke="#0d2a12" stroke-width=".5"/><path d="M-2 .6l.8-2.2.6 1.8.9-2.4.8 2.2.9-1.9.5 2.5" fill="none" stroke="#7fd36b" stroke-width=".5"/></g>`;
+  const tower = (t, c) => `<rect x="${(gx(t[0]) - 1.5).toFixed(1)}" y="${(gy(t[1]) - 1.5).toFixed(1)}" width="3" height="3" rx=".5" fill="${c}" stroke="#010a13" stroke-width=".6"/>`;
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec tours, buissons et emplacements de ward">
     <image href="map11.png" x="0" y="0" width="100" height="100"/>
+    ${Object.values(SPOTS).filter(p => p[3]).map(p => bush(p[0], p[1])).join('')}
+    ${TOWERS.blue.map(t => tower(t, '#3a8fe0')).join('')}${TOWERS.red.map(t => tower(t, '#e0463a')).join('')}
+    <text x="65.5" y="75.5" font-size="3.2" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
+    <text x="32" y="22.5" font-size="3.2" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
     <circle cx="${me[0]}" cy="${me[1]}" r="8" fill="none" stroke="#c8aa6e" stroke-width="1" stroke-dasharray="2 1.5"/>
     <text x="${me[0]}" y="${me[1] + (me[1] > 50 ? -10 : 14)}" font-size="4.5" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">TOI</text>
-    ${pts.map((p, i) => `<g><circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#ffd34d" opacity=".25"><animate attributeName="r" values="4;7;4" dur="1.6s" repeatCount="indefinite"/></circle><circle cx="${p[0]}" cy="${p[1]}" r="3.6" fill="#ffd34d" stroke="#010a13" stroke-width="1"/><text x="${p[0]}" y="${p[1] + 1.6}" font-size="4.6" font-weight="800" fill="#010a13" text-anchor="middle" font-family="sans-serif">${i + 1}</text></g>`).join('')}
+    ${pts.map((p, i) => `<g><circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#ffd34d" opacity=".25"><animate attributeName="r" values="4;7;4" dur="1.6s" repeatCount="indefinite"/></circle><circle cx="${p[0]}" cy="${p[1]}" r="2.8" fill="#ffd34d" stroke="#010a13" stroke-width=".8"/><text x="${p[0]}" y="${p[1] + 1.35}" font-size="3.8" font-weight="800" fill="#010a13" text-anchor="middle" font-family="sans-serif">${i + 1}</text></g>`).join('')}
   </svg>`;
 }
 
