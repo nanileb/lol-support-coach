@@ -346,6 +346,12 @@ ol.prio b{color:var(--gold2)}
 .wr-r img{width:32px;height:32px;border:1px solid var(--gline);border-radius:3px}
 .pos{color:var(--good,#0ac8b9)}
 .neg{color:var(--bad,#e84057)}
+
+/* Sélecteur en plein écran, collé en haut (le clavier ne le cache plus) */
+.modal{align-items:flex-start;top:var(--vvt,0px);bottom:auto;height:var(--vvh,100dvh)}
+.sheet{height:100%;max-height:none;border-radius:0 0 14px 14px;border-top:0;border-bottom:1px solid var(--gold);padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
+.sheet .grid{flex:1;min-height:0;align-content:start}
+#pickSearch{font-size:16px}
 </style>
 </head>
 <body>
@@ -516,7 +522,7 @@ ol.prio b{color:var(--gold2)}
 <div id="alertBox"></div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="app.js?v=12"></script>
-<script src="analyse.js?v=12"></script>
+<script src="app.js?v=13"></script>
+<script src="analyse.js?v=13"></script>
 </body>
 </html>

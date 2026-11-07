@@ -446,7 +446,7 @@ function mapSVG(keys) {
   const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
   const st = x => { const c = x[0] === 'b' ? '#3a8fe0' : '#e0463a'; return x[1] === 't' ? `<rect x="${x[2] - 1.4}" y="${x[3] - 1.4}" width="2.8" height="2.8" rx=".4" fill="${c}" stroke="#010a13" stroke-width=".5"/>` : `<circle cx="${x[2]}" cy="${x[3]}" r="1.5" fill="none" stroke="${c}" stroke-width=".8"/>`; };
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec tours, buissons et emplacements de ward">
-    <image href="map-sr.jpg?v=12" x="0" y="0" width="100" height="100"/>
+    <image href="map-sr.jpg?v=13" x="0" y="0" width="100" height="100"/>
     ${STRUCTS.map(st).join('')}
     <text x="66.2" y="77" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
     <text x="42" y="30.5" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
@@ -617,6 +617,8 @@ $('#pickGrid').addEventListener('click', e => {
   else { PK.onPick(id); closePicker(); }
 });
 $('#pickSearch').addEventListener('input', renderPicker);
+// Suit la zone visible (clavier ouvert) pour garder le sélecteur entier à l'écran
+if (window.visualViewport) { const vv = window.visualViewport, fit = () => { document.documentElement.style.setProperty('--vvh', vv.height + 'px'); document.documentElement.style.setProperty('--vvt', vv.offsetTop + 'px'); }; vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit(); }
 $('#pickSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { const f = $('#pickGrid .pick'); if (f) f.click(); } });
 $('#pickClose').onclick = () => closePicker();
 $('#pickNone').onclick = () => { PK.onPick(null); closePicker(); };
