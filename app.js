@@ -56,7 +56,7 @@ async function loadDD(force) {
   try {
     const versions = await getJSON(DD + '/api/versions.json', { cache: 'no-cache' });
     S.version = versions[0];
-    const cached = LS.get('dd2', null);
+    const cached = LS.get('dd3', null);
     if (!force && cached && cached.v === S.version) { S.champs = cached.champs; S.items = cached.items; }
     else {
       const [c, it] = await Promise.all([
@@ -66,11 +66,11 @@ async function loadDD(force) {
       S.champs = {};
       for (const [id, ch] of Object.entries(c.data)) S.champs[id] = { id, key: ch.key, name: ch.name, tags: ch.tags, info: ch.info, img: ch.image.full };
       S.items = null;
-      if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) S.items[iid] = { name: x.name, gold: x.gold && x.gold.total, from: x.from || [] }; }
-      LS.set('dd2', { v: S.version, champs: S.champs, items: S.items });
+      if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) S.items[iid] = { name: x.name, gold: x.gold && x.gold.total, base: x.gold && x.gold.base, from: x.from || [] }; }
+      LS.set('dd3', { v: S.version, champs: S.champs, items: S.items });
     }
   } catch (e) {
-    const cached = LS.get('dd2', null);
+    const cached = LS.get('dd3', null);
     if (cached) { S.version = cached.v; S.champs = cached.champs; S.items = cached.items; }
   }
   S.byKey = {};
@@ -273,33 +273,68 @@ function renderBuild() {
   addSeq(boots, 'bottes : ' + bootsWhy);
   rest.forEach(x => addSeq(x.id, x.why));
   core.slice(1).forEach(id => addSeq(id, 'objet de base'));
-  const order = seq.slice(0, 5);
-  const gk = S.bought.key, bought = new Set(S.bought.ids || []);
-  const nextIdx = order.findIndex(x => !bought.has(String(x.id)));
-  const gold = id => (S.items && S.items[id] && S.items[id].gold) || null;
-  const comps = id => ((S.items && S.items[id] && S.items[id].from) || []).filter(itemExists);
+  const order = seq.filter(x => x.id !== boots).slice(0, 4).map(x => x.id);
+  order.splice(1, 0, boots); // 1er objet, puis finir les bottes, puis la suite
+  window._why = seq; const steps = planBuys(order.filter(Boolean));
+  const done = new Set(S.bought.ids || []);
+  const nextI = steps.findIndex(x => !done.has(x.k));
   const big = (id, sz) => `<img class="ico" style="width:${sz}px;height:${sz}px" src="${iimg(id)}" alt="" loading="lazy">`;
-  const nx = nextIdx >= 0 ? order[nextIdx] : null;
+  const nx = nextI >= 0 ? steps[nextI] : null, after = nextI >= 0 ? steps.slice(nextI + 1, nextI + 4) : [];
+  const groups = [];
+  steps.forEach((st, i) => { let g = groups.find(x => x.name === st.grp); if (!g) groups.push(g = { name: st.grp, items: [] }); g.items.push({ st, i }); });
   out.innerHTML = `
-    ${nx ? `<div class="nextbuy"><div class="lbl">Prochain achat · ${nextIdx + 1}/${order.length}</div>
-      <div class="nb-main">${big(nx.id, 76)}<div class="grow"><div class="nb-name">${esc(iname(nx.id))}</div>
-        ${gold(nx.id) ? `<div class="nb-gold num">${gold(nx.id)} po</div>` : ''}<div class="nb-why">${esc(nx.why)}</div></div></div>
-      ${comps(nx.id).length ? `<div class="lbl" style="margin-top:12px">Pas assez d'or ? Achète d'abord :</div>
-        <div class="comps">${comps(nx.id).map(c => `<div class="comp">${big(c, 44)}<span class="num">${gold(c) || ''} po</span></div>`).join('')}</div>` : ''}
-      <div class="row" style="margin-top:12px"><button class="btn primary grow" data-buy="${nx.id}">Acheté ✓</button><span class="pink-hint">+ 1 pink</span></div>
-    </div>` : `<div class="nextbuy"><div class="lbl">Build complet</div><p>Plus que des pinks et, si besoin, un objet de la liste « contre eux ».</p></div>`}
-    <div class="card"><h3>Ordre d'achat</h3><ol class="order">
-      ${order.map((x, i) => `<li class="${bought.has(String(x.id)) ? 'done' : ''} ${i === nextIdx ? 'cur' : ''}">
-        <span class="n">${i + 1}</span>${big(x.id, 52)}<div class="grow"><b>${esc(iname(x.id))}</b><small>${esc(x.why)}</small></div>
-        <button class="tick" data-buy="${x.id}" aria-label="Marquer comme acheté">${bought.has(String(x.id)) ? '✓' : ''}</button></li>`).join('')}
-    </ol>${bought.size ? '<button class="btn small ghost" id="resetBuy">Remettre à zéro</button>' : ''}</div>
-    <div class="card"><h3>Départ et quête support</h3>
-      <div class="startrow">${[3865, 2003, 2003].filter(itemExists).map(id => big(id, 48)).join('')}<span class="note">+ ward</span></div>
+    ${nx ? `<div class="nextbuy"><div class="lbl">Prochain achat · ${esc(nx.grp)}</div>
+      <div class="nb-main">${big(nx.id, 76)}<div class="grow"><div class="nb-name">${nx.kind === 'finish' ? 'Finir ' : ''}${esc(iname(nx.id))}</div>
+        ${nx.cost ? `<div class="nb-gold num">${nx.cost} po</div>` : ''}<div class="nb-why">${esc(nx.why || '')}</div></div></div>
+      ${after.length ? `<div class="lbl" style="margin-top:12px">Puis</div><div class="comps">${after.map(x => `<div class="comp">${big(x.id, 44)}<span class="num">${x.cost || ''} po</span></div>`).join('<span class="arrow">→</span>')}</div>` : ''}
+      <div class="row" style="margin-top:12px"><button class="btn primary grow" data-buy="${nx.k}">Acheté ✓</button><span class="pink-hint">+ 1 pink</span></div>
+    </div>` : `<div class="nextbuy"><div class="lbl">Build complet</div><p>Plus que des pinks, et un objet « contre eux » si besoin.</p></div>`}
+    <div class="card"><h3>Achats dans l'ordre</h3>
+      ${groups.map(g => `<div class="bgroup"><div class="bgh">${esc(g.name)}</div><ol class="order">
+        ${g.items.map(({ st, i }) => `<li class="${done.has(st.k) ? 'done' : ''} ${i === nextI ? 'cur' : ''}">${big(st.id, 44)}
+          <div class="grow"><b>${st.kind === 'finish' ? 'Finir ' : ''}${esc(iname(st.id))}${st.qty > 1 ? ' ×' + st.qty : ''}</b><small class="num">${st.cost ? st.cost + ' po' : ''}${st.why ? ' · ' + esc(st.why) : ''}</small></div>
+          <button class="tick" data-buy="${st.k}" aria-label="Marquer comme acheté">${done.has(st.k) ? '✓' : ''}</button></li>`).join('')}
+      </ol></div>`).join('')}
+      ${done.size ? '<button class="btn small ghost" id="resetBuy">Remettre à zéro</button>' : ''}</div>
+    <div class="card"><h3>Quête support</h3>
       <div class="startrow quest">${[3865, 3866, 3867].filter(itemExists).map(id => big(id, 40)).join('<span class="arrow">→</span>')}${upId && itemExists(upId) ? '<span class="arrow">→</span>' + big(upId, 40) : ''}</div>
-      <p class="note">La quête se fait toute seule en farmant avec ton objet support.${upId && itemExists(upId) ? ' Amélioration conseillée : <b>' + esc(iname(upId)) + '</b>.' : ''} À chaque retour : 1 pink (40 po une fois la quête finie).</p></div>
+      <p class="note">Se fait toute seule en farmant avec ton objet support.${upId && itemExists(upId) ? ' Amélioration conseillée : <b>' + esc(iname(upId)) + '</b>.' : ''} À chaque retour : 1 pink (40 po une fois la quête finie).</p></div>
     <div class="card"><h3>Runes et sorts</h3><p>${esc((S.meta.keystones || {})[arch] || '')}</p><p class="note">${esc(sums)}</p></div>
     ${A.n ? '' : '<p class="note">Ajoute l\'équipe adverse pour adapter les objets.</p>'}`;
-  void gk;
+  window._why = seq;
+}
+// Découpe le build en achats réels (composants puis assemblage), en réutilisant ce qui est déjà dans l'inventaire.
+function planBuys(order) {
+  const it = id => (S.items && S.items[String(id)]) || null;
+  const from = id => ((it(id) && it(id).from) || []).map(String);
+  const total = id => (it(id) && it(id).gold) || 0;
+  const base = id => (it(id) && it(id).base) || 0;
+  const steps = [], inv = [];
+  const add = (grp, id, kind, why) => {
+    const last = steps[steps.length - 1];
+    if (last && last.grp === grp && last.id === String(id) && kind === 'buy' && last.kind === 'buy') { last.qty++; last.cost += total(id); return; }
+    steps.push({ grp, id: String(id), kind, qty: 1, why, cost: kind === 'finish' ? base(id) : total(id) });
+  };
+  add('Départ', 3865, 'buy', 'objet de quête support');
+  if (itemExists(2003)) { add('Départ', 2003, 'buy', 'potions'); add('Départ', 2003, 'buy'); }
+  const pink = itemExists(2055) ? 2055 : null;
+  const bootsId = order[1];
+  const basic = from(bootsId).find(c => !from(c).length) || (itemExists(1001) ? '1001' : null);
+  if (basic) { add('1er retour', basic, 'buy', 'vitesse pour roam et esquiver'); inv.push(basic); }
+  if (pink) add('1er retour', pink, 'buy', 'vision de la rivière');
+  const expand = (grp, id, why) => {
+    const comps = from(id);
+    if (!comps.length || !S.items) { add(grp, id, 'buy', why); return; }
+    comps.forEach(c => { const k = inv.indexOf(c); if (k >= 0) inv.splice(k, 1); else expand(grp, c); });
+    add(grp, id, 'finish', why);
+  };
+  const whyOf = id => ((window._why || []).find(x => String(x.id) === String(id)) || {}).why;
+  order.forEach((id, n) => {
+    const grp = id === bootsId ? 'Finir les bottes' : `Objet ${n === 0 ? 1 : n} : ${iname(id)}`;
+    expand(grp, id, whyOf(id));
+  });
+  steps.forEach((st, i) => st.k = 's' + i + '_' + st.id);
+  return steps;
 }
 function toggleBuy(id) {
   id = String(id); const ids = new Set(S.bought.ids || []);
