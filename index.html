@@ -152,9 +152,9 @@ ul.tips li{padding-left:2px}
 .legend .l-ward::before{border-color:var(--ward)} .legend .l-obj::before{border-color:var(--gold)} .legend .l-danger::before{border-color:var(--pink)} .legend .l-lane::before{border-color:#8aa4ff}
 
 /* map */
-.mapwrap{display:grid;grid-template-columns:minmax(0,180px) 1fr;gap:12px;align-items:start}
-.mapwrap svg{width:100%;height:auto;border-radius:4px;background:#0f2a22}
-@media (max-width:420px){.mapwrap{grid-template-columns:132px 1fr;gap:10px}}
+.mapwrap{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:14px;align-items:start}
+.mapwrap svg{width:100%;height:auto;border-radius:4px;background:#010a13;border:1px solid var(--gline);display:block}
+@media (max-width:560px){.mapwrap{grid-template-columns:1fr;gap:10px}.mapwrap svg{max-width:320px;margin:0 auto;order:2}}
 
 /* alert banner */
 .alert{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;background:var(--pink);color:#2a0712;border-radius:4px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;gap:12px;align-items:flex-start;animation:pop .25s ease-out}

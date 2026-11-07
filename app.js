@@ -429,28 +429,23 @@ function renderBot() {
 
 /* ---------------- Chronologie ---------------- */
 const SPOTS = {
-  riverBot: [76, 76, 'Buisson rivière bot'], pit: [67, 69, 'Entrée du pit drake'],
-  triBlue: [62, 86, 'Tri-bush bleu'], triRed: [86, 62, 'Tri-bush rouge'],
-  deepRed: [78, 40, 'Jungle rouge côté bot'], deepBlue: [56, 70, 'Jungle bleue côté bot'],
-  pitTop: [31, 31, 'Pit des larves / Baron'], riverTop: [24, 38, 'Rivière top'],
-  midBlue: [44, 56, 'Rivière mid (sud)'], midRed: [56, 44, 'Rivière mid (nord)']
+  riverBot: [76, 77, 'Buisson rivière bot'], pit: [62, 71, 'Entrée du pit drake'],
+  triBlue: [60, 88, 'Tri-bush bleu'], triRed: [88, 60, 'Tri-bush rouge'],
+  deepRed: [76, 42, 'Jungle rouge côté bot'], deepBlue: [54, 74, 'Jungle bleue côté bot'],
+  pitTop: [37, 28, 'Pit des larves / Baron'], riverTop: [22, 30, 'Rivière top'],
+  midBlue: [57, 58, 'Rivière mid (sud)'], midRed: [43, 41, 'Rivière mid (nord)']
 };
 function wardSpots(key, side) {
   const enemyTri = side === 'blue' ? 'triRed' : 'triBlue', enemyDeep = side === 'blue' ? 'deepRed' : 'deepBlue';
   return ({ lvl1: ['riverBot'], gank: [enemyTri, 'riverBot'], drake: ['pit', 'riverBot'], grubs: ['riverTop', 'pitTop'], mid: ['midBlue', 'midRed'], deep: [enemyDeep, enemyTri], baron: ['pitTop', 'riverTop', 'midRed'] })[key] || [];
 }
 function mapSVG(keys) {
-  const pts = keys.map(k => SPOTS[k]).filter(Boolean);
-  return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte simplifiée avec emplacements de ward">
-    <rect width="100" height="100" fill="#0f2a22"/>
-    <path d="M0 18 L18 0 M82 100 L100 82" stroke="#1d4d3f" stroke-width="2"/>
-    <path d="M6 100 L100 6" stroke="#1f3a44" stroke-width="7" opacity=".55"/>
-    <path d="M8 92 L8 8 L92 8 M8 92 L92 92 L92 8" fill="none" stroke="#2c4a3f" stroke-width="5"/>
-    <path d="M10 90 L90 10" fill="none" stroke="#2c4a3f" stroke-width="5"/>
-    <path d="M0 0 L36 36 M64 64 L100 100" stroke="#1b5b73" stroke-width="9" opacity=".7"/>
-    <circle cx="8" cy="92" r="7" fill="#2f6bb3"/><circle cx="92" cy="8" r="7" fill="#b3413a"/>
-    <circle cx="67" cy="69" r="4.5" fill="none" stroke="#e3b55a" stroke-width="1.2"/><circle cx="31" cy="31" r="4.5" fill="none" stroke="#b07cff" stroke-width="1.2"/>
-    ${pts.map((p, i) => `<g><circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#3fd0c0" opacity=".25"/><circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="#3fd0c0"/><text x="${p[0]}" y="${p[1] - 5}" font-size="6" fill="#e6eef0" text-anchor="middle" font-family="sans-serif">${i + 1}</text></g>`).join('')}
+  const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec emplacements de ward">
+    <image href="map11.png" x="0" y="0" width="100" height="100"/>
+    <circle cx="${me[0]}" cy="${me[1]}" r="8" fill="none" stroke="#c8aa6e" stroke-width="1" stroke-dasharray="2 1.5"/>
+    <text x="${me[0]}" y="${me[1] + (me[1] > 50 ? -10 : 14)}" font-size="4.5" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">TOI</text>
+    ${pts.map((p, i) => `<g><circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#ffd34d" opacity=".25"><animate attributeName="r" values="4;7;4" dur="1.6s" repeatCount="indefinite"/></circle><circle cx="${p[0]}" cy="${p[1]}" r="3.6" fill="#ffd34d" stroke="#010a13" stroke-width="1"/><text x="${p[0]}" y="${p[1] + 1.6}" font-size="4.6" font-weight="800" fill="#010a13" text-anchor="middle" font-family="sans-serif">${i + 1}</text></g>`).join('')}
   </svg>`;
 }
 
@@ -508,7 +503,7 @@ function renderTimeline() {
   $('#timeline').innerHTML = (nextWard ? `<div class="card" style="margin-bottom:14px"><h3>${t == null ? 'Première ward' : 'Prochaine ward'} · ${fmt(nextWard.t)}</h3>
       <div class="mapwrap">${mapSVG(nextWard.spots || [])}<div><b>${esc(nextWard.title)}</b><p class="note" style="margin-top:4px">${esc(nextWard.text)}</p>
       <ol class="tips" style="margin-top:6px;font-size:13px">${(nextWard.spots || []).map(k => `<li>${esc(SPOTS[k][2])}</li>`).join('')}</ol>
-      <p class="note">Côté ${S.match.side === 'blue' ? 'bleu (base en bas à gauche)' : 'rouge (base en haut à droite)'}. Schéma simplifié.</p></div></div></div>` : '') +
+      <p class="note">Côté ${S.match.side === 'blue' ? 'bleu (base en bas à gauche)' : 'rouge (base en haut à droite)'}.</p></div></div></div>` : '') +
     (t != null && (t != null ? ev.filter((e, i) => e.t < t - 5 && i !== nextIdx).length : 0) ? `<button class="btn small ghost" id="togglePast" style="margin-bottom:12px">${S.showPast ? 'Masquer' : 'Voir'} les ${(t != null ? ev.filter((e, i) => e.t < t - 5 && i !== nextIdx).length : 0)} événements passés</button>` : '') +
     ev.map((e, i) => ({ e, i })).filter(({ e, i }) => t == null || S.showPast || e.t >= t - 5 || i === nextIdx).map(({ e, i }) => `<div class="ev ${e.kind} ${t != null && e.t < t - 5 && i !== nextIdx ? 'past' : ''} ${i === nextIdx ? 'now' : ''}">
       <div class="tm">${fmt(e.t)}</div><div class="dot"><i></i></div>
