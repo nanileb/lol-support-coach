@@ -276,32 +276,28 @@ function renderBuild() {
   const order = seq.filter(x => x.id !== boots).slice(0, 4).map(x => x.id);
   order.splice(1, 0, boots); // 1er objet, puis finir les bottes, puis la suite
   window._why = seq; const steps = planBuys(order.filter(Boolean));
-  const done = new Set(S.bought.ids || []);
-  const nextI = steps.findIndex(x => !done.has(x.k));
-  const big = (id, sz) => `<img class="ico" style="width:${sz}px;height:${sz}px" src="${iimg(id)}" alt="" loading="lazy">`;
-  const nx = nextI >= 0 ? steps[nextI] : null, after = nextI >= 0 ? steps.slice(nextI + 1, nextI + 4) : [];
   const groups = [];
-  steps.forEach((st, i) => { let g = groups.find(x => x.name === st.grp); if (!g) groups.push(g = { name: st.grp, items: [] }); g.items.push({ st, i }); });
-  out.innerHTML = `
-    ${nx ? `<div class="nextbuy"><div class="lbl">Prochain achat · ${esc(nx.grp)}</div>
-      <div class="nb-main">${big(nx.id, 76)}<div class="grow"><div class="nb-name">${nx.kind === 'finish' ? 'Finir ' : ''}${esc(iname(nx.id))}</div>
-        ${nx.cost ? `<div class="nb-gold num">${nx.cost} po</div>` : ''}<div class="nb-why">${esc(nx.why || '')}</div></div></div>
-      ${after.length ? `<div class="lbl" style="margin-top:12px">Puis</div><div class="comps">${after.map(x => `<div class="comp">${big(x.id, 44)}<span class="num">${x.cost || ''} po</span></div>`).join('<span class="arrow">→</span>')}</div>` : ''}
-      <div class="row" style="margin-top:12px"><button class="btn primary grow" data-buy="${nx.k}">Acheté ✓</button><span class="pink-hint">+ 1 pink</span></div>
-    </div>` : `<div class="nextbuy"><div class="lbl">Build complet</div><p>Plus que des pinks, et un objet « contre eux » si besoin.</p></div>`}
-    <div class="card"><h3>Achats dans l'ordre</h3>
-      ${groups.map(g => `<div class="bgroup"><div class="bgh">${esc(g.name)}</div><ol class="order">
-        ${g.items.map(({ st, i }) => `<li class="${done.has(st.k) ? 'done' : ''} ${i === nextI ? 'cur' : ''}">${big(st.id, 44)}
-          <div class="grow"><b>${st.kind === 'finish' ? 'Finir ' : ''}${esc(iname(st.id))}${st.qty > 1 ? ' ×' + st.qty : ''}</b><small class="num">${st.cost ? st.cost + ' po' : ''}${st.why ? ' · ' + esc(st.why) : ''}</small></div>
-          <button class="tick" data-buy="${st.k}" aria-label="Marquer comme acheté">${done.has(st.k) ? '✓' : ''}</button></li>`).join('')}
-      </ol></div>`).join('')}
-      ${done.size ? '<button class="btn small ghost" id="resetBuy">Remettre à zéro</button>' : ''}</div>
-    <div class="card"><h3>Quête support</h3>
-      <div class="startrow quest">${[3865, 3866, 3867].filter(itemExists).map(id => big(id, 40)).join('<span class="arrow">→</span>')}${upId && itemExists(upId) ? '<span class="arrow">→</span>' + big(upId, 40) : ''}</div>
-      <p class="note">Se fait toute seule en farmant avec ton objet support.${upId && itemExists(upId) ? ' Amélioration conseillée : <b>' + esc(iname(upId)) + '</b>.' : ''} À chaque retour : 1 pink (40 po une fois la quête finie).</p></div>
-    <div class="card"><h3>Runes et sorts</h3><p>${esc((S.meta.keystones || {})[arch] || '')}</p><p class="note">${esc(sums)}</p></div>
-    ${A.n ? '' : '<p class="note">Ajoute l\'équipe adverse pour adapter les objets.</p>'}`;
-  window._why = seq;
+  steps.forEach(st => { let g = groups.find(x => x.name === st.grp); if (!g) groups.push(g = { name: st.grp, items: [] }); g.items.push(st); });
+  const tile = st => `<div class="tl-i ${st.kind === 'finish' ? 'fin' : ''}"><img src="${iimg(st.id)}" alt="${esc(iname(st.id))}" loading="lazy">${st.qty > 1 ? `<i class="qty">×${st.qty}</i>` : ''}<span class="num">${st.cost || ''}</span></div>`;
+  const label = g => {
+    const m = g.name.match(/^Objet (\d+) : (.*)$/);
+    if (m) return `<b>Objet ${m[1]}</b><small>${esc(m[2])}</small>`;
+    if (g.name === 'Finir les bottes') { const f = g.items[g.items.length - 1]; return `<b>Bottes</b><small>${esc(iname(f.id))}</small>`; }
+    return `<b>${esc(g.name)}</b>`;
+  };
+  const vs = sit.length ? sit.slice(0, 3).map(x => `${esc(iname(x.id))} <span>(${esc(x.why)})</span>`).join(' · ') : '';
+  const g0 = groups.find(g => g.name === 'Départ'), g1 = groups.find(g => g.name === '1er retour');
+  const firstRow = g0 && g1 ? `<div class="bp-row"><div class="bp-l"><b>Départ</b><small>puis 1er retour</small></div><div class="bp-r">${g0.items.map(tile).join('')}<span class="vbar"></span>${g1.items.map(tile).join('')}</div></div>` : '';
+  const restG = firstRow ? groups.filter(g => g !== g0 && g !== g1) : groups;
+  out.innerHTML = `<div class="buildpath">${firstRow}
+      ${restG.map(g => `<div class="bp-row"><div class="bp-l">${label(g)}</div><div class="bp-r">${g.items.map(tile).join('<span class="sep">›</span>')}</div></div>`).join('')}
+    </div>
+    <div class="bp-foot">
+      <div><b>Chaque retour :</b> 1 pink${upId && itemExists(upId) ? ` · <b>Ward finale :</b> ${esc(iname(upId))}` : ''}</div>
+      ${vs ? `<div class="bp-vs"><b>Contre eux :</b> ${vs}</div>` : ''}
+      <div><b>Runes :</b> ${esc((S.meta.keystones || {})[arch] || '')} · ${esc(sums)}</div>
+      ${A.n ? '' : '<div class="note">Ajoute l\'équipe adverse (plus bas) pour adapter les objets.</div>'}
+    </div>`;
 }
 // Découpe le build en achats réels (composants puis assemblage), en réutilisant ce qui est déjà dans l'inventaire.
 function planBuys(order) {
@@ -592,7 +588,7 @@ async function loadLive() {
     const len = Number(g.gameLength) || 0;
     if (len > 0) { await startClock(len); }
     save(); renderAll();
-    st.className = 'status ok'; st.textContent = `Partie trouvée : tu joues ${cname(meP.id)}, côté ${S.match.side === 'blue' ? 'bleu' : 'rouge'}. ${len > 0 ? 'Chrono calé à ' + fmt(len) + ' (ajuste de ±10 s si besoin).' : 'Lance le chrono dans Timings au début de la partie.'} Vérifie les rôles adverses.`;
+    st.className = 'status ok'; st.textContent = `✓ ${cname(meP.id)} · côté ${S.match.side === 'blue' ? 'bleu' : 'rouge'}${len > 0 ? ' · chrono ' + fmt(len) : ''}`;
   } catch (e) { st.className = 'status err'; st.textContent = 'Relais injoignable : vérifie son adresse dans les Réglages.'; }
 }
 

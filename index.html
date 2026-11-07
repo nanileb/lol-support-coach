@@ -285,6 +285,30 @@ li.done .tick{background:var(--good);border-color:var(--good)}
 .bgroup + .bgroup{margin-top:6px}
 .bgh{font:700 12px/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
 ol.order li{padding:6px 8px}
+
+/* Build sur un seul écran */
+#v-game > .card:first-child{padding:8px;gap:6px}
+#v-game > .card:first-child .btn{min-height:38px}
+#liveStatus:empty{display:none}
+#buildCard{background:linear-gradient(180deg,rgba(30,35,40,.92),rgba(10,20,40,.92));border:1px solid var(--gline);padding:8px 10px}
+#v-game{gap:10px}
+main:has(#v-game:not([hidden])){padding-top:10px}
+.buildpath{display:flex;flex-direction:column}
+.bp-row{display:grid;grid-template-columns:70px 1fr;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid rgba(120,90,40,.35)}
+.bp-row:last-child{border-bottom:0}
+.bp-l b{display:block;font:700 12px/1.1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.bp-l small{display:block;font-size:11px;line-height:1.2;color:var(--mute);margin-top:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.bp-r{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+.bp-r .sep{color:var(--gline);font-size:18px;line-height:1}
+.tl-i{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px}
+.tl-i img{width:36px;height:36px;border:1px solid var(--gline);border-radius:3px;background:#010a13}
+.tl-i.fin img{width:42px;height:42px;border:2px solid var(--gold);box-shadow:0 0 10px rgba(200,170,110,.35)}
+.tl-i span{font-size:11px;color:var(--gold);line-height:1}
+.tl-i .qty{position:absolute;right:-4px;top:-4px;font-style:normal;font-size:11px;font-weight:700;background:var(--gold);color:#010a13;border-radius:2px;padding:0 3px}
+.bp-foot{margin-top:6px;font-size:12px!important;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--fg);line-height:1.35}
+.bp-foot b{color:var(--gold);font-weight:600}
+.bp-vs span{color:var(--mute)}
+.vbar{width:1px;align-self:stretch;background:var(--gline);margin:0 6px}
 </style>
 </head>
 <body>
@@ -317,14 +341,10 @@ ol.order li{padding:6px 8px}
 
   <!-- EN GAME / BUILD -->
   <section class="view" id="v-game" hidden>
-    <div>
-      <h2>En game</h2>
-      <p class="lead" id="gameLead">Récupère ta partie en cours ou saisis l'équipe adverse.</p>
-    </div>
     <div class="card">
       <div class="row">
-        <button class="btn primary grow" id="btnLive">Charger ma partie en cours</button>
-        <a class="btn ghost" id="opggLink" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">OP.GG</a>
+        <button class="btn primary small grow" id="btnLive">Charger ma partie en cours</button>
+        <a class="btn small ghost" id="opggLink" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">OP.GG</a>
       </div>
       <p class="status" id="liveStatus"></p>
     </div>
