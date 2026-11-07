@@ -655,14 +655,23 @@ $('#optLead').addEventListener('change', e => { S.settings.lead = Number(e.targe
 $('#refreshMeta').onclick = async () => { toast('Rechargement…'); await loadMeta(true); await loadDD(true); renderAll(); toast('Données à jour'); };
 
 /* ---------------- Navigation et actions ---------------- */
+const GAME_TABS = ['draft', 'game', 'bot', 'time'];
 function show(v) {
-  S.view = v; LS.set('view', v);
+  S.view = v; if (GAME_TABS.includes(v)) LS.set('view', v);
   $$('section.view[id^="v-"]').forEach(s => s.hidden = s.id !== 'v-' + v);
   $$('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.v === v)));
+  $('nav.tabs').hidden = !GAME_TABS.includes(v);
+  $('#btnHome').hidden = v === 'home';
+  document.body.classList.toggle('in-game', GAME_TABS.includes(v));
   if (v === 'time') renderTimeline();
+  if (v === 'home') { const a = $('#homeAcc'); if (a) a.textContent = S.settings.riotId ? 'Compte : ' + S.settings.riotId : 'Ajoute ton Riot ID dans les Réglages.'; }
+  if (v === 'analyse' && typeof renderAnalyse === 'function') { renderAnalyse(); if (Date.now() - AN.updated > 10 * 60000) loadAnalyse(false); }
   window.scrollTo(0, 0);
 }
 $$('nav.tabs button').forEach(b => b.onclick = () => show(b.dataset.v));
+$$('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+$('#btnHome').onclick = () => show('home');
+$('#btnAnalyse').onclick = () => loadAnalyse(false);
 $('#btnLive').onclick = loadLive;
 $('#clearDraft').onclick = () => { const me = S.match.me, side = S.match.side; S.match = defMatch(); S.match.me = me; S.match.side = side; S.kills = { drakes: [], soul: null }; S.bought = { ids: [] }; LS.set('bought', S.bought); save(); renderAll(); };
 $('#btnStart').onclick = () => { S.kills = { drakes: [], soul: null }; startClock(0); toast('Chrono lancé, garde l\'app ouverte'); };
@@ -686,7 +695,7 @@ function renderAll() {
 (async function init() {
   await loadMeta(false);
   renderAll();
-  show(LS.get('view', 'draft'));
+  show('home');
   await loadDD(false);
   renderAll();
   if (S.timer.start) markPastFired();

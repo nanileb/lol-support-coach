@@ -309,15 +309,69 @@ main:has(#v-game:not([hidden])){padding-top:10px}
 .bp-foot b{color:var(--gold);font-weight:600}
 .bp-vs span{color:var(--mute)}
 .vbar{width:1px;align-self:stretch;background:var(--gline);margin:0 6px}
+
+/* Accueil + analyse */
+nav.tabs{grid-template-columns:repeat(4,1fr)}
+nav.tabs[hidden]{display:none}
+header.top .back{background:none;border:1px solid var(--gline);color:var(--gold);width:36px;height:36px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex:none;padding:0}
+header.top .back[hidden]{display:none}
+header.top .back svg{width:20px;height:20px}
+header.top h1{flex:1;white-space:nowrap;font-size:18px!important}
+.home{display:flex;flex-direction:column;gap:14px;padding-top:10px}
+.hz{display:flex;align-items:center;gap:14px;text-align:left;padding:20px 16px;border:1px solid var(--gline);border-radius:4px;background:linear-gradient(180deg,rgba(30,35,40,.92),rgba(10,20,40,.92));color:var(--fg);font:inherit}
+.hz-game{border:2px solid var(--gold);box-shadow:0 0 22px rgba(200,170,110,.18);padding:28px 16px}
+.hz-ic{width:52px;height:52px;flex:none;border:1px solid var(--gline);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold);background:#010a13}
+.hz-ic svg{width:26px;height:26px}
+.hz b{display:block;font:700 20px/1.1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--gold2)}
+.hz small{display:block;font-size:13px;color:var(--mute);margin-top:4px}
+.lbl-s{font:700 12px/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-top:6px}
+.lg-head{display:flex;gap:12px;align-items:center}
+.lg-head img{width:52px;height:52px;border:2px solid var(--gold);border-radius:3px}
+.lg-head b{font-size:18px;color:var(--gold2)}
+.adv{color:var(--mute);font-size:13px}
+.deaths{display:flex;flex-direction:column;gap:4px}
+.death{display:flex;gap:10px;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
+.death:last-child{border-bottom:0}
+.death b{color:var(--bad,#e84057);width:42px;flex:none}
+ol.prio{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+ol.prio b{color:var(--gold2)}
+.cmp{display:flex;flex-direction:column;font-size:13px}
+.cmp-h,.cmp-r{display:grid;grid-template-columns:1fr 52px 52px 52px;gap:4px;padding:6px 0;align-items:center;border-bottom:1px solid var(--line)}
+.cmp-h{font:700 11px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.cmp-h span,.cmp-r > :not(:first-child){text-align:right}
+.cmp-r.low b{color:var(--bad,#e84057)}
+.cmp-r.ok b{color:var(--good,#0ac8b9)}
+.wr{display:flex;flex-direction:column;gap:6px}
+.wr-r{display:flex;align-items:center;gap:10px;font-size:14px}
+.wr-r img{width:32px;height:32px;border:1px solid var(--gline);border-radius:3px}
+.pos{color:var(--good,#0ac8b9)}
+.neg{color:var(--bad,#e84057)}
 </style>
 </head>
 <body>
 <header class="top">
+  <button class="back" id="btnHome" aria-label="Accueil" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></button>
   <h1>Coach <span>Support</span></h1>
   <div class="patch" id="patchBadge">Patch …</div>
 </header>
 
 <main>
+  <!-- ACCUEIL -->
+  <section class="view" id="v-home">
+    <div class="home">
+      <button class="hz hz-game" data-go="draft"><span class="hz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><span class="grow"><b>Nouvelle game</b><small>Draft · Build · Botlane · Timings</small></span></button>
+      <button class="hz" data-go="analyse"><span class="hz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16M7 16V9m5 7V5m5 11v-5"/></svg></span><span class="grow"><b>Analyse</b><small>Tes dernières parties et comment progresser</small></span></button>
+      <button class="hz" data-go="set"><span class="hz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10l2 2M5 19l2-2m10-10l2-2"/></svg></span><span class="grow"><b>Réglages</b><small>Pool, compte, alertes</small></span></button>
+      <p class="note" id="homeAcc"></p>
+    </div>
+  </section>
+
+  <!-- ANALYSE -->
+  <section class="view" id="v-analyse" hidden>
+    <div class="row"><h2 class="grow">Analyse</h2><button class="btn primary small" id="btnAnalyse">Analyser mes parties</button></div>
+    <p class="status" id="anStatus"></p>
+    <div id="anOut" class="view"></div>
+  </section>
   <!-- DRAFT / SYNERGIE -->
   <section class="view" id="v-draft">
     <div>
@@ -445,12 +499,11 @@ main:has(#v-game:not([hidden])){padding-top:10px}
   </section>
 </main>
 
-<nav class="tabs" role="tablist">
+<nav class="tabs" role="tablist" hidden>
   <button role="tab" data-v="draft" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16M7 16V9m5 7V5m5 11v-5"/></svg>Draft</button>
   <button role="tab" data-v="game" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg>Build</button>
   <button role="tab" data-v="bot" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l14 14M19 5L5 19"/></svg>Botlane</button>
   <button role="tab" data-v="time" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Timings</button>
-  <button role="tab" data-v="set" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10l2 2M5 19l2-2m10-10l2-2"/></svg>Réglages</button>
 </nav>
 
 <div class="modal" id="picker" hidden>
@@ -464,5 +517,6 @@ main:has(#v-game:not([hidden])){padding-top:10px}
 <div class="toast" id="toast" hidden></div>
 
 <script src="app.js"></script>
+<script src="analyse.js"></script>
 </body>
 </html>
