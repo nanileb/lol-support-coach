@@ -428,37 +428,31 @@ function renderBot() {
 }
 
 /* ---------------- Chronologie ---------------- */
-// Positions en % de la minimap (0,0 = haut gauche). 4e valeur = c'est un buisson.
+// Positions en % de la minimap (0,0 = haut gauche), tirées de la grille de navigation et des placements du client (Base_SRX).
 const SPOTS = {
-  riverBot: [78.9, 77.7, 'Buisson de rivière bot', 1], pit: [68.8, 67.6, 'Entrée du pit drake'],
-  triBlue: [72.7, 85.2, 'Tri-bush bleu (bot)', 1], triRed: [85.2, 72.7, 'Tri-bush rouge (bot)', 1],
-  deepRed: [76.6, 41.8, 'Jungle rouge côté bot'], deepBlue: [53.9, 75.0, 'Jungle bleue côté bot'],
-  pitTop: [32.4, 31.2, 'Entrée du pit Baron / larves'], riverTop: [21.5, 23.0, 'Buisson de rivière top', 1],
-  midBlue: [55.9, 57.0, 'Buisson rivière mid (sud)', 1], midRed: [44.1, 43.4, 'Buisson rivière mid (nord)', 1]
+  riverBot: [77.8, 73.8, 'Buisson de rivière bot'], pit: [68.6, 66.2, 'Entrée du pit drake'],
+  triBlue: [69.9, 79.5, 'Tri-bush bleu (bot)'], triRed: [81.4, 68.2, 'Tri-bush rouge (bot)'],
+  deepRed: [68.6, 59.4, 'Buisson d\'entrée jungle rouge (côté bot)'], deepBlue: [57.7, 68.3, 'Buisson d\'entrée jungle bleue (côté bot)'],
+  pitTop: [31.4, 33.2, 'Entrée du pit Baron / larves'], riverTop: [22.6, 23.6, 'Buisson de rivière top'],
+  midBlue: [58.4, 56.9, 'Buisson rivière mid (sud)'], midRed: [42.2, 43.8, 'Buisson rivière mid (nord)']
 };
-// Tours : coordonnées du jeu converties en % de la minimap
-const gx = x => (x + 120) / 149.9, gy = y => 100 - (y + 120) / 151;
-const TOWERS = {
-  blue: [[10504, 1029], [6919, 1483], [4281, 1253], [5846, 6396], [5048, 4812], [3651, 3696], [981, 10441], [1512, 6699], [1169, 4287], [1748, 2270], [2177, 1807]],
-  red: [[4318, 13875], [7943, 13411], [10481, 13650], [8955, 8510], [9767, 10113], [11134, 11207], [13866, 4505], [13327, 8226], [13624, 10572], [12611, 13084], [13052, 12612]]
-};
+// Tours (t) et inhibiteurs (i) : [équipe, type, x %, y %]
+const STRUCTS = [["b","t",11.8,84.7],["b","t",14.7,87.8],["r","t",87.9,15.1],["r","t",84.9,11.9],["b","t",28.8,91.6],["b","t",24.6,75.1],["b","t",7.9,71.1],["b","i",21.6,78.3],["b","i",23.4,91.7],["b","i",7.9,75.9],["r","i",75.9,8.0],["b","t",46.6,90.0],["r","t",53.5,9.7],["b","t",70.7,93.1],["b","t",34.0,67.6],["r","t",70.6,8.1],["r","t",29.1,6.6],["b","t",39.4,56.9],["b","t",6.6,29.7],["b","t",10.2,54.9],["r","t",65.8,31.9],["r","t",75.0,24.5],["r","i",78.1,21.4],["r","t",60.3,42.7],["r","t",93.4,69.7],["r","i",91.6,23.8],["r","t",91.7,28.8],["r","t",89.7,44.6]];
 function wardSpots(key, side) {
   const enemyTri = side === 'blue' ? 'triRed' : 'triBlue', enemyDeep = side === 'blue' ? 'deepRed' : 'deepBlue';
   return ({ lvl1: ['riverBot'], gank: [enemyTri, 'riverBot'], drake: ['pit', 'riverBot'], grubs: ['riverTop', 'pitTop'], mid: ['midBlue', 'midRed'], deep: [enemyDeep, enemyTri], baron: ['pitTop', 'riverTop', 'midRed'] })[key] || [];
 }
 function mapSVG(keys) {
   const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
-  const bush = (x, y) => `<g transform="translate(${x} ${y})"><ellipse rx="4.6" ry="3.4" fill="#2f7d3a" stroke="#0d2a12" stroke-width=".5"/><path d="M-2 .6l.8-2.2.6 1.8.9-2.4.8 2.2.9-1.9.5 2.5" fill="none" stroke="#7fd36b" stroke-width=".5"/></g>`;
-  const tower = (t, c) => `<rect x="${(gx(t[0]) - 1.5).toFixed(1)}" y="${(gy(t[1]) - 1.5).toFixed(1)}" width="3" height="3" rx=".5" fill="${c}" stroke="#010a13" stroke-width=".6"/>`;
+  const st = x => { const c = x[0] === 'b' ? '#3a8fe0' : '#e0463a'; return x[1] === 't' ? `<rect x="${x[2] - 1.4}" y="${x[3] - 1.4}" width="2.8" height="2.8" rx=".4" fill="${c}" stroke="#010a13" stroke-width=".5"/>` : `<circle cx="${x[2]}" cy="${x[3]}" r="1.5" fill="none" stroke="${c}" stroke-width=".8"/>`; };
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec tours, buissons et emplacements de ward">
-    <image href="map11.png" x="0" y="0" width="100" height="100"/>
-    ${Object.values(SPOTS).filter(p => p[3]).map(p => bush(p[0], p[1])).join('')}
-    ${TOWERS.blue.map(t => tower(t, '#3a8fe0')).join('')}${TOWERS.red.map(t => tower(t, '#e0463a')).join('')}
-    <text x="65.5" y="75.5" font-size="3.2" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
-    <text x="32" y="22.5" font-size="3.2" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
+    <image href="map-sr.jpg" x="0" y="0" width="100" height="100"/>
+    ${STRUCTS.map(st).join('')}
+    <text x="66.2" y="77" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
+    <text x="42" y="30.5" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
     <circle cx="${me[0]}" cy="${me[1]}" r="8" fill="none" stroke="#c8aa6e" stroke-width="1" stroke-dasharray="2 1.5"/>
     <text x="${me[0]}" y="${me[1] + (me[1] > 50 ? -10 : 14)}" font-size="4.5" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">TOI</text>
-    ${pts.map((p, i) => `<g><circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#ffd34d" opacity=".25"><animate attributeName="r" values="4;7;4" dur="1.6s" repeatCount="indefinite"/></circle><circle cx="${p[0]}" cy="${p[1]}" r="2.8" fill="#ffd34d" stroke="#010a13" stroke-width=".8"/><text x="${p[0]}" y="${p[1] + 1.35}" font-size="3.8" font-weight="800" fill="#010a13" text-anchor="middle" font-family="sans-serif">${i + 1}</text></g>`).join('')}
+    ${pts.map((p, i) => `<g><circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#ffd34d" opacity=".25"><animate attributeName="r" values="3;5.5;3" dur="1.6s" repeatCount="indefinite"/></circle><circle cx="${p[0]}" cy="${p[1]}" r="2.3" fill="#ffd34d" stroke="#010a13" stroke-width=".6"/><text x="${p[0]}" y="${p[1] + 1.1}" font-size="3.1" font-weight="800" fill="#010a13" text-anchor="middle" font-family="sans-serif">${i + 1}</text></g>`).join('')}
   </svg>`;
 }
 

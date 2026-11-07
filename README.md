@@ -23,3 +23,7 @@ Riot interdit les appels directs depuis un navigateur, donc l'app passe par un p
 Le relais n'expose qu'une seule route : `/live?riotId=Pseudo%23TAG&platform=euw1` (compte via account-v1, puis partie en cours via spectator-v5).
 
 Sans relais, le bouton **OP.GG** ouvre ta partie en cours et tu saisis les champions adverses à la main.
+
+## Carte
+
+`map-sr.jpg` : minimap officielle de la Faille (texture `2dlevelminimap_base_baron1`, Riot Games, via CommunityDragon) avec les buissons tirés de la grille de navigation du client (`aipath_srx`, extraite par le projet iamywl/Web_game). Positions des tours et inhibiteurs : `Base_SRX` du client.
