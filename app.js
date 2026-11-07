@@ -279,6 +279,37 @@ function laneScores(sup, adc) {
   const sp = supProfile(sup), ap = adcProfile(adc);
   return { early: ap.early * 1.2 + sp.early + sp.poke * 0.4, allin: ap.allin + sp.engage * 1.2 + sp.early * 0.5, late: ap.scale * 1.2 + sp.scale + sp.peel * 0.3 };
 }
+const SPELLS = {}, spellLoading = {};
+function loadSpells(id) {
+  if (!id || SPELLS[id] || spellLoading[id] || !S.version) return;
+  const ck = LS.get('sp_' + id, null);
+  if (ck && ck.v === S.version) { SPELLS[id] = ck.d; return; }
+  spellLoading[id] = true;
+  getJSON(`${DD}/cdn/${S.version}/data/fr_FR/champion/${id}.json`).then(j => {
+    const c = j.data[id], d = { Passif: { name: c.passive.name, img: `${DD}/cdn/${S.version}/img/passive/${c.passive.image.full}` } };
+    ['Q', 'W', 'E', 'R'].forEach((k, i) => { const s = c.spells[i]; if (s) d[k] = { name: s.name, cd: s.cooldownBurn, img: `${DD}/cdn/${S.version}/img/spell/${s.image.full}` }; });
+    SPELLS[id] = d; LS.set('sp_' + id, { v: S.version, d });
+    if (S.view === 'bot' || S.view === 'game') renderBot();
+  }).catch(() => { }).finally(() => { spellLoading[id] = false; });
+}
+function spellRow(champId, k, tip) {
+  const sp = (SPELLS[champId] || {})[k];
+  const cd = sp && sp.cd && sp.cd !== '0' ? `<span class="cd num">${esc(sp.cd.split('/').slice(0, 1)[0])} s${sp.cd.includes('/') ? ' → ' + esc(sp.cd.split('/').pop()) + ' s' : ''}</span>` : '';
+  return `<div class="spell">${sp ? `<img src="${sp.img}" alt="">` : `<span class="sk">${esc(k)}</span>`}
+    <div class="grow"><div class="sn"><b>${esc(cname(champId))} · ${esc(k)}</b>${sp ? ' ' + esc(sp.name) : ''} ${cd}</div><div class="st">${esc(tip)}</div></div></div>`;
+}
+const ARCH_DO = {
+  engage: m => `Engage quand leur sort défensif ou leur Flash est tombé. ${adcProfile(m.ally.adc).style === 'hyper' ? cname(m.ally.adc) + ' scale mieux : ne force pas si ce n\'est pas propre.' : cname(m.ally.adc) + ' suit bien tes engages.'}`,
+  enchanter: m => `Trade avec ${cname(m.ally.adc)} (auto + ton sort) puis recule. Garde bouclier/soin pour leur engage.`,
+  warden: m => `Reste près de ${cname(m.ally.adc)}, intercepte les projectiles, punis leur engage.`,
+  mage: m => `Poke dès qu'ils s'avancent pour un last-hit, garde ta portée.`
+};
+const ARCH_DONT = {
+  engage: 'Engager seul quand ton ADC est loin ou en train de farmer',
+  enchanter: 'Gaspiller ton bouclier/soin avant leur engage',
+  warden: 'Partir en avant : ton rôle est de protéger',
+  mage: 'Te placer devant tes sbires (tu es la cible facile)'
+};
 function renderBot() {
   const m = S.match, me = m.me, a = m.ally.adc, ea = m.enemy.adc, es = m.enemy.support, out = $('#botOut');
   if (!me || !ea || !es || !a) {
@@ -286,44 +317,46 @@ function renderBot() {
       <p class="note">Manque : ${[!a && 'ton ADC', !me && 'ton support', !ea && 'leur ADC', !es && 'leur support'].filter(Boolean).join(', ')}</p></div>`;
     return;
   }
+  [es, ea].forEach(loadSpells);
   const mine = laneScores(me, a), theirs = laneScores(es, ea);
   const cMe = S.meta.counters[me] || [], cThem = S.meta.counters[es] || [];
   if (cMe.includes(es) || cMe.includes(ea)) { mine.early += 1; mine.allin += 1; }
   if (cThem.includes(me) || cThem.includes(a)) { theirs.early += 1; theirs.allin += 1; }
-  const pair = ((S.meta.pairs[me] || {})[a] || 0) / 10, epair = ((S.meta.pairs[es] || {})[ea] || 0) / 10;
-  mine.allin += pair; theirs.allin += epair;
+  mine.allin += ((S.meta.pairs[me] || {})[a] || 0) / 10; theirs.allin += ((S.meta.pairs[es] || {})[ea] || 0) / 10;
   const ph = (k, label, sub) => { const d = mine[k] - theirs[k]; const c = d > 0.8 ? 'adv' : d < -0.8 ? 'dis' : 'even'; return { c, d, html: `<div class="phase ${c}"><small>${label}</small><b>${c === 'adv' ? 'Avantage' : c === 'dis' ? 'Désavant.' : 'Égal'}</b><small>${sub}</small></div>` }; };
   const P = [ph('early', 'Niv 1-2', 'trades'), ph('allin', 'Niv 3-6', 'all-in'), ph('late', 'Après 6', 'scaling')];
   const total = P.reduce((s, x) => s + x.d, 0);
-  const verdict = total > 1.5 ? ['good', 'Vous avez l\'avantage en lane'] : total < -1.5 ? ['bad', 'Lane difficile, joue la sécurité'] : ['warn', 'Lane équilibrée, tout se joue sur les cooldowns'];
-  const sp = supProfile(me), esp = supProfile(es), eap = adcProfile(ea), myap = adcProfile(a);
-  const T = [];
-  // Menace du support adverse
-  if (inList('hookers', es) && ['Blitzcrank', 'Thresh', 'Nautilus', 'Pyke', 'Morgana'].includes(es)) T.push(`<b>${cname(es)}</b> vit de son grappin : reste derrière tes sbires. Quand il le rate, c'est votre fenêtre de trade (plusieurs secondes sans menace).`);
-  else if (esp.arch === 'engage') T.push(`<b>${cname(es)}</b> va engager : ne te colle pas à ton ADC (évite le double CC), garde Flash/peel pour son engage. Engage raté = punis tout de suite.`);
-  else if (esp.arch === 'enchanter') T.push(`<b>${cname(es)}</b> protège son ADC : trade quand son bouclier/soin est en recharge, et punis-le quand il s'avance pour poke.`);
-  else if (esp.arch === 'warden') T.push(`<b>${cname(es)}</b> protège très bien : évite les all-in dans son ADC, joue les trades courts et le contrôle de vague.`);
-  else T.push(`<b>${cname(es)}</b> poke de loin et reste fragile : cache-toi dans les buissons, évite les sorts gratuits, et force un all-in court quand il a utilisé son sort principal.`);
-  // ADC adverse
-  const eStyle = { bully: `<b>${cname(ea)}</b> domine les niveaux 1-3 : ne donne pas d'échanges gratuits, quitte à perdre un sbire sous tour.`, allin: `<b>${cname(ea)}</b> cherche l'all-in : garde ton exhaust/peel pour lui, pas pour leur support.`, hyper: `<b>${cname(ea)}</b> est faible tôt : sois agressif avant 10 min, punis chaque last-hit et prends les plaques.`, poke: `<b>${cname(ea)}</b> poke : évite les longs échanges à distance, avance seulement pour engager.`, utility: `<b>${cname(ea)}</b> a de l'utilité à longue portée : attention à ses contrôles, joue en dehors de sa ligne de tir.` };
-  T.push(eStyle[eap.style]);
-  // Notre plan
-  if (P[0].c === 'adv') T.push(`Vous gagnez les premiers niveaux : <b>course au niveau 2</b> (1<sup>re</sup> vague + 3 sbires mêlée de la 2<sup>e</sup>), et engage dès que tu y es.`);
-  else T.push(`Niveau 2 = 1<sup>re</sup> vague + 3 sbires mêlée de la 2<sup>e</sup>. S'ils l'ont avant vous, recule d'un cran.`);
-  if (sp.arch === 'engage') T.push(`Plan ${cname(me)} : engage quand leur sort défensif ou leur Flash est tombé. ${myap.style === 'hyper' ? `${cname(a)} scale mieux : ne force pas si ce n'est pas propre.` : `${cname(a)} suit bien les engages : sois agressif.`}`);
-  else if (sp.arch === 'enchanter') T.push(`Plan ${cname(me)} : trade avec ${cname(a)} (auto + ton sort) puis recule, garde ton bouclier/soin pour leur engage.`);
-  else if (sp.arch === 'warden') T.push(`Plan ${cname(me)} : reste près de ${cname(a)}, intercepte les projectiles et punis leur engage.`);
-  else T.push(`Plan ${cname(me)} : poke dès qu'ils s'avancent pour last-hit, garde la portée et ne te fais pas engage.`);
-  if (P[2].c === 'adv' && P[0].c !== 'adv') T.push(`Vous scalez mieux : jouez safe jusqu'au niveau 6 et aux premiers objets, puis prenez le dessus.`);
-  if (P[2].c === 'dis' && P[0].c !== 'dis') T.push(`Ils scalent mieux : convertissez votre avance tôt (plaques, drake, roams) avant 14:00.`);
-  if (cMe.includes(es)) T.push(`${cname(me)} contre directement ${cname(es)}.`);
-  if (cThem.includes(me)) T.push(`Attention, ${cname(es)} contre ${cname(me)} : joue plus en retrait.`);
+  const verdict = total > 1.5 ? ['good', 'Vous avez l\'avantage'] : total < -1.5 ? ['bad', 'Lane difficile : sécurité d\'abord'] : ['warn', 'Lane équilibrée : tout se joue sur les sorts'];
+  const sp = supProfile(me), esp = supProfile(es), eap = adcProfile(ea);
+  const L = S.meta.lane || {}, Les = L[es] || {}, Lea = L[ea] || {};
+  // Sorts à esquiver
+  const genericS = (id, p) => p.arch === 'engage' ? [['E', 'Son engage principal : garde la distance quand il est prêt.']] : p.arch === 'mage' ? [['Q', 'Son sort principal : derrière tes sbires, bouge latéralement.']] : [];
+  const spells = [...(Les.s || genericS(es, esp)).map(x => spellRow(es, x[0], x[1])), ...(Lea.s || []).map(x => spellRow(ea, x[0], x[1]))];
+  // À faire
+  const DO = [];
+  if (P[0].c === 'adv') DO.push('Course au niveau 2 (1re vague + 3 sbires mêlée) puis engage tout de suite');
+  else DO.push('Niveau 2 = 1re vague + 3 sbires mêlée : recule d\'un cran s\'ils l\'ont avant vous');
+  (Les.do || []).forEach(x => DO.push(x)); (Lea.do || []).forEach(x => DO.push(x));
+  DO.push(ARCH_DO[sp.arch](m));
+  if (P[2].c === 'adv' && P[0].c !== 'adv') DO.push('Jouer safe jusqu\'au 6 et aux premiers objets : vous scalez mieux');
+  if (P[2].c === 'dis' && P[0].c !== 'dis') DO.push('Convertir votre avance avant 14:00 (plaques, drake) : ils scalent mieux');
+  DO.push(total > 1.5 ? 'Pousser et prendre les plaques, roam mid dès le niveau 5' : total < -1.5 ? 'Laisser la vague venir à votre tour, ward le tri-bush, demander un gank niveau 3-4' : 'Slow push avant chaque retour et avant le drake');
+  if (cMe.includes(es)) DO.push(`${cname(me)} contre ${cname(es)} : sois agressif`);
+  // À éviter
+  const DONT = [];
+  (Les.dont || []).forEach(x => DONT.push(x)); (Lea.dont || []).forEach(x => DONT.push(x));
+  if (!Les.dont) DONT.push(esp.arch === 'engage' ? 'Te coller à ton ADC (double contrôle)' : esp.arch === 'enchanter' ? 'Trade quand son bouclier/soin est prêt' : 'Prendre du poke gratuit en avançant');
+  if (!Lea.dont && ({ bully: 1, allin: 1 })[eap.style]) DONT.push(`Les échanges longs contre ${cname(ea)} au niveau 1-3`);
+  DONT.push(ARCH_DONT[sp.arch]);
+  if (cThem.includes(me)) DONT.push(`Jouer devant : ${cname(es)} contre ${cname(me)}`);
   const jg = m.enemy.jungle && S.meta.junglers[m.enemy.jungle];
-  if (jg) T.push(`Jungler adverse <b>${cname(m.enemy.jungle)}</b> : ${esc(jg.note)}.`);
-  T.push(total > 1.5 ? `Gestion de vague : poussez et prenez les plaques, puis roam mid une fois niveau 5 (avant, −33 % d'or/XP hors bot).` : total < -1.5 ? `Gestion de vague : laissez la vague venir près de votre tour, ward le tri-bush et demande un gank niveau 3-4.` : `Gestion de vague : slow push avant chaque retour et avant le drake.`);
+  if (jg) DONT.push(`Avancer sans ward : ${cname(m.enemy.jungle)} ${jg.note}`);
+  const uniq = a => [...new Set(a)];
   out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><div class="phases">${P.map(x => x.html).join('')}</div></div>
-    <div class="card"><h3>Comment jouer</h3><ul class="tips">${T.map(t => `<li>${t}</li>`).join('')}</ul></div>
-    <p class="note">Estimation basée sur les profils des champions (force tôt, engage, scaling) et les counters connus au patch ${esc(S.meta.patch)}.</p>`;
+    <div class="card"><h3>Sorts à surveiller</h3><div class="spells">${spells.join('') || '<p class="note">Pas de fiche pour ces champions.</p>'}</div>
+      <p class="note">Recharges du patch en cours, du niveau 1 au rang max.</p></div>
+    <div class="card dolist"><h3>Pour gagner la lane</h3><ul class="checks do">${uniq(DO).slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <div class="card dolist"><h3>À éviter</h3><ul class="checks dont">${uniq(DONT).slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
 }
 
 /* ---------------- Chronologie ---------------- */
@@ -408,11 +441,13 @@ function renderTimeline() {
       <div class="mapwrap">${mapSVG(nextWard.spots || [])}<div><b>${esc(nextWard.title)}</b><p class="note" style="margin-top:4px">${esc(nextWard.text)}</p>
       <ol class="tips" style="margin-top:6px;font-size:13px">${(nextWard.spots || []).map(k => `<li>${esc(SPOTS[k][2])}</li>`).join('')}</ol>
       <p class="note">Côté ${S.match.side === 'blue' ? 'bleu (base en bas à gauche)' : 'rouge (base en haut à droite)'}. Schéma simplifié.</p></div></div></div>` : '') +
-    ev.map((e, i) => `<div class="ev ${e.kind} ${t != null && e.t < t - 5 && i !== nextIdx ? 'past' : ''} ${i === nextIdx ? 'now' : ''}">
+    (t != null && (t != null ? ev.filter((e, i) => e.t < t - 5 && i !== nextIdx).length : 0) ? `<button class="btn small ghost" id="togglePast" style="margin-bottom:12px">${S.showPast ? 'Masquer' : 'Voir'} les ${(t != null ? ev.filter((e, i) => e.t < t - 5 && i !== nextIdx).length : 0)} événements passés</button>` : '') +
+    ev.map((e, i) => ({ e, i })).filter(({ e, i }) => t == null || S.showPast || e.t >= t - 5 || i === nextIdx).map(({ e, i }) => `<div class="ev ${e.kind} ${t != null && e.t < t - 5 && i !== nextIdx ? 'past' : ''} ${i === nextIdx ? 'now' : ''}">
       <div class="tm">${fmt(e.t)}</div><div class="dot"><i></i></div>
       <div class="body"><span class="kind">${{ ward: 'Ward', obj: 'Objectif', danger: 'Danger', lane: 'Lane' }[e.kind]}</span><b>${esc(e.title)}</b><p>${esc(e.text)}</p></div></div>`).join('');
   $('#rules').innerHTML = `<ul class="tips">${(S.meta.supportRules || []).map(r => `<li><b>${esc(r.title)}.</b> ${esc(r.text)}</li>`).join('')}</ul>`;
   $$('.seg [data-side]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.side === S.match.side)));
+  const tp = $('#togglePast'); if (tp) tp.onclick = () => { S.showPast = !S.showPast; renderTimeline(); };
   tick(true);
 }
 

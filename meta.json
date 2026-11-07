@@ -2,250 +2,1736 @@
   "patch": "26.22",
   "updated": "2026-11-06",
   "sources": [
-    {"label": "Tier list support 26.22 (Lexu, Émeraude+)", "url": "https://lexu.gg/lol/support-tier-list/"},
-    {"label": "Tier list support 26.22 (MetaBot)", "url": "https://metabot.gg/en/league/champions/tier-list/support"},
-    {"label": "Timers des objectifs 2026", "url": "https://wiki.leagueoflegends.com/en-us/Voidgrub_camp"},
-    {"label": "Quêtes de rôle 2026", "url": "https://guides-factory.com/guides/lol-role-quests-guide"},
-    {"label": "Patch notes officiels", "url": "https://www.leagueoflegends.com/fr-fr/news/tags/patch-notes/"}
+    {
+      "label": "Tier list support 26.22 (Lexu, Émeraude+)",
+      "url": "https://lexu.gg/lol/support-tier-list/"
+    },
+    {
+      "label": "Tier list support 26.22 (MetaBot)",
+      "url": "https://metabot.gg/en/league/champions/tier-list/support"
+    },
+    {
+      "label": "Timers des objectifs 2026",
+      "url": "https://wiki.leagueoflegends.com/en-us/Voidgrub_camp"
+    },
+    {
+      "label": "Quêtes de rôle 2026",
+      "url": "https://guides-factory.com/guides/lol-role-quests-guide"
+    },
+    {
+      "label": "Patch notes officiels",
+      "url": "https://www.leagueoflegends.com/fr-fr/news/tags/patch-notes/"
+    }
   ],
-
   "tiers": {
-    "Thresh": "S+", "Lulu": "S+", "Leona": "S+", "Blitzcrank": "S+", "Seraphine": "S+", "Braum": "S+",
-    "Alistar": "S", "Milio": "S", "Senna": "S", "Rakan": "S", "Janna": "S", "Rell": "S", "Zilean": "S",
-    "Nautilus": "A", "Nami": "A", "Lux": "A", "Soraka": "A", "Velkoz": "A", "Zyra": "A", "Maokai": "A",
-    "Poppy": "A", "Zoe": "A", "Amumu": "A", "Hwei": "A", "Elise": "A", "Morgana": "A",
-    "Karma": "B", "Yuumi": "B", "Pyke": "B", "Bard": "B", "Pantheon": "B", "Xerath": "B", "Swain": "B",
-    "Brand": "B", "Sona": "B", "TahmKench": "B", "Renata": "B", "Neeko": "B", "Shaco": "B", "Taric": "B",
-    "Shen": "B", "Galio": "B",
-    "Sylas": "C", "Ashe": "C", "Leblanc": "C", "Camille": "C", "Teemo": "C",
+    "Thresh": "S+",
+    "Lulu": "S+",
+    "Leona": "S+",
+    "Blitzcrank": "S+",
+    "Seraphine": "S+",
+    "Braum": "S+",
+    "Alistar": "S",
+    "Milio": "S",
+    "Senna": "S",
+    "Rakan": "S",
+    "Janna": "S",
+    "Rell": "S",
+    "Zilean": "S",
+    "Nautilus": "A",
+    "Nami": "A",
+    "Lux": "A",
+    "Soraka": "A",
+    "Velkoz": "A",
+    "Zyra": "A",
+    "Maokai": "A",
+    "Poppy": "A",
+    "Zoe": "A",
+    "Amumu": "A",
+    "Hwei": "A",
+    "Elise": "A",
+    "Morgana": "A",
+    "Karma": "B",
+    "Yuumi": "B",
+    "Pyke": "B",
+    "Bard": "B",
+    "Pantheon": "B",
+    "Xerath": "B",
+    "Swain": "B",
+    "Brand": "B",
+    "Sona": "B",
+    "TahmKench": "B",
+    "Renata": "B",
+    "Neeko": "B",
+    "Shaco": "B",
+    "Taric": "B",
+    "Shen": "B",
+    "Galio": "B",
+    "Sylas": "C",
+    "Ashe": "C",
+    "Leblanc": "C",
+    "Camille": "C",
+    "Teemo": "C",
     "Mel": "D"
   },
   "winrates": {
-    "Thresh": 50.9, "Lulu": 50.0, "Leona": 51.9, "Blitzcrank": 51.9, "Seraphine": 51.4, "Braum": 51.0,
-    "Alistar": 51.5, "Milio": 50.8, "Senna": 52.0, "Rakan": 51.7, "Janna": 52.6, "Rell": 51.9, "Zilean": 53.1,
-    "Nautilus": 49.5, "Nami": 50.8, "Lux": 49.5, "Soraka": 50.9, "Velkoz": 50.9, "Zyra": 50.3, "Maokai": 50.3,
-    "Poppy": 50.1, "Zoe": 51.2, "Amumu": 52.0, "Hwei": 50.0, "Elise": 50.0, "Morgana": 48.9,
-    "Karma": 48.6, "Yuumi": 48.7, "Pyke": 49.2, "Bard": 48.7, "Pantheon": 49.2, "Xerath": 49.0, "Swain": 48.9,
-    "Brand": 48.3, "Sona": 50.5, "TahmKench": 49.1, "Renata": 50.8, "Neeko": 49.4, "Shaco": 48.7, "Taric": 51.0,
-    "Shen": 51.0, "Galio": 50.3, "Sylas": 45.8, "Ashe": 44.4, "Leblanc": 47.1, "Camille": 44.9, "Teemo": 47.6, "Mel": 38.5
+    "Thresh": 50.9,
+    "Lulu": 50.0,
+    "Leona": 51.9,
+    "Blitzcrank": 51.9,
+    "Seraphine": 51.4,
+    "Braum": 51.0,
+    "Alistar": 51.5,
+    "Milio": 50.8,
+    "Senna": 52.0,
+    "Rakan": 51.7,
+    "Janna": 52.6,
+    "Rell": 51.9,
+    "Zilean": 53.1,
+    "Nautilus": 49.5,
+    "Nami": 50.8,
+    "Lux": 49.5,
+    "Soraka": 50.9,
+    "Velkoz": 50.9,
+    "Zyra": 50.3,
+    "Maokai": 50.3,
+    "Poppy": 50.1,
+    "Zoe": 51.2,
+    "Amumu": 52.0,
+    "Hwei": 50.0,
+    "Elise": 50.0,
+    "Morgana": 48.9,
+    "Karma": 48.6,
+    "Yuumi": 48.7,
+    "Pyke": 49.2,
+    "Bard": 48.7,
+    "Pantheon": 49.2,
+    "Xerath": 49.0,
+    "Swain": 48.9,
+    "Brand": 48.3,
+    "Sona": 50.5,
+    "TahmKench": 49.1,
+    "Renata": 50.8,
+    "Neeko": 49.4,
+    "Shaco": 48.7,
+    "Taric": 51.0,
+    "Shen": 51.0,
+    "Galio": 50.3,
+    "Sylas": 45.8,
+    "Ashe": 44.4,
+    "Leblanc": 47.1,
+    "Camille": 44.9,
+    "Teemo": 47.6,
+    "Mel": 38.5
   },
-
   "supports": {
-    "Thresh":     {"arch": "engage",    "early": 2, "engage": 3, "poke": 1, "sustain": 0, "peel": 3, "scale": 2, "dmg": "tank"},
-    "Leona":      {"arch": "engage",    "early": 3, "engage": 3, "poke": 0, "sustain": 0, "peel": 1, "scale": 1, "dmg": "tank"},
-    "Nautilus":   {"arch": "engage",    "early": 3, "engage": 3, "poke": 0, "sustain": 0, "peel": 2, "scale": 1, "dmg": "tank"},
-    "Alistar":    {"arch": "engage",    "early": 2, "engage": 3, "poke": 0, "sustain": 1, "peel": 3, "scale": 2, "dmg": "tank"},
-    "Rell":       {"arch": "engage",    "early": 2, "engage": 3, "poke": 0, "sustain": 0, "peel": 2, "scale": 2, "dmg": "tank"},
-    "Rakan":      {"arch": "engage",    "early": 2, "engage": 3, "poke": 0, "sustain": 1, "peel": 2, "scale": 2, "dmg": "ap"},
-    "Blitzcrank": {"arch": "engage",    "early": 3, "engage": 3, "poke": 0, "sustain": 0, "peel": 1, "scale": 1, "dmg": "tank"},
-    "Pyke":       {"arch": "engage",    "early": 3, "engage": 3, "poke": 1, "sustain": 0, "peel": 0, "scale": 1, "dmg": "ad"},
-    "Maokai":     {"arch": "engage",    "early": 2, "engage": 2, "poke": 1, "sustain": 1, "peel": 2, "scale": 2, "dmg": "tank"},
-    "Amumu":      {"arch": "engage",    "early": 2, "engage": 3, "poke": 0, "sustain": 0, "peel": 1, "scale": 2, "dmg": "tank"},
-    "Poppy":      {"arch": "warden",    "early": 2, "engage": 2, "poke": 0, "sustain": 0, "peel": 3, "scale": 2, "dmg": "tank"},
-    "Braum":      {"arch": "warden",    "early": 3, "engage": 2, "poke": 1, "sustain": 0, "peel": 3, "scale": 2, "dmg": "tank"},
-    "TahmKench":  {"arch": "warden",    "early": 2, "engage": 2, "poke": 1, "sustain": 1, "peel": 3, "scale": 2, "dmg": "tank"},
-    "Taric":      {"arch": "warden",    "early": 2, "engage": 2, "poke": 0, "sustain": 2, "peel": 3, "scale": 2, "dmg": "tank"},
-    "Shen":       {"arch": "warden",    "early": 2, "engage": 2, "poke": 0, "sustain": 0, "peel": 2, "scale": 2, "dmg": "tank"},
-    "Galio":      {"arch": "engage",    "early": 1, "engage": 3, "poke": 1, "sustain": 0, "peel": 2, "scale": 2, "dmg": "tank"},
-    "Pantheon":   {"arch": "engage",    "early": 3, "engage": 2, "poke": 2, "sustain": 0, "peel": 1, "scale": 0, "dmg": "ad"},
-    "Camille":    {"arch": "engage",    "early": 2, "engage": 2, "poke": 0, "sustain": 0, "peel": 1, "scale": 1, "dmg": "ad"},
-    "Lulu":       {"arch": "enchanter", "early": 2, "engage": 0, "poke": 2, "sustain": 1, "peel": 3, "scale": 3, "dmg": "ap"},
-    "Janna":      {"arch": "enchanter", "early": 1, "engage": 0, "poke": 1, "sustain": 1, "peel": 3, "scale": 3, "dmg": "ap"},
-    "Milio":      {"arch": "enchanter", "early": 1, "engage": 0, "poke": 1, "sustain": 2, "peel": 3, "scale": 3, "dmg": "ap"},
-    "Nami":       {"arch": "enchanter", "early": 3, "engage": 1, "poke": 2, "sustain": 2, "peel": 2, "scale": 2, "dmg": "ap"},
-    "Soraka":     {"arch": "enchanter", "early": 1, "engage": 0, "poke": 2, "sustain": 3, "peel": 1, "scale": 3, "dmg": "ap"},
-    "Sona":       {"arch": "enchanter", "early": 1, "engage": 1, "poke": 2, "sustain": 2, "peel": 1, "scale": 3, "dmg": "ap"},
-    "Yuumi":      {"arch": "enchanter", "early": 0, "engage": 0, "poke": 1, "sustain": 2, "peel": 2, "scale": 3, "dmg": "ap"},
-    "Karma":      {"arch": "enchanter", "early": 3, "engage": 1, "poke": 3, "sustain": 1, "peel": 2, "scale": 1, "dmg": "ap"},
-    "Renata":     {"arch": "enchanter", "early": 2, "engage": 1, "poke": 1, "sustain": 0, "peel": 3, "scale": 2, "dmg": "ap"},
-    "Seraphine":  {"arch": "enchanter", "early": 2, "engage": 1, "poke": 2, "sustain": 1, "peel": 1, "scale": 3, "dmg": "ap"},
-    "Zilean":     {"arch": "enchanter", "early": 2, "engage": 0, "poke": 2, "sustain": 0, "peel": 3, "scale": 3, "dmg": "ap"},
-    "Bard":       {"arch": "enchanter", "early": 2, "engage": 1, "poke": 1, "sustain": 1, "peel": 2, "scale": 3, "dmg": "ap"},
-    "Senna":      {"arch": "mage",      "early": 2, "engage": 0, "poke": 3, "sustain": 1, "peel": 1, "scale": 3, "dmg": "ad"},
-    "Lux":        {"arch": "mage",      "early": 2, "engage": 1, "poke": 3, "sustain": 0, "peel": 1, "scale": 2, "dmg": "ap"},
-    "Zyra":       {"arch": "mage",      "early": 3, "engage": 1, "poke": 3, "sustain": 0, "peel": 1, "scale": 2, "dmg": "ap"},
-    "Brand":      {"arch": "mage",      "early": 3, "engage": 0, "poke": 3, "sustain": 0, "peel": 0, "scale": 2, "dmg": "ap"},
-    "Xerath":     {"arch": "mage",      "early": 2, "engage": 0, "poke": 3, "sustain": 0, "peel": 0, "scale": 2, "dmg": "ap"},
-    "Velkoz":     {"arch": "mage",      "early": 2, "engage": 0, "poke": 3, "sustain": 0, "peel": 0, "scale": 2, "dmg": "ap"},
-    "Swain":      {"arch": "mage",      "early": 2, "engage": 2, "poke": 1, "sustain": 2, "peel": 1, "scale": 2, "dmg": "ap"},
-    "Morgana":    {"arch": "mage",      "early": 1, "engage": 1, "poke": 1, "sustain": 0, "peel": 3, "scale": 2, "dmg": "ap"},
-    "Hwei":       {"arch": "mage",      "early": 2, "engage": 1, "poke": 3, "sustain": 0, "peel": 1, "scale": 3, "dmg": "ap"},
-    "Zoe":        {"arch": "mage",      "early": 2, "engage": 1, "poke": 3, "sustain": 0, "peel": 0, "scale": 2, "dmg": "ap"},
-    "Neeko":      {"arch": "mage",      "early": 2, "engage": 2, "poke": 1, "sustain": 0, "peel": 1, "scale": 2, "dmg": "ap"},
-    "Elise":      {"arch": "mage",      "early": 3, "engage": 2, "poke": 1, "sustain": 0, "peel": 0, "scale": 1, "dmg": "ap"},
-    "Leblanc":    {"arch": "mage",      "early": 3, "engage": 1, "poke": 2, "sustain": 0, "peel": 0, "scale": 1, "dmg": "ap"},
-    "Sylas":      {"arch": "mage",      "early": 2, "engage": 2, "poke": 0, "sustain": 1, "peel": 0, "scale": 2, "dmg": "ap"},
-    "Mel":        {"arch": "mage",      "early": 2, "engage": 0, "poke": 3, "sustain": 0, "peel": 1, "scale": 2, "dmg": "ap"},
-    "Ashe":       {"arch": "mage",      "early": 2, "engage": 2, "poke": 2, "sustain": 0, "peel": 2, "scale": 2, "dmg": "ad"},
-    "Teemo":      {"arch": "mage",      "early": 2, "engage": 0, "poke": 2, "sustain": 0, "peel": 0, "scale": 1, "dmg": "ap"},
-    "Shaco":      {"arch": "mage",      "early": 2, "engage": 1, "poke": 1, "sustain": 0, "peel": 1, "scale": 1, "dmg": "ap"}
+    "Thresh": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 3,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Leona": {
+      "arch": "engage",
+      "early": 3,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 1,
+      "dmg": "tank"
+    },
+    "Nautilus": {
+      "arch": "engage",
+      "early": 3,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 2,
+      "scale": 1,
+      "dmg": "tank"
+    },
+    "Alistar": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 1,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Rell": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Rakan": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 1,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Blitzcrank": {
+      "arch": "engage",
+      "early": 3,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 1,
+      "dmg": "tank"
+    },
+    "Pyke": {
+      "arch": "engage",
+      "early": 3,
+      "engage": 3,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 1,
+      "dmg": "ad"
+    },
+    "Maokai": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 2,
+      "poke": 1,
+      "sustain": 1,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Amumu": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 3,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Poppy": {
+      "arch": "warden",
+      "early": 2,
+      "engage": 2,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Braum": {
+      "arch": "warden",
+      "early": 3,
+      "engage": 2,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "TahmKench": {
+      "arch": "warden",
+      "early": 2,
+      "engage": 2,
+      "poke": 1,
+      "sustain": 1,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Taric": {
+      "arch": "warden",
+      "early": 2,
+      "engage": 2,
+      "poke": 0,
+      "sustain": 2,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Shen": {
+      "arch": "warden",
+      "early": 2,
+      "engage": 2,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Galio": {
+      "arch": "engage",
+      "early": 1,
+      "engage": 3,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "tank"
+    },
+    "Pantheon": {
+      "arch": "engage",
+      "early": 3,
+      "engage": 2,
+      "poke": 2,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 0,
+      "dmg": "ad"
+    },
+    "Camille": {
+      "arch": "engage",
+      "early": 2,
+      "engage": 2,
+      "poke": 0,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 1,
+      "dmg": "ad"
+    },
+    "Lulu": {
+      "arch": "enchanter",
+      "early": 2,
+      "engage": 0,
+      "poke": 2,
+      "sustain": 1,
+      "peel": 3,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Janna": {
+      "arch": "enchanter",
+      "early": 1,
+      "engage": 0,
+      "poke": 1,
+      "sustain": 1,
+      "peel": 3,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Milio": {
+      "arch": "enchanter",
+      "early": 1,
+      "engage": 0,
+      "poke": 1,
+      "sustain": 2,
+      "peel": 3,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Nami": {
+      "arch": "enchanter",
+      "early": 3,
+      "engage": 1,
+      "poke": 2,
+      "sustain": 2,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Soraka": {
+      "arch": "enchanter",
+      "early": 1,
+      "engage": 0,
+      "poke": 2,
+      "sustain": 3,
+      "peel": 1,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Sona": {
+      "arch": "enchanter",
+      "early": 1,
+      "engage": 1,
+      "poke": 2,
+      "sustain": 2,
+      "peel": 1,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Yuumi": {
+      "arch": "enchanter",
+      "early": 0,
+      "engage": 0,
+      "poke": 1,
+      "sustain": 2,
+      "peel": 2,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Karma": {
+      "arch": "enchanter",
+      "early": 3,
+      "engage": 1,
+      "poke": 3,
+      "sustain": 1,
+      "peel": 2,
+      "scale": 1,
+      "dmg": "ap"
+    },
+    "Renata": {
+      "arch": "enchanter",
+      "early": 2,
+      "engage": 1,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Seraphine": {
+      "arch": "enchanter",
+      "early": 2,
+      "engage": 1,
+      "poke": 2,
+      "sustain": 1,
+      "peel": 1,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Zilean": {
+      "arch": "enchanter",
+      "early": 2,
+      "engage": 0,
+      "poke": 2,
+      "sustain": 0,
+      "peel": 3,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Bard": {
+      "arch": "enchanter",
+      "early": 2,
+      "engage": 1,
+      "poke": 1,
+      "sustain": 1,
+      "peel": 2,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Senna": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 0,
+      "poke": 3,
+      "sustain": 1,
+      "peel": 1,
+      "scale": 3,
+      "dmg": "ad"
+    },
+    "Lux": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 1,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Zyra": {
+      "arch": "mage",
+      "early": 3,
+      "engage": 1,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Brand": {
+      "arch": "mage",
+      "early": 3,
+      "engage": 0,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Xerath": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 0,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Velkoz": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 0,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Swain": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 2,
+      "poke": 1,
+      "sustain": 2,
+      "peel": 1,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Morgana": {
+      "arch": "mage",
+      "early": 1,
+      "engage": 1,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 3,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Hwei": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 1,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 3,
+      "dmg": "ap"
+    },
+    "Zoe": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 1,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Neeko": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 2,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Elise": {
+      "arch": "mage",
+      "early": 3,
+      "engage": 2,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 1,
+      "dmg": "ap"
+    },
+    "Leblanc": {
+      "arch": "mage",
+      "early": 3,
+      "engage": 1,
+      "poke": 2,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 1,
+      "dmg": "ap"
+    },
+    "Sylas": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 2,
+      "poke": 0,
+      "sustain": 1,
+      "peel": 0,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Mel": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 0,
+      "poke": 3,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 2,
+      "dmg": "ap"
+    },
+    "Ashe": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 2,
+      "poke": 2,
+      "sustain": 0,
+      "peel": 2,
+      "scale": 2,
+      "dmg": "ad"
+    },
+    "Teemo": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 0,
+      "poke": 2,
+      "sustain": 0,
+      "peel": 0,
+      "scale": 1,
+      "dmg": "ap"
+    },
+    "Shaco": {
+      "arch": "mage",
+      "early": 2,
+      "engage": 1,
+      "poke": 1,
+      "sustain": 0,
+      "peel": 1,
+      "scale": 1,
+      "dmg": "ap"
+    }
   },
-
   "adcs": {
-    "Jinx":        {"style": "hyper",   "early": 1, "allin": 1, "scale": 3, "range": "long"},
-    "KogMaw":      {"style": "hyper",   "early": 1, "allin": 1, "scale": 3, "range": "long"},
-    "Twitch":      {"style": "hyper",   "early": 1, "allin": 2, "scale": 3, "range": "mid"},
-    "Vayne":       {"style": "hyper",   "early": 1, "allin": 2, "scale": 3, "range": "short"},
-    "Zeri":        {"style": "hyper",   "early": 1, "allin": 1, "scale": 3, "range": "mid"},
-    "Aphelios":    {"style": "hyper",   "early": 2, "allin": 2, "scale": 3, "range": "long"},
-    "Smolder":     {"style": "hyper",   "early": 1, "allin": 1, "scale": 3, "range": "mid"},
-    "Kaisa":       {"style": "allin",   "early": 1, "allin": 2, "scale": 3, "range": "mid"},
-    "Samira":      {"style": "allin",   "early": 2, "allin": 3, "scale": 2, "range": "short"},
-    "Nilah":       {"style": "allin",   "early": 2, "allin": 3, "scale": 2, "range": "short"},
-    "Kalista":     {"style": "allin",   "early": 3, "allin": 3, "scale": 1, "range": "mid"},
-    "Tristana":    {"style": "allin",   "early": 2, "allin": 3, "scale": 2, "range": "mid"},
-    "Draven":      {"style": "bully",   "early": 3, "allin": 3, "scale": 2, "range": "mid"},
-    "Lucian":      {"style": "bully",   "early": 3, "allin": 2, "scale": 1, "range": "short"},
-    "Caitlyn":     {"style": "bully",   "early": 3, "allin": 1, "scale": 2, "range": "long"},
-    "MissFortune": {"style": "bully",   "early": 3, "allin": 2, "scale": 2, "range": "mid"},
-    "Ezreal":      {"style": "poke",    "early": 2, "allin": 1, "scale": 2, "range": "long"},
-    "Varus":       {"style": "poke",    "early": 2, "allin": 2, "scale": 2, "range": "long"},
-    "Jhin":        {"style": "utility", "early": 2, "allin": 2, "scale": 2, "range": "long"},
-    "Ashe":        {"style": "utility", "early": 2, "allin": 2, "scale": 2, "range": "long"},
-    "Sivir":       {"style": "utility", "early": 1, "allin": 1, "scale": 3, "range": "mid"},
-    "Xayah":       {"style": "allin",   "early": 2, "allin": 2, "scale": 2, "range": "mid"},
-    "Corki":       {"style": "poke",    "early": 2, "allin": 1, "scale": 2, "range": "mid"},
-    "Ziggs":       {"style": "poke",    "early": 2, "allin": 1, "scale": 2, "range": "long"},
-    "Seraphine":   {"style": "utility", "early": 1, "allin": 1, "scale": 3, "range": "long"},
-    "Swain":       {"style": "allin",   "early": 2, "allin": 2, "scale": 2, "range": "short"},
-    "Yasuo":       {"style": "allin",   "early": 2, "allin": 2, "scale": 2, "range": "short"},
-    "Hwei":        {"style": "poke",    "early": 2, "allin": 1, "scale": 3, "range": "long"},
-    "Karthus":     {"style": "hyper",   "early": 1, "allin": 1, "scale": 3, "range": "long"},
-    "Mel":         {"style": "poke",    "early": 2, "allin": 1, "scale": 2, "range": "long"}
+    "Jinx": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "long"
+    },
+    "KogMaw": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "long"
+    },
+    "Twitch": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 2,
+      "scale": 3,
+      "range": "mid"
+    },
+    "Vayne": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 2,
+      "scale": 3,
+      "range": "short"
+    },
+    "Zeri": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "mid"
+    },
+    "Aphelios": {
+      "style": "hyper",
+      "early": 2,
+      "allin": 2,
+      "scale": 3,
+      "range": "long"
+    },
+    "Smolder": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "mid"
+    },
+    "Kaisa": {
+      "style": "allin",
+      "early": 1,
+      "allin": 2,
+      "scale": 3,
+      "range": "mid"
+    },
+    "Samira": {
+      "style": "allin",
+      "early": 2,
+      "allin": 3,
+      "scale": 2,
+      "range": "short"
+    },
+    "Nilah": {
+      "style": "allin",
+      "early": 2,
+      "allin": 3,
+      "scale": 2,
+      "range": "short"
+    },
+    "Kalista": {
+      "style": "allin",
+      "early": 3,
+      "allin": 3,
+      "scale": 1,
+      "range": "mid"
+    },
+    "Tristana": {
+      "style": "allin",
+      "early": 2,
+      "allin": 3,
+      "scale": 2,
+      "range": "mid"
+    },
+    "Draven": {
+      "style": "bully",
+      "early": 3,
+      "allin": 3,
+      "scale": 2,
+      "range": "mid"
+    },
+    "Lucian": {
+      "style": "bully",
+      "early": 3,
+      "allin": 2,
+      "scale": 1,
+      "range": "short"
+    },
+    "Caitlyn": {
+      "style": "bully",
+      "early": 3,
+      "allin": 1,
+      "scale": 2,
+      "range": "long"
+    },
+    "MissFortune": {
+      "style": "bully",
+      "early": 3,
+      "allin": 2,
+      "scale": 2,
+      "range": "mid"
+    },
+    "Ezreal": {
+      "style": "poke",
+      "early": 2,
+      "allin": 1,
+      "scale": 2,
+      "range": "long"
+    },
+    "Varus": {
+      "style": "poke",
+      "early": 2,
+      "allin": 2,
+      "scale": 2,
+      "range": "long"
+    },
+    "Jhin": {
+      "style": "utility",
+      "early": 2,
+      "allin": 2,
+      "scale": 2,
+      "range": "long"
+    },
+    "Ashe": {
+      "style": "utility",
+      "early": 2,
+      "allin": 2,
+      "scale": 2,
+      "range": "long"
+    },
+    "Sivir": {
+      "style": "utility",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "mid"
+    },
+    "Xayah": {
+      "style": "allin",
+      "early": 2,
+      "allin": 2,
+      "scale": 2,
+      "range": "mid"
+    },
+    "Corki": {
+      "style": "poke",
+      "early": 2,
+      "allin": 1,
+      "scale": 2,
+      "range": "mid"
+    },
+    "Ziggs": {
+      "style": "poke",
+      "early": 2,
+      "allin": 1,
+      "scale": 2,
+      "range": "long"
+    },
+    "Seraphine": {
+      "style": "utility",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "long"
+    },
+    "Swain": {
+      "style": "allin",
+      "early": 2,
+      "allin": 2,
+      "scale": 2,
+      "range": "short"
+    },
+    "Yasuo": {
+      "style": "allin",
+      "early": 2,
+      "allin": 2,
+      "scale": 2,
+      "range": "short"
+    },
+    "Hwei": {
+      "style": "poke",
+      "early": 2,
+      "allin": 1,
+      "scale": 3,
+      "range": "long"
+    },
+    "Karthus": {
+      "style": "hyper",
+      "early": 1,
+      "allin": 1,
+      "scale": 3,
+      "range": "long"
+    },
+    "Mel": {
+      "style": "poke",
+      "early": 2,
+      "allin": 1,
+      "scale": 2,
+      "range": "long"
+    }
   },
-
   "pairs": {
-    "Leona":      {"Samira": 15, "Draven": 12, "MissFortune": 12, "Kalista": 10, "Kaisa": 8, "Lucian": 8, "Tristana": 8, "Nilah": 8, "Caitlyn": 5},
-    "Nautilus":   {"Kalista": 12, "Samira": 12, "Draven": 10, "Kaisa": 10, "MissFortune": 8, "Lucian": 6, "Tristana": 6},
-    "Alistar":    {"Kalista": 12, "Samira": 10, "Draven": 8, "Kaisa": 8, "Nilah": 8, "Tristana": 6},
-    "Rell":       {"Samira": 12, "Kaisa": 10, "MissFortune": 10, "Nilah": 10, "Kalista": 8, "Xayah": 6},
-    "Rakan":      {"Xayah": 18, "Kaisa": 10, "Samira": 10, "Nilah": 8, "Kalista": 8},
-    "Blitzcrank": {"Draven": 12, "Caitlyn": 8, "MissFortune": 8, "Samira": 8, "Lucian": 6, "Jhin": 6},
-    "Thresh":     {"Lucian": 10, "Kalista": 10, "Draven": 8, "Samira": 8, "Jhin": 6, "Caitlyn": 6, "Vayne": 6, "Ezreal": 5},
-    "Pyke":       {"Draven": 8, "Samira": 8, "Caitlyn": 6, "MissFortune": 6, "Jhin": 6, "Lucian": 6},
-    "Braum":      {"Lucian": 12, "Vayne": 10, "Samira": 8, "Kalista": 6, "Jinx": 6, "Twitch": 6},
-    "TahmKench":  {"Vayne": 10, "Twitch": 10, "KogMaw": 10, "Jinx": 8, "Zeri": 6, "Aphelios": 6},
-    "Taric":      {"Ezreal": 10, "Vayne": 8, "Kalista": 8, "Lucian": 8, "Samira": 6, "Draven": 6},
-    "Maokai":     {"Jinx": 8, "Aphelios": 8, "MissFortune": 8, "Samira": 6, "Jhin": 6},
-    "Poppy":      {"Caitlyn": 6, "Jinx": 6, "Draven": 6, "Ezreal": 5},
-    "Amumu":      {"MissFortune": 10, "Samira": 10, "Kaisa": 8, "Jinx": 6},
-    "Galio":      {"Samira": 8, "MissFortune": 8, "Kaisa": 8, "Nilah": 6},
-    "Shen":       {"Vayne": 8, "Jinx": 8, "Kalista": 8, "Samira": 6},
-    "Pantheon":   {"Draven": 10, "Lucian": 8, "Samira": 8, "Caitlyn": 8, "Kalista": 6},
-    "Lulu":       {"Jinx": 15, "Twitch": 15, "KogMaw": 15, "Zeri": 12, "Aphelios": 10, "Vayne": 10, "Kaisa": 8, "Samira": 6, "Kalista": 6},
-    "Janna":      {"Zeri": 12, "Jinx": 10, "Aphelios": 10, "KogMaw": 10, "Twitch": 10, "Vayne": 8, "Ezreal": 8, "Smolder": 8, "Draven": 8},
-    "Milio":      {"Zeri": 14, "Jinx": 12, "Aphelios": 12, "Caitlyn": 12, "KogMaw": 12, "Twitch": 10, "Vayne": 10, "Smolder": 10, "Jhin": 8, "Ezreal": 6},
-    "Nami":       {"Lucian": 18, "Draven": 10, "Samira": 10, "Ezreal": 10, "Kalista": 8, "Vayne": 8, "Jhin": 6, "MissFortune": 6, "Twitch": 6},
-    "Soraka":     {"Jinx": 10, "Aphelios": 10, "Sivir": 10, "KogMaw": 8, "Twitch": 8, "Zeri": 8, "Smolder": 8, "Ezreal": 6},
-    "Sona":       {"Jhin": 10, "MissFortune": 10, "Ezreal": 8, "Kaisa": 8, "Jinx": 8, "Aphelios": 6},
-    "Yuumi":      {"Ezreal": 15, "Zeri": 12, "Twitch": 12, "Kaisa": 10, "Smolder": 10, "Vayne": 10, "KogMaw": 10},
-    "Karma":      {"Ezreal": 12, "Caitlyn": 12, "Jhin": 10, "Varus": 10, "Smolder": 10, "Lucian": 8, "Draven": 6, "Sivir": 6},
-    "Renata":     {"Jinx": 10, "Aphelios": 10, "Kaisa": 8, "Zeri": 8, "Vayne": 8, "Samira": 8, "Twitch": 6},
-    "Seraphine":  {"Jhin": 10, "Sivir": 10, "MissFortune": 10, "Jinx": 8, "Ezreal": 8, "Aphelios": 8, "Varus": 8},
-    "Zilean":     {"Ezreal": 8, "Vayne": 8, "Jinx": 8, "Aphelios": 8, "KogMaw": 8, "Zeri": 6, "Caitlyn": 6},
-    "Bard":       {"Ezreal": 8, "Kalista": 8, "Jhin": 8, "Caitlyn": 6, "Smolder": 6},
-    "Senna":      {"Seraphine": 10, "Jhin": 8, "Ziggs": 8, "Caitlyn": 8, "Sivir": 8, "Ashe": 8, "Varus": 6, "Xayah": 6},
-    "Lux":        {"Caitlyn": 10, "Ezreal": 10, "Jhin": 10, "Varus": 10, "MissFortune": 10, "Ashe": 8, "Smolder": 8, "Sivir": 6},
-    "Zyra":       {"Caitlyn": 10, "Jhin": 10, "MissFortune": 10, "Varus": 8, "Ashe": 8, "Draven": 6, "Samira": 6},
-    "Brand":      {"Jhin": 10, "MissFortune": 10, "Caitlyn": 8, "Varus": 8, "Ashe": 6, "Draven": 6},
-    "Xerath":     {"Caitlyn": 10, "Jhin": 10, "Varus": 10, "Ezreal": 8, "Ashe": 8, "Smolder": 6},
-    "Velkoz":     {"Jhin": 10, "Varus": 10, "Caitlyn": 8, "Ezreal": 8, "MissFortune": 8, "Ashe": 6},
-    "Swain":      {"Draven": 8, "Samira": 8, "Kalista": 6, "Caitlyn": 6, "Jhin": 6},
-    "Morgana":    {"Draven": 8, "Jhin": 8, "Caitlyn": 8, "Ashe": 6, "MissFortune": 6, "Samira": 6},
-    "Hwei":       {"Jhin": 8, "Caitlyn": 8, "Varus": 8, "MissFortune": 8},
-    "Zoe":        {"Jhin": 8, "Caitlyn": 8, "Ezreal": 6, "Varus": 6},
-    "Neeko":      {"MissFortune": 10, "Samira": 8, "Jhin": 8, "Draven": 6},
-    "Elise":      {"Draven": 8, "Samira": 8, "Caitlyn": 6},
-    "Ashe":       {"Caitlyn": 8, "Jhin": 8, "Draven": 6, "Varus": 6}
+    "Leona": {
+      "Samira": 15,
+      "Draven": 12,
+      "MissFortune": 12,
+      "Kalista": 10,
+      "Kaisa": 8,
+      "Lucian": 8,
+      "Tristana": 8,
+      "Nilah": 8,
+      "Caitlyn": 5
+    },
+    "Nautilus": {
+      "Kalista": 12,
+      "Samira": 12,
+      "Draven": 10,
+      "Kaisa": 10,
+      "MissFortune": 8,
+      "Lucian": 6,
+      "Tristana": 6
+    },
+    "Alistar": {
+      "Kalista": 12,
+      "Samira": 10,
+      "Draven": 8,
+      "Kaisa": 8,
+      "Nilah": 8,
+      "Tristana": 6
+    },
+    "Rell": {
+      "Samira": 12,
+      "Kaisa": 10,
+      "MissFortune": 10,
+      "Nilah": 10,
+      "Kalista": 8,
+      "Xayah": 6
+    },
+    "Rakan": {
+      "Xayah": 18,
+      "Kaisa": 10,
+      "Samira": 10,
+      "Nilah": 8,
+      "Kalista": 8
+    },
+    "Blitzcrank": {
+      "Draven": 12,
+      "Caitlyn": 8,
+      "MissFortune": 8,
+      "Samira": 8,
+      "Lucian": 6,
+      "Jhin": 6
+    },
+    "Thresh": {
+      "Lucian": 10,
+      "Kalista": 10,
+      "Draven": 8,
+      "Samira": 8,
+      "Jhin": 6,
+      "Caitlyn": 6,
+      "Vayne": 6,
+      "Ezreal": 5
+    },
+    "Pyke": {
+      "Draven": 8,
+      "Samira": 8,
+      "Caitlyn": 6,
+      "MissFortune": 6,
+      "Jhin": 6,
+      "Lucian": 6
+    },
+    "Braum": {
+      "Lucian": 12,
+      "Vayne": 10,
+      "Samira": 8,
+      "Kalista": 6,
+      "Jinx": 6,
+      "Twitch": 6
+    },
+    "TahmKench": {
+      "Vayne": 10,
+      "Twitch": 10,
+      "KogMaw": 10,
+      "Jinx": 8,
+      "Zeri": 6,
+      "Aphelios": 6
+    },
+    "Taric": {
+      "Ezreal": 10,
+      "Vayne": 8,
+      "Kalista": 8,
+      "Lucian": 8,
+      "Samira": 6,
+      "Draven": 6
+    },
+    "Maokai": {
+      "Jinx": 8,
+      "Aphelios": 8,
+      "MissFortune": 8,
+      "Samira": 6,
+      "Jhin": 6
+    },
+    "Poppy": {
+      "Caitlyn": 6,
+      "Jinx": 6,
+      "Draven": 6,
+      "Ezreal": 5
+    },
+    "Amumu": {
+      "MissFortune": 10,
+      "Samira": 10,
+      "Kaisa": 8,
+      "Jinx": 6
+    },
+    "Galio": {
+      "Samira": 8,
+      "MissFortune": 8,
+      "Kaisa": 8,
+      "Nilah": 6
+    },
+    "Shen": {
+      "Vayne": 8,
+      "Jinx": 8,
+      "Kalista": 8,
+      "Samira": 6
+    },
+    "Pantheon": {
+      "Draven": 10,
+      "Lucian": 8,
+      "Samira": 8,
+      "Caitlyn": 8,
+      "Kalista": 6
+    },
+    "Lulu": {
+      "Jinx": 15,
+      "Twitch": 15,
+      "KogMaw": 15,
+      "Zeri": 12,
+      "Aphelios": 10,
+      "Vayne": 10,
+      "Kaisa": 8,
+      "Samira": 6,
+      "Kalista": 6
+    },
+    "Janna": {
+      "Zeri": 12,
+      "Jinx": 10,
+      "Aphelios": 10,
+      "KogMaw": 10,
+      "Twitch": 10,
+      "Vayne": 8,
+      "Ezreal": 8,
+      "Smolder": 8,
+      "Draven": 8
+    },
+    "Milio": {
+      "Zeri": 14,
+      "Jinx": 12,
+      "Aphelios": 12,
+      "Caitlyn": 12,
+      "KogMaw": 12,
+      "Twitch": 10,
+      "Vayne": 10,
+      "Smolder": 10,
+      "Jhin": 8,
+      "Ezreal": 6
+    },
+    "Nami": {
+      "Lucian": 18,
+      "Draven": 10,
+      "Samira": 10,
+      "Ezreal": 10,
+      "Kalista": 8,
+      "Vayne": 8,
+      "Jhin": 6,
+      "MissFortune": 6,
+      "Twitch": 6
+    },
+    "Soraka": {
+      "Jinx": 10,
+      "Aphelios": 10,
+      "Sivir": 10,
+      "KogMaw": 8,
+      "Twitch": 8,
+      "Zeri": 8,
+      "Smolder": 8,
+      "Ezreal": 6
+    },
+    "Sona": {
+      "Jhin": 10,
+      "MissFortune": 10,
+      "Ezreal": 8,
+      "Kaisa": 8,
+      "Jinx": 8,
+      "Aphelios": 6
+    },
+    "Yuumi": {
+      "Ezreal": 15,
+      "Zeri": 12,
+      "Twitch": 12,
+      "Kaisa": 10,
+      "Smolder": 10,
+      "Vayne": 10,
+      "KogMaw": 10
+    },
+    "Karma": {
+      "Ezreal": 12,
+      "Caitlyn": 12,
+      "Jhin": 10,
+      "Varus": 10,
+      "Smolder": 10,
+      "Lucian": 8,
+      "Draven": 6,
+      "Sivir": 6
+    },
+    "Renata": {
+      "Jinx": 10,
+      "Aphelios": 10,
+      "Kaisa": 8,
+      "Zeri": 8,
+      "Vayne": 8,
+      "Samira": 8,
+      "Twitch": 6
+    },
+    "Seraphine": {
+      "Jhin": 10,
+      "Sivir": 10,
+      "MissFortune": 10,
+      "Jinx": 8,
+      "Ezreal": 8,
+      "Aphelios": 8,
+      "Varus": 8
+    },
+    "Zilean": {
+      "Ezreal": 8,
+      "Vayne": 8,
+      "Jinx": 8,
+      "Aphelios": 8,
+      "KogMaw": 8,
+      "Zeri": 6,
+      "Caitlyn": 6
+    },
+    "Bard": {
+      "Ezreal": 8,
+      "Kalista": 8,
+      "Jhin": 8,
+      "Caitlyn": 6,
+      "Smolder": 6
+    },
+    "Senna": {
+      "Seraphine": 10,
+      "Jhin": 8,
+      "Ziggs": 8,
+      "Caitlyn": 8,
+      "Sivir": 8,
+      "Ashe": 8,
+      "Varus": 6,
+      "Xayah": 6
+    },
+    "Lux": {
+      "Caitlyn": 10,
+      "Ezreal": 10,
+      "Jhin": 10,
+      "Varus": 10,
+      "MissFortune": 10,
+      "Ashe": 8,
+      "Smolder": 8,
+      "Sivir": 6
+    },
+    "Zyra": {
+      "Caitlyn": 10,
+      "Jhin": 10,
+      "MissFortune": 10,
+      "Varus": 8,
+      "Ashe": 8,
+      "Draven": 6,
+      "Samira": 6
+    },
+    "Brand": {
+      "Jhin": 10,
+      "MissFortune": 10,
+      "Caitlyn": 8,
+      "Varus": 8,
+      "Ashe": 6,
+      "Draven": 6
+    },
+    "Xerath": {
+      "Caitlyn": 10,
+      "Jhin": 10,
+      "Varus": 10,
+      "Ezreal": 8,
+      "Ashe": 8,
+      "Smolder": 6
+    },
+    "Velkoz": {
+      "Jhin": 10,
+      "Varus": 10,
+      "Caitlyn": 8,
+      "Ezreal": 8,
+      "MissFortune": 8,
+      "Ashe": 6
+    },
+    "Swain": {
+      "Draven": 8,
+      "Samira": 8,
+      "Kalista": 6,
+      "Caitlyn": 6,
+      "Jhin": 6
+    },
+    "Morgana": {
+      "Draven": 8,
+      "Jhin": 8,
+      "Caitlyn": 8,
+      "Ashe": 6,
+      "MissFortune": 6,
+      "Samira": 6
+    },
+    "Hwei": {
+      "Jhin": 8,
+      "Caitlyn": 8,
+      "Varus": 8,
+      "MissFortune": 8
+    },
+    "Zoe": {
+      "Jhin": 8,
+      "Caitlyn": 8,
+      "Ezreal": 6,
+      "Varus": 6
+    },
+    "Neeko": {
+      "MissFortune": 10,
+      "Samira": 8,
+      "Jhin": 8,
+      "Draven": 6
+    },
+    "Elise": {
+      "Draven": 8,
+      "Samira": 8,
+      "Caitlyn": 6
+    },
+    "Ashe": {
+      "Caitlyn": 8,
+      "Jhin": 8,
+      "Draven": 6,
+      "Varus": 6
+    }
   },
-
   "counters": {
-    "Morgana":   ["Blitzcrank", "Thresh", "Nautilus", "Pyke", "Leona", "Rell", "Alistar"],
-    "Janna":     ["Leona", "Nautilus", "Alistar", "Rell", "Rakan", "Samira", "Nilah", "Kalista"],
-    "Braum":     ["Draven", "Lucian", "Samira", "Kalista", "Vayne", "Blitzcrank"],
-    "Alistar":   ["Lulu", "Janna", "Soraka", "Yuumi", "Sona", "Milio"],
-    "Leona":     ["Soraka", "Yuumi", "Sona", "Senna", "Lux", "Xerath", "Velkoz"],
-    "Nautilus":  ["Soraka", "Yuumi", "Sona", "Senna", "Xerath", "Velkoz"],
-    "Blitzcrank":["Soraka", "Yuumi", "Sona", "Senna", "Xerath", "Velkoz", "Zyra"],
-    "Thresh":    ["Senna", "Sona", "Yuumi", "Soraka"],
-    "Pyke":      ["Soraka", "Sona", "Yuumi", "Senna", "Zilean"],
-    "Rell":      ["Soraka", "Yuumi", "Sona", "Lulu"],
-    "Nami":      ["Leona", "Nautilus", "Yuumi", "Soraka"],
-    "Zyra":      ["Leona", "Nautilus", "Alistar", "Rell", "Yuumi"],
-    "Brand":     ["Leona", "Nautilus", "Alistar", "Rell", "Taric", "Soraka", "Yuumi"],
-    "Xerath":    ["Soraka", "Yuumi", "Janna", "Karma", "Lulu"],
-    "Velkoz":    ["Soraka", "Yuumi", "Janna", "Lulu"],
-    "Lux":       ["Soraka", "Yuumi", "Sona", "Lulu"],
-    "Karma":     ["Soraka", "Yuumi", "Sona", "Milio", "Janna"],
-    "Lulu":      ["Pyke", "Pantheon", "Leblanc", "Elise"],
-    "Milio":     ["Pyke", "Elise", "Leblanc"],
-    "Zilean":    ["Pyke", "Blitzcrank", "Thresh"],
-    "Taric":     ["Pyke", "Samira", "Nilah"],
-    "TahmKench": ["Pyke", "Blitzcrank", "Thresh", "Samira"],
-    "Senna":     ["Soraka", "Yuumi", "Sona", "Velkoz"],
-    "Soraka":    ["Xerath", "Velkoz", "Lux", "Karma"],
-    "Renata":    ["Samira", "Nilah", "Kaisa", "Kalista"],
-    "Seraphine": ["Soraka", "Yuumi", "Sona"],
-    "Poppy":     ["Alistar", "Rell", "Rakan", "Pyke", "Galio"]
+    "Morgana": [
+      "Blitzcrank",
+      "Thresh",
+      "Nautilus",
+      "Pyke",
+      "Leona",
+      "Rell",
+      "Alistar"
+    ],
+    "Janna": [
+      "Leona",
+      "Nautilus",
+      "Alistar",
+      "Rell",
+      "Rakan",
+      "Samira",
+      "Nilah",
+      "Kalista"
+    ],
+    "Braum": [
+      "Draven",
+      "Lucian",
+      "Samira",
+      "Kalista",
+      "Vayne",
+      "Blitzcrank"
+    ],
+    "Alistar": [
+      "Lulu",
+      "Janna",
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Milio"
+    ],
+    "Leona": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Senna",
+      "Lux",
+      "Xerath",
+      "Velkoz"
+    ],
+    "Nautilus": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Senna",
+      "Xerath",
+      "Velkoz"
+    ],
+    "Blitzcrank": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Senna",
+      "Xerath",
+      "Velkoz",
+      "Zyra"
+    ],
+    "Thresh": [
+      "Senna",
+      "Sona",
+      "Yuumi",
+      "Soraka"
+    ],
+    "Pyke": [
+      "Soraka",
+      "Sona",
+      "Yuumi",
+      "Senna",
+      "Zilean"
+    ],
+    "Rell": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Lulu"
+    ],
+    "Nami": [
+      "Leona",
+      "Nautilus",
+      "Yuumi",
+      "Soraka"
+    ],
+    "Zyra": [
+      "Leona",
+      "Nautilus",
+      "Alistar",
+      "Rell",
+      "Yuumi"
+    ],
+    "Brand": [
+      "Leona",
+      "Nautilus",
+      "Alistar",
+      "Rell",
+      "Taric",
+      "Soraka",
+      "Yuumi"
+    ],
+    "Xerath": [
+      "Soraka",
+      "Yuumi",
+      "Janna",
+      "Karma",
+      "Lulu"
+    ],
+    "Velkoz": [
+      "Soraka",
+      "Yuumi",
+      "Janna",
+      "Lulu"
+    ],
+    "Lux": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Lulu"
+    ],
+    "Karma": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Milio",
+      "Janna"
+    ],
+    "Lulu": [
+      "Pyke",
+      "Pantheon",
+      "Leblanc",
+      "Elise"
+    ],
+    "Milio": [
+      "Pyke",
+      "Elise",
+      "Leblanc"
+    ],
+    "Zilean": [
+      "Pyke",
+      "Blitzcrank",
+      "Thresh"
+    ],
+    "Taric": [
+      "Pyke",
+      "Samira",
+      "Nilah"
+    ],
+    "TahmKench": [
+      "Pyke",
+      "Blitzcrank",
+      "Thresh",
+      "Samira"
+    ],
+    "Senna": [
+      "Soraka",
+      "Yuumi",
+      "Sona",
+      "Velkoz"
+    ],
+    "Soraka": [
+      "Xerath",
+      "Velkoz",
+      "Lux",
+      "Karma"
+    ],
+    "Renata": [
+      "Samira",
+      "Nilah",
+      "Kaisa",
+      "Kalista"
+    ],
+    "Seraphine": [
+      "Soraka",
+      "Yuumi",
+      "Sona"
+    ],
+    "Poppy": [
+      "Alistar",
+      "Rell",
+      "Rakan",
+      "Pyke",
+      "Galio"
+    ]
   },
-
-  "engagers": ["Malphite", "Amumu", "Sejuani", "Zac", "JarvanIV", "Ornn", "Rell", "Leona", "Nautilus", "Alistar", "Rakan", "Vi", "MonkeyKing", "Diana", "Kennen", "Sion", "Gragas", "Maokai", "Galio", "Hecarim", "Skarner", "Nocturne", "Poppy", "KSante", "Shen", "Gnar", "Camille", "Yasuo", "Yone", "Lillia", "Rammus", "Volibear", "Nunu", "Thresh", "Blitzcrank", "Pyke", "Ambessa", "Orianna", "Seraphine", "Zyra", "Neeko", "Sett", "Briar", "Aurora", "Cassiopeia"],
-  "frontline": ["Malphite", "Sejuani", "Zac", "Ornn", "Rell", "Leona", "Nautilus", "Alistar", "Sion", "Maokai", "Galio", "Poppy", "KSante", "Shen", "Rammus", "Braum", "TahmKench", "Taric", "Chogath", "DrMundo", "Gragas", "Amumu", "Skarner", "Volibear", "Nunu", "Sett", "Mordekaiser", "Garen", "Darius", "Gnar", "Udyr", "Trundle", "Warwick", "Olaf", "Jax", "Renekton", "Aatrox", "Illaoi", "Yorick", "Ambessa", "Hecarim", "JarvanIV", "MonkeyKing", "XinZhao", "Vi", "Singed"],
-  "healers": ["Soraka", "Yuumi", "Aatrox", "Vladimir", "Sylas", "DrMundo", "Warwick", "Briar", "Fiddlesticks", "Swain", "Illaoi", "Olaf", "Volibear", "Nami", "Sona", "Seraphine", "Milio", "Senna", "Samira", "Kayn", "Darius", "Renekton", "Gwen", "Udyr", "Trundle", "Sett", "Taric", "Maokai", "Viego", "Belveth", "Irelia", "Fiora", "Ekko", "Gragas", "Zac", "Nasus", "Yorick", "MasterYi", "Kindred", "Akshan", "Smolder", "Ambessa"],
-  "assassins": ["Zed", "Talon", "Khazix", "Rengar", "Qiyana", "Akali", "Katarina", "Evelynn", "Shaco", "Kayn", "Nocturne", "Pyke", "Fizz", "Leblanc", "Naafiri", "Diana", "Ekko", "Kassadin", "Elise", "Nidalee", "Viego", "Briar", "Yone", "Yasuo", "Pantheon", "Camille", "Irelia", "Fiora", "Belveth", "MasterYi", "Aurora", "Ambessa"],
-  "hookers": ["Blitzcrank", "Thresh", "Nautilus", "Pyke", "Morgana", "Bard", "Ashe", "Zyra", "Lux", "Elise", "Neeko", "Rakan", "Leona"],
-
+  "engagers": [
+    "Malphite",
+    "Amumu",
+    "Sejuani",
+    "Zac",
+    "JarvanIV",
+    "Ornn",
+    "Rell",
+    "Leona",
+    "Nautilus",
+    "Alistar",
+    "Rakan",
+    "Vi",
+    "MonkeyKing",
+    "Diana",
+    "Kennen",
+    "Sion",
+    "Gragas",
+    "Maokai",
+    "Galio",
+    "Hecarim",
+    "Skarner",
+    "Nocturne",
+    "Poppy",
+    "KSante",
+    "Shen",
+    "Gnar",
+    "Camille",
+    "Yasuo",
+    "Yone",
+    "Lillia",
+    "Rammus",
+    "Volibear",
+    "Nunu",
+    "Thresh",
+    "Blitzcrank",
+    "Pyke",
+    "Ambessa",
+    "Orianna",
+    "Seraphine",
+    "Zyra",
+    "Neeko",
+    "Sett",
+    "Briar",
+    "Aurora",
+    "Cassiopeia"
+  ],
+  "frontline": [
+    "Malphite",
+    "Sejuani",
+    "Zac",
+    "Ornn",
+    "Rell",
+    "Leona",
+    "Nautilus",
+    "Alistar",
+    "Sion",
+    "Maokai",
+    "Galio",
+    "Poppy",
+    "KSante",
+    "Shen",
+    "Rammus",
+    "Braum",
+    "TahmKench",
+    "Taric",
+    "Chogath",
+    "DrMundo",
+    "Gragas",
+    "Amumu",
+    "Skarner",
+    "Volibear",
+    "Nunu",
+    "Sett",
+    "Mordekaiser",
+    "Garen",
+    "Darius",
+    "Gnar",
+    "Udyr",
+    "Trundle",
+    "Warwick",
+    "Olaf",
+    "Jax",
+    "Renekton",
+    "Aatrox",
+    "Illaoi",
+    "Yorick",
+    "Ambessa",
+    "Hecarim",
+    "JarvanIV",
+    "MonkeyKing",
+    "XinZhao",
+    "Vi",
+    "Singed"
+  ],
+  "healers": [
+    "Soraka",
+    "Yuumi",
+    "Aatrox",
+    "Vladimir",
+    "Sylas",
+    "DrMundo",
+    "Warwick",
+    "Briar",
+    "Fiddlesticks",
+    "Swain",
+    "Illaoi",
+    "Olaf",
+    "Volibear",
+    "Nami",
+    "Sona",
+    "Seraphine",
+    "Milio",
+    "Senna",
+    "Samira",
+    "Kayn",
+    "Darius",
+    "Renekton",
+    "Gwen",
+    "Udyr",
+    "Trundle",
+    "Sett",
+    "Taric",
+    "Maokai",
+    "Viego",
+    "Belveth",
+    "Irelia",
+    "Fiora",
+    "Ekko",
+    "Gragas",
+    "Zac",
+    "Nasus",
+    "Yorick",
+    "MasterYi",
+    "Kindred",
+    "Akshan",
+    "Smolder",
+    "Ambessa"
+  ],
+  "assassins": [
+    "Zed",
+    "Talon",
+    "Khazix",
+    "Rengar",
+    "Qiyana",
+    "Akali",
+    "Katarina",
+    "Evelynn",
+    "Shaco",
+    "Kayn",
+    "Nocturne",
+    "Pyke",
+    "Fizz",
+    "Leblanc",
+    "Naafiri",
+    "Diana",
+    "Ekko",
+    "Kassadin",
+    "Elise",
+    "Nidalee",
+    "Viego",
+    "Briar",
+    "Yone",
+    "Yasuo",
+    "Pantheon",
+    "Camille",
+    "Irelia",
+    "Fiora",
+    "Belveth",
+    "MasterYi",
+    "Aurora",
+    "Ambessa"
+  ],
+  "hookers": [
+    "Blitzcrank",
+    "Thresh",
+    "Nautilus",
+    "Pyke",
+    "Morgana",
+    "Bard",
+    "Ashe",
+    "Zyra",
+    "Lux",
+    "Elise",
+    "Neeko",
+    "Rakan",
+    "Leona"
+  ],
   "junglers": {
-    "LeeSin":     {"type": "early", "note": "gros gank niveau 3 avec Q"},
-    "Elise":      {"type": "early", "note": "gank niveau 3 avec cocon, souvent tour bot"},
-    "XinZhao":    {"type": "early", "note": "gank niveau 3 très violent, knock-up"},
-    "JarvanIV":   {"type": "early", "note": "combo EQ niveau 3, gank depuis la rivière"},
-    "RekSai":     {"type": "early", "note": "gank niveau 3 par tunnel, peu visible"},
-    "Nidalee":    {"type": "early", "note": "invade + gank tôt, pose des pièges"},
-    "Shaco":      {"type": "early", "note": "gank niveau 2-3 invisible, boîtes dans les buissons"},
-    "Briar":      {"type": "early", "note": "très agressive tôt, gank niveau 3"},
-    "Vi":         {"type": "early", "note": "Q chargée depuis la rivière/tri-bush"},
-    "Pantheon":   {"type": "early", "note": "stun + gank niveau 3"},
-    "Naafiri":    {"type": "early", "note": "gank niveau 3 avec meute"},
-    "Volibear":   {"type": "early", "note": "gank niveau 3, flip sous ta tour"},
-    "Nunu":       {"type": "early", "note": "boule de neige depuis la rivière dès niveau 3"},
-    "MonkeyKing": {"type": "early", "note": "gank niveau 3, clone dans les buissons"},
-    "Warwick":    {"type": "mid",   "note": "gank niveau 3-4, fort sur cibles basses en PV"},
-    "Sejuani":    {"type": "mid",   "note": "gank fiable niveau 3-4"},
-    "Rammus":     {"type": "mid",   "note": "gank niveau 4-6, vitesse énorme"},
-    "Amumu":      {"type": "mid",   "note": "Q depuis le brouillard niveau 3-4"},
-    "Zac":        {"type": "mid",   "note": "saut E de très loin, ward large"},
-    "Trundle":    {"type": "mid",   "note": "gank niveau 3 avec pilier"},
-    "Udyr":       {"type": "mid",   "note": "stun en courant, gank niveau 3-4"},
-    "Jax":        {"type": "mid",   "note": "saut + stun niveau 3"},
-    "Ivern":      {"type": "mid",   "note": "gank niveau 3 avec Q, buissons"},
-    "Gragas":     {"type": "mid",   "note": "body slam + barrique"},
-    "Hecarim":    {"type": "mid",   "note": "full clear rapide puis gank 4-5"},
-    "Ekko":       {"type": "mid",   "note": "gank 3-4, stun W difficile à voir"},
-    "Rengar":     {"type": "six",   "note": "saut depuis les buissons, wards les buissons proches"},
-    "Nocturne":   {"type": "six",   "note": "plonge avec R dès niveau 6"},
-    "Evelynn":    {"type": "six",   "note": "invisible à partir du niveau 6, pink obligatoire"},
-    "Diana":      {"type": "six",   "note": "gros gank niveau 6"},
-    "Fiddlesticks": {"type": "six", "note": "R depuis les buissons/rivière dès 6, pink les buissons"},
-    "Kayn":       {"type": "farm",  "note": "farm puis gank à travers les murs"},
-    "Khazix":     {"type": "mid",   "note": "invade, gank 3-4 sur cible isolée"},
-    "Graves":     {"type": "farm",  "note": "farm/invade, gank surtout après 5:00"},
-    "Lillia":     {"type": "farm",  "note": "farm rapide, gank 4-6"},
-    "Karthus":    {"type": "farm",  "note": "farm, R global à surveiller après 6"},
-    "MasterYi":   {"type": "farm",  "note": "farm, gank opportuniste après 6"},
-    "Shyvana":    {"type": "farm",  "note": "farm, prend les drakes"},
-    "Belveth":    {"type": "farm",  "note": "farm puis objectifs"},
-    "Kindred":    {"type": "farm",  "note": "farm de marques, invade"},
-    "Viego":      {"type": "mid",   "note": "gank 3-4, rush drake"},
-    "Talon":      {"type": "mid",   "note": "gank par les murs niveau 3+"},
-    "Taliyah":    {"type": "mid",   "note": "R mur à partir du 6, gank 3 avec mur"},
-    "Skarner":    {"type": "mid",   "note": "gank 3-4 avec R/E, attention aux murs"},
-    "Zyra":       {"type": "farm",  "note": "farm, gank après 6"},
-    "Poppy":      {"type": "mid",   "note": "gank 3 avec stun contre mur"},
-    "Nasus":      {"type": "farm",  "note": "farm, peu de gank tôt"},
-    "Wukong":     {"type": "early", "note": "gank niveau 3"}
+    "LeeSin": {
+      "type": "early",
+      "note": "gros gank niveau 3 avec Q"
+    },
+    "Elise": {
+      "type": "early",
+      "note": "gank niveau 3 avec cocon, souvent tour bot"
+    },
+    "XinZhao": {
+      "type": "early",
+      "note": "gank niveau 3 très violent, knock-up"
+    },
+    "JarvanIV": {
+      "type": "early",
+      "note": "combo EQ niveau 3, gank depuis la rivière"
+    },
+    "RekSai": {
+      "type": "early",
+      "note": "gank niveau 3 par tunnel, peu visible"
+    },
+    "Nidalee": {
+      "type": "early",
+      "note": "invade + gank tôt, pose des pièges"
+    },
+    "Shaco": {
+      "type": "early",
+      "note": "gank niveau 2-3 invisible, boîtes dans les buissons"
+    },
+    "Briar": {
+      "type": "early",
+      "note": "très agressive tôt, gank niveau 3"
+    },
+    "Vi": {
+      "type": "early",
+      "note": "Q chargée depuis la rivière/tri-bush"
+    },
+    "Pantheon": {
+      "type": "early",
+      "note": "stun + gank niveau 3"
+    },
+    "Naafiri": {
+      "type": "early",
+      "note": "gank niveau 3 avec meute"
+    },
+    "Volibear": {
+      "type": "early",
+      "note": "gank niveau 3, flip sous ta tour"
+    },
+    "Nunu": {
+      "type": "early",
+      "note": "boule de neige depuis la rivière dès niveau 3"
+    },
+    "MonkeyKing": {
+      "type": "early",
+      "note": "gank niveau 3, clone dans les buissons"
+    },
+    "Warwick": {
+      "type": "mid",
+      "note": "gank niveau 3-4, fort sur cibles basses en PV"
+    },
+    "Sejuani": {
+      "type": "mid",
+      "note": "gank fiable niveau 3-4"
+    },
+    "Rammus": {
+      "type": "mid",
+      "note": "gank niveau 4-6, vitesse énorme"
+    },
+    "Amumu": {
+      "type": "mid",
+      "note": "Q depuis le brouillard niveau 3-4"
+    },
+    "Zac": {
+      "type": "mid",
+      "note": "saut E de très loin, ward large"
+    },
+    "Trundle": {
+      "type": "mid",
+      "note": "gank niveau 3 avec pilier"
+    },
+    "Udyr": {
+      "type": "mid",
+      "note": "stun en courant, gank niveau 3-4"
+    },
+    "Jax": {
+      "type": "mid",
+      "note": "saut + stun niveau 3"
+    },
+    "Ivern": {
+      "type": "mid",
+      "note": "gank niveau 3 avec Q, buissons"
+    },
+    "Gragas": {
+      "type": "mid",
+      "note": "body slam + barrique"
+    },
+    "Hecarim": {
+      "type": "mid",
+      "note": "full clear rapide puis gank 4-5"
+    },
+    "Ekko": {
+      "type": "mid",
+      "note": "gank 3-4, stun W difficile à voir"
+    },
+    "Rengar": {
+      "type": "six",
+      "note": "saut depuis les buissons, wards les buissons proches"
+    },
+    "Nocturne": {
+      "type": "six",
+      "note": "plonge avec R dès niveau 6"
+    },
+    "Evelynn": {
+      "type": "six",
+      "note": "invisible à partir du niveau 6, pink obligatoire"
+    },
+    "Diana": {
+      "type": "six",
+      "note": "gros gank niveau 6"
+    },
+    "Fiddlesticks": {
+      "type": "six",
+      "note": "R depuis les buissons/rivière dès 6, pink les buissons"
+    },
+    "Kayn": {
+      "type": "farm",
+      "note": "farm puis gank à travers les murs"
+    },
+    "Khazix": {
+      "type": "mid",
+      "note": "invade, gank 3-4 sur cible isolée"
+    },
+    "Graves": {
+      "type": "farm",
+      "note": "farm/invade, gank surtout après 5:00"
+    },
+    "Lillia": {
+      "type": "farm",
+      "note": "farm rapide, gank 4-6"
+    },
+    "Karthus": {
+      "type": "farm",
+      "note": "farm, R global à surveiller après 6"
+    },
+    "MasterYi": {
+      "type": "farm",
+      "note": "farm, gank opportuniste après 6"
+    },
+    "Shyvana": {
+      "type": "farm",
+      "note": "farm, prend les drakes"
+    },
+    "Belveth": {
+      "type": "farm",
+      "note": "farm puis objectifs"
+    },
+    "Kindred": {
+      "type": "farm",
+      "note": "farm de marques, invade"
+    },
+    "Viego": {
+      "type": "mid",
+      "note": "gank 3-4, rush drake"
+    },
+    "Talon": {
+      "type": "mid",
+      "note": "gank par les murs niveau 3+"
+    },
+    "Taliyah": {
+      "type": "mid",
+      "note": "R mur à partir du 6, gank 3 avec mur"
+    },
+    "Skarner": {
+      "type": "mid",
+      "note": "gank 3-4 avec R/E, attention aux murs"
+    },
+    "Zyra": {
+      "type": "farm",
+      "note": "farm, gank après 6"
+    },
+    "Poppy": {
+      "type": "mid",
+      "note": "gank 3 avec stun contre mur"
+    },
+    "Nasus": {
+      "type": "farm",
+      "note": "farm, peu de gank tôt"
+    },
+    "Wukong": {
+      "type": "early",
+      "note": "gank niveau 3"
+    }
   },
-
   "timers": {
     "dragon": 300,
     "dragonRespawn": 300,
@@ -257,51 +1743,1372 @@
     "scuttle": 210,
     "platesFall": 840
   },
-
   "supportRules": [
-    {"title": "Quête de rôle support", "text": "800 points, gagnés via l'or de ton objet support (Atlas du monde puis Boussole runique). Récompense : Butin des mondes, pink à 40 po au lieu de 75, stockées dans l'emplacement de quête (tu en portes 2 sans prendre de case d'inventaire)."},
-    {"title": "Pénalité de roam avant niveau 5", "text": "Jusqu'au niveau 5, les sbires tués hors de la bot lane rapportent 33 % d'or et d'XP en moins (et ralentissent ta quête). Ne quitte pas la lane avant niv 5 sauf pour un objectif ou un kill sûr."},
-    {"title": "Crédit de roam", "text": "À partir du niveau 3, chaque tranche de 2 min passée en lane te donne 1 min de roam sans pénalité (max 60 s). Un roam court et préparé ne coûte rien."},
-    {"title": "Atakhan et Roses de sang", "text": "Supprimés depuis le patch 26.1. Baron apparaît à 20:00."},
-    {"title": "Larves du Néant", "text": "Un seul groupe à 8:00, pas de réapparition. Disparaissent à 14:45 (14:55 en combat). Le Héraut prend le même pit à 15:00."}
+    {
+      "title": "Quête de rôle support",
+      "text": "800 points, gagnés via l'or de ton objet support (Atlas du monde puis Boussole runique). Récompense : Butin des mondes, pink à 40 po au lieu de 75, stockées dans l'emplacement de quête (tu en portes 2 sans prendre de case d'inventaire)."
+    },
+    {
+      "title": "Pénalité de roam avant niveau 5",
+      "text": "Jusqu'au niveau 5, les sbires tués hors de la bot lane rapportent 33 % d'or et d'XP en moins (et ralentissent ta quête). Ne quitte pas la lane avant niv 5 sauf pour un objectif ou un kill sûr."
+    },
+    {
+      "title": "Crédit de roam",
+      "text": "À partir du niveau 3, chaque tranche de 2 min passée en lane te donne 1 min de roam sans pénalité (max 60 s). Un roam court et préparé ne coûte rien."
+    },
+    {
+      "title": "Atakhan et Roses de sang",
+      "text": "Supprimés depuis le patch 26.1. Baron apparaît à 20:00."
+    },
+    {
+      "title": "Larves du Néant",
+      "text": "Un seul groupe à 8:00, pas de réapparition. Disparaissent à 14:45 (14:55 en combat). Le Héraut prend le même pit à 15:00."
+    }
   ],
-
   "items": {
-    "start":   [3865],
-    "boots":   {"default": 3158, "vsAD": 3047, "vsCC": 3111, "roam": 3009, "mage": 3020},
+    "start": [
+      3865
+    ],
+    "boots": {
+      "default": 3158,
+      "vsAD": 3047,
+      "vsCC": 3111,
+      "roam": 3009,
+      "mage": 3020
+    },
     "core": {
-      "engage":    [3190, 3050, 3109],
-      "warden":    [3190, 3109, 3110],
-      "enchanter": [6617, 3504, 6616, 3107],
-      "mage":      [6653, 3165, 4005, 3116]
+      "engage": [
+        3190,
+        3050,
+        3109
+      ],
+      "warden": [
+        3190,
+        3109,
+        3110
+      ],
+      "enchanter": [
+        6617,
+        3504,
+        6616,
+        3107
+      ],
+      "mage": [
+        6653,
+        3165,
+        4005,
+        3116
+      ]
     },
     "situational": {
-      "antiheal":   {"engage": 3076, "warden": 3076, "enchanter": 3011, "mage": 3165},
-      "vsAP":       [8020, 2504, 3190],
-      "vsAD":       [3110, 3143, 3075],
-      "vsCC":       [3222, 3111],
-      "vsDive":     [3109, 3190, 3157],
-      "vsTanks":    [8010, 6653, 3135],
-      "vsCrit":     [3143, 3110]
+      "antiheal": {
+        "engage": 3076,
+        "warden": 3076,
+        "enchanter": 3011,
+        "mage": 3165
+      },
+      "vsAP": [
+        8020,
+        2504,
+        3190
+      ],
+      "vsAD": [
+        3110,
+        3143,
+        3075
+      ],
+      "vsCC": [
+        3222,
+        3111
+      ],
+      "vsDive": [
+        3109,
+        3190,
+        3157
+      ],
+      "vsTanks": [
+        8010,
+        6653,
+        3135
+      ],
+      "vsCrit": [
+        3143,
+        3110
+      ]
     },
-    "upgrades": {"engage": 3869, "warden": 3876, "enchanter": 3870, "mage": 3871, "attack": 3877},
+    "upgrades": {
+      "engage": 3869,
+      "warden": 3876,
+      "enchanter": 3870,
+      "mage": 3871,
+      "attack": 3877
+    },
     "names": {
-      "3865": "Atlas du monde", "3866": "Boussole runique", "3867": "Butin des mondes",
-      "3869": "Opposition céleste", "3870": "Façonneur de rêves", "3871": "Pointe dimensionnelle de Zaz'Zak", "3876": "Traîneau du solstice", "3877": "Chant du sang",
-      "3190": "Médaillon de l'Iron Solari", "3050": "Convergence de Zeke", "3109": "Vœu du chevalier", "3110": "Cœur gelé",
-      "6617": "Pierre de lune renouvelée", "3504": "Encensoir ardent", "6616": "Bâton de l'eau vive", "3107": "Rédemption",
-      "6653": "Tourment de Liandry", "3165": "Morellonomicon", "4005": "Mandat impérial", "3116": "Sceptre de cristal de Rylai",
-      "3076": "Veste épineuse", "3011": "Putréfacteur chimtech", "8020": "Masque abyssal", "2504": "Kaenic Rookern",
-      "3143": "Présage de Randuin", "3075": "Cotte épineuse", "3222": "Bénédiction de Mikael", "3111": "Bottes de mercure",
-      "3157": "Sablier de Zhonya", "8010": "Malédiction du saigneur", "3135": "Bâton du vide",
-      "3158": "Bottes ioniennes de lucidité", "3047": "Coques en acier renforcé", "3009": "Bottes de rapidité", "3020": "Chaussures du sorcier"
+      "3865": "Atlas du monde",
+      "3866": "Boussole runique",
+      "3867": "Butin des mondes",
+      "3869": "Opposition céleste",
+      "3870": "Façonneur de rêves",
+      "3871": "Pointe dimensionnelle de Zaz'Zak",
+      "3876": "Traîneau du solstice",
+      "3877": "Chant du sang",
+      "3190": "Médaillon de l'Iron Solari",
+      "3050": "Convergence de Zeke",
+      "3109": "Vœu du chevalier",
+      "3110": "Cœur gelé",
+      "6617": "Pierre de lune renouvelée",
+      "3504": "Encensoir ardent",
+      "6616": "Bâton de l'eau vive",
+      "3107": "Rédemption",
+      "6653": "Tourment de Liandry",
+      "3165": "Morellonomicon",
+      "4005": "Mandat impérial",
+      "3116": "Sceptre de cristal de Rylai",
+      "3076": "Veste épineuse",
+      "3011": "Putréfacteur chimtech",
+      "8020": "Masque abyssal",
+      "2504": "Kaenic Rookern",
+      "3143": "Présage de Randuin",
+      "3075": "Cotte épineuse",
+      "3222": "Bénédiction de Mikael",
+      "3111": "Bottes de mercure",
+      "3157": "Sablier de Zhonya",
+      "8010": "Malédiction du saigneur",
+      "3135": "Bâton du vide",
+      "3158": "Bottes ioniennes de lucidité",
+      "3047": "Coques en acier renforcé",
+      "3009": "Bottes de rapidité",
+      "3020": "Chaussures du sorcier"
     }
   },
-
   "keystones": {
-    "engage":    "Après-coup (Aftershock) ou Glacial augmenté",
-    "warden":    "Gardien (Guardian) ou Après-coup",
+    "engage": "Après-coup (Aftershock) ou Glacial augmenté",
+    "warden": "Gardien (Guardian) ou Après-coup",
     "enchanter": "Invocation d'Aery ou Gardien",
-    "mage":      "Comète arcanique ou Invocation d'Aery"
+    "mage": "Comète arcanique ou Invocation d'Aery"
+  },
+  "lane": {
+    "Thresh": {
+      "s": [
+        [
+          "Q",
+          "Reste derrière tes sbires. S'il rate, il est sans engage pendant de longues secondes."
+        ],
+        [
+          "E",
+          "Le fléau te repousse : ne passe pas à côté de lui pour engager."
+        ]
+      ],
+      "do": [
+        "Trade dès que son Q est en recharge"
+      ],
+      "dont": [
+        "Rester sur une ligne sans sbire devant toi"
+      ]
+    },
+    "Leona": {
+      "s": [
+        [
+          "E",
+          "Traverse les sbires : ne reste pas à sa portée quand elle avance."
+        ],
+        [
+          "R",
+          "Étourdit au centre, ralentit autour : sors du cercle."
+        ]
+      ],
+      "do": [
+        "Punir dès que son E est raté"
+      ],
+      "dont": [
+        "Rester collé à ton ADC (double étourdissement)",
+        "Avancer pour un last-hit quand elle est hors de vue"
+      ]
+    },
+    "Nautilus": {
+      "s": [
+        [
+          "Q",
+          "Bloqué par sbires et murs : reste derrière tes sbires."
+        ],
+        [
+          "R",
+          "Ciblé, impossible à esquiver : garde ton bouclier/peel pour après."
+        ]
+      ],
+      "do": [
+        "Trade quand son Q est en recharge"
+      ],
+      "dont": [
+        "Laisser ton ADC sans sbire devant lui"
+      ]
+    },
+    "Blitzcrank": {
+      "s": [
+        [
+          "Q",
+          "Toujours un sbire entre lui et toi. Pas de sbire : garde Flash."
+        ]
+      ],
+      "do": [
+        "Jouer agressif sur lui quand le Q est tombé"
+      ],
+      "dont": [
+        "Marcher dans le brouillard près de la rivière et des buissons"
+      ]
+    },
+    "Alistar": {
+      "s": [
+        [
+          "W",
+          "Il doit sauter sur toi (W puis Q) : garde la distance."
+        ],
+        [
+          "R",
+          "Réduit énormément ses dégâts subis : ne force pas, recule."
+        ]
+      ],
+      "do": [
+        "Échanger quand son W ou son Q est en recharge"
+      ],
+      "dont": [
+        "Rester près de lui au niveau 2 (combo W+Q)"
+      ]
+    },
+    "Rell": {
+      "s": [
+        [
+          "W",
+          "Saut + projection : écarte-toi de ton ADC."
+        ],
+        [
+          "R",
+          "Attire tout le monde : sors de la zone dès qu'elle arrive."
+        ]
+      ],
+      "do": [
+        "Punir quand son W est utilisé (elle est lente sans)"
+      ],
+      "dont": [
+        "Te grouper avec ton ADC"
+      ]
+    },
+    "Rakan": {
+      "s": [
+        [
+          "W",
+          "Saut + knock-up : garde un contrôle pour l'interrompre."
+        ],
+        [
+          "E",
+          "Saute sur son ADC : ne lance pas un sort qu'il peut esquiver ainsi."
+        ]
+      ],
+      "do": [
+        "Engager quand son W est en recharge"
+      ],
+      "dont": [
+        "Rester dans la portée de son W près des buissons"
+      ]
+    },
+    "Pyke": {
+      "s": [
+        [
+          "Q",
+          "Grappin bloqué par les sbires. Chargé, il ralentit : marche de côté."
+        ],
+        [
+          "E",
+          "Son fantôme étourdit derrière lui : ne sois pas sur sa trajectoire."
+        ],
+        [
+          "R",
+          "Exécute à PV bas : recule avant d'être dans la zone."
+        ]
+      ],
+      "do": [
+        "Le punir au niveau 1-2, il a peu de PV"
+      ],
+      "dont": [
+        "Rester bas en PV en lane après le niveau 6"
+      ]
+    },
+    "Braum": {
+      "s": [
+        [
+          "Passif",
+          "4 coups = étourdissement : ne laisse pas leur ADC te taper 3 fois."
+        ],
+        [
+          "E",
+          "Bloque les projectiles : ne tire pas dans son bouclier."
+        ]
+      ],
+      "do": [
+        "Contourner son bouclier ou attendre qu'il tombe"
+      ],
+      "dont": [
+        "Engager quand son E est actif"
+      ]
+    },
+    "TahmKench": {
+      "s": [
+        [
+          "Q",
+          "3 cumuls = étourdissement : évite les longs échanges."
+        ],
+        [
+          "W",
+          "Avale son ADC pour le sauver : garde ton burst pour après."
+        ]
+      ],
+      "do": [
+        "Trade court, pars avant le 3e cumul"
+      ],
+      "dont": [
+        "Rester au corps à corps avec lui"
+      ]
+    },
+    "Taric": {
+      "s": [
+        [
+          "E",
+          "Étourdit en ligne (aussi depuis l'allié lié) : sors de la ligne."
+        ],
+        [
+          "R",
+          "Invulnérabilité après un délai : recule et attends la fin."
+        ]
+      ],
+      "do": [
+        "Écarter leur duo, le E ne touche qu'en ligne"
+      ],
+      "dont": [
+        "Commencer un all-in au moment de son ultime"
+      ]
+    },
+    "Poppy": {
+      "s": [
+        [
+          "E",
+          "Étourdit contre un mur : reste loin des murs."
+        ],
+        [
+          "W",
+          "Bloque les dashs : pas de saut près d'elle."
+        ]
+      ],
+      "do": [
+        "Jouer au milieu de la lane"
+      ],
+      "dont": [
+        "Dasher près d'elle"
+      ]
+    },
+    "Maokai": {
+      "s": [
+        [
+          "W",
+          "Immobilisation ciblée : garde la distance."
+        ],
+        [
+          "E",
+          "Arbrisseaux dans les buissons : contourne-les."
+        ]
+      ],
+      "do": [
+        "Garder les buissons de votre côté"
+      ],
+      "dont": [
+        "Entrer dans un buisson avec un arbrisseau"
+      ]
+    },
+    "Amumu": {
+      "s": [
+        [
+          "Q",
+          "Bandage bloqué par les sbires."
+        ],
+        [
+          "R",
+          "Zone d'étourdissement : écarte-toi de ton ADC."
+        ]
+      ],
+      "do": [
+        "Trade quand son Q est raté"
+      ],
+      "dont": [
+        "Te grouper avec ton ADC"
+      ]
+    },
+    "Galio": {
+      "s": [
+        [
+          "E",
+          "Dash + knock-up en ligne."
+        ],
+        [
+          "W",
+          "Provocation en zone : ne reste pas collé."
+        ]
+      ],
+      "do": [
+        "Le poke, il a peu d'outils à distance"
+      ],
+      "dont": [
+        "Marcher vers lui pendant son W"
+      ]
+    },
+    "Shen": {
+      "s": [
+        [
+          "E",
+          "Dash + provocation : écarte-toi de sa ligne."
+        ],
+        [
+          "R",
+          "Gros bouclier global sur un allié."
+        ]
+      ],
+      "do": [
+        "Trade quand son E est en recharge"
+      ],
+      "dont": [
+        "Partir en all-in sans savoir si son R est prêt"
+      ]
+    },
+    "Pantheon": {
+      "s": [
+        [
+          "W",
+          "Étourdissement ciblé : garde la distance au niveau 2-3."
+        ],
+        [
+          "E",
+          "Bloque tout devant lui : contourne ou attends."
+        ]
+      ],
+      "do": [
+        "Survivre aux niveaux 1-5, il faiblit ensuite"
+      ],
+      "dont": [
+        "Échanger contre lui au niveau 2-3"
+      ]
+    },
+    "Camille": {
+      "s": [
+        [
+          "E",
+          "Grappin sur mur puis étourdissement."
+        ]
+      ],
+      "do": [
+        "Jouer loin des murs"
+      ],
+      "dont": [
+        "Rester près du mur du tri-bush"
+      ]
+    },
+    "Lulu": {
+      "s": [
+        [
+          "W",
+          "Métamorphose : annule ton engage, attends qu'elle l'utilise."
+        ],
+        [
+          "Q",
+          "Poke via sa fée Pix : reste hors de portée de Pix."
+        ]
+      ],
+      "do": [
+        "Engager après son W"
+      ],
+      "dont": [
+        "All-in tant que son W et son R sont prêts"
+      ]
+    },
+    "Janna": {
+      "s": [
+        [
+          "Q",
+          "Tornade qui se charge : esquive latéralement."
+        ],
+        [
+          "R",
+          "Repousse et soigne : attends son R avant de tout lancer."
+        ]
+      ],
+      "do": [
+        "Forcer quand son Q est utilisé"
+      ],
+      "dont": [
+        "Engager en ligne droite face à son Q chargé"
+      ]
+    },
+    "Milio": {
+      "s": [
+        [
+          "E",
+          "Bouclier sur son ADC : trade quand il est tombé."
+        ],
+        [
+          "R",
+          "Purifie les contrôles : engage après son ultime."
+        ]
+      ],
+      "do": [
+        "L'engager lui, il est fragile"
+      ],
+      "dont": [
+        "Engager quand son R est prêt"
+      ]
+    },
+    "Nami": {
+      "s": [
+        [
+          "Q",
+          "Bulle lente : marche de côté quand elle la lance."
+        ],
+        [
+          "E",
+          "Sur son ADC : ses coups ralentissent."
+        ]
+      ],
+      "do": [
+        "Punir chaque bulle ratée"
+      ],
+      "dont": [
+        "Rester immobile pendant un last-hit"
+      ]
+    },
+    "Soraka": {
+      "s": [
+        [
+          "E",
+          "Silence puis immobilisation à la fin : sors du cercle."
+        ],
+        [
+          "Q",
+          "Elle se soigne en touchant : esquive pour couper sa sustain."
+        ]
+      ],
+      "do": [
+        "L'engager, elle meurt vite"
+      ],
+      "dont": [
+        "Faire du petit poke : elle soigne tout"
+      ]
+    },
+    "Sona": {
+      "s": [
+        [
+          "R",
+          "Étourdit en ligne : écarte-toi de ton ADC."
+        ],
+        [
+          "Q",
+          "Poke automatique : évite les longs échanges."
+        ]
+      ],
+      "do": [
+        "All-in tôt, elle est très fragile"
+      ],
+      "dont": [
+        "Jouer le poke contre elle"
+      ]
+    },
+    "Yuumi": {
+      "s": [
+        [
+          "Q",
+          "Missile lent : sors de la trajectoire."
+        ]
+      ],
+      "do": [
+        "Harceler l'ADC : Yuumi ne te répond pas seule",
+        "Forcer des all-in courts"
+      ],
+      "dont": [
+        "Perdre du temps sur Yuumi"
+      ]
+    },
+    "Karma": {
+      "s": [
+        [
+          "Q",
+          "Gros poke (surtout avec R) : derrière tes sbires."
+        ],
+        [
+          "W",
+          "Lien : sors de sa portée avant la fin (immobilisation)."
+        ]
+      ],
+      "do": [
+        "Engager juste après son RQ"
+      ],
+      "dont": [
+        "Rester dans son lien W"
+      ]
+    },
+    "Renata": {
+      "s": [
+        [
+          "W",
+          "Sauve son allié s'il participe à un kill : attends la fin ou finis très vite."
+        ],
+        [
+          "R",
+          "Rend fou : écarte-toi de ton ADC."
+        ]
+      ],
+      "do": [
+        "Forcer quand son W est utilisé"
+      ],
+      "dont": [
+        "Rester groupé face à son R"
+      ]
+    },
+    "Seraphine": {
+      "s": [
+        [
+          "E",
+          "Étourdit si déjà ralenti : esquive le E."
+        ],
+        [
+          "R",
+          "Charme en ligne, s'allonge sur les alliés : ne te mets pas en ligne."
+        ]
+      ],
+      "do": [
+        "L'engager, elle est fragile"
+      ],
+      "dont": [
+        "Rester aligné avec ton ADC"
+      ]
+    },
+    "Zilean": {
+      "s": [
+        [
+          "Q",
+          "Deux bombes = étourdissement : esquive la 2e."
+        ],
+        [
+          "R",
+          "Ressuscite son allié : attends la fin."
+        ]
+      ],
+      "do": [
+        "Esquiver ses bombes puis engager"
+      ],
+      "dont": [
+        "Tout lancer sur une cible sous son R"
+      ]
+    },
+    "Bard": {
+      "s": [
+        [
+          "Q",
+          "Étourdit s'il y a un mur ou un allié derrière toi : ni aligné, ni près des murs."
+        ]
+      ],
+      "do": [
+        "Punir quand il quitte la lane pour ses carillons"
+      ],
+      "dont": [
+        "Rester aligné avec ton ADC"
+      ]
+    },
+    "Senna": {
+      "s": [
+        [
+          "W",
+          "S'accroche puis immobilise autour : écarte-toi de ton ADC."
+        ],
+        [
+          "Q",
+          "Soigne et frappe en ligne : ne reste pas aligné avec son ADC."
+        ]
+      ],
+      "do": [
+        "L'engager, elle a peu de PV"
+      ],
+      "dont": [
+        "Échanger à distance avec elle"
+      ]
+    },
+    "Lux": {
+      "s": [
+        [
+          "Q",
+          "Immobilisation, 2 cibles max : derrière tes sbires."
+        ],
+        [
+          "E",
+          "Zone de ralentissement : sors-en vite."
+        ]
+      ],
+      "do": [
+        "L'engager quand son Q est tombé"
+      ],
+      "dont": [
+        "Marcher dans son E"
+      ]
+    },
+    "Zyra": {
+      "s": [
+        [
+          "E",
+          "Racines lentes : esquive latéralement."
+        ],
+        [
+          "Q",
+          "Plantes qui tirent : sors de leur zone."
+        ]
+      ],
+      "do": [
+        "L'engager, elle est fragile"
+      ],
+      "dont": [
+        "Combattre dans ses plantes"
+      ]
+    },
+    "Brand": {
+      "s": [
+        [
+          "Q",
+          "Étourdit si tu brûles : esquive après chaque sort."
+        ],
+        [
+          "W",
+          "Zone retardée : sors-en."
+        ]
+      ],
+      "do": [
+        "L'engager, il n'a pas de fuite"
+      ],
+      "dont": [
+        "Rester dans ses zones"
+      ]
+    },
+    "Xerath": {
+      "s": [
+        [
+          "E",
+          "Étourdissement : derrière tes sbires."
+        ],
+        [
+          "Q",
+          "Ligne chargée : bouge latéralement."
+        ]
+      ],
+      "do": [
+        "L'engager, il n'a aucune fuite"
+      ],
+      "dont": [
+        "Rester immobile à sa portée"
+      ]
+    },
+    "Velkoz": {
+      "s": [
+        [
+          "E",
+          "Knock-up retardé : bouge dès qu'il le lance."
+        ],
+        [
+          "Q",
+          "Se divise à angle droit : ne reste pas à côté de la ligne."
+        ]
+      ],
+      "do": [
+        "L'engager au corps à corps"
+      ],
+      "dont": [
+        "Jouer le poke contre lui"
+      ]
+    },
+    "Swain": {
+      "s": [
+        [
+          "E",
+          "Immobilise au retour : esquive le retour."
+        ],
+        [
+          "R",
+          "Draine : ne combats pas longtemps contre lui."
+        ]
+      ],
+      "do": [
+        "Trade court"
+      ],
+      "dont": [
+        "Combattre dans son ultime"
+      ]
+    },
+    "Morgana": {
+      "s": [
+        [
+          "Q",
+          "Immobilisation longue : derrière tes sbires."
+        ],
+        [
+          "E",
+          "Bouclier anti-contrôles : n'engage pas dedans."
+        ]
+      ],
+      "do": [
+        "Engager quand son E est utilisé"
+      ],
+      "dont": [
+        "Lancer ton engage sur la cible protégée par son E"
+      ]
+    },
+    "Hwei": {
+      "s": [
+        [
+          "Q",
+          "Sorts longue portée en ligne : bouge latéralement."
+        ],
+        [
+          "E",
+          "Peur en ligne : ne reste pas aligné."
+        ]
+      ],
+      "do": [
+        "L'engager, il est lent"
+      ],
+      "dont": [
+        "Rester dans ses zones"
+      ]
+    },
+    "Zoe": {
+      "s": [
+        [
+          "E",
+          "Bulle de sommeil : derrière tes sbires."
+        ]
+      ],
+      "do": [
+        "L'engager quand son E est raté"
+      ],
+      "dont": [
+        "Ramasser les sorts qu'elle laisse au sol"
+      ]
+    },
+    "Neeko": {
+      "s": [
+        [
+          "E",
+          "Racine qui rebondit : derrière tes sbires."
+        ],
+        [
+          "R",
+          "Étourdit en zone : écarte-toi de ton ADC."
+        ]
+      ],
+      "do": [
+        "Se méfier des sbires/champions bizarres (déguisement)"
+      ],
+      "dont": [
+        "Te grouper"
+      ]
+    },
+    "Elise": {
+      "s": [
+        [
+          "E",
+          "Cocon (étourdissement) : derrière tes sbires."
+        ]
+      ],
+      "do": [
+        "Jouer derrière tes sbires dès le niveau 2"
+      ],
+      "dont": [
+        "Avancer devant tes sbires"
+      ]
+    },
+    "Leblanc": {
+      "s": [
+        [
+          "E",
+          "Chaîne : sors de sa portée avant la fin."
+        ]
+      ],
+      "do": [
+        "Rester derrière tes sbires"
+      ],
+      "dont": [
+        "Avancer seul"
+      ]
+    },
+    "Sylas": {
+      "s": [
+        [
+          "E",
+          "Chaîne puis saut : derrière tes sbires."
+        ]
+      ],
+      "do": [
+        "Garder tes sorts pour après son E"
+      ],
+      "dont": [
+        "Lui laisser voler ton ultime facilement"
+      ]
+    },
+    "Mel": {
+      "s": [
+        [
+          "W",
+          "Renvoie les projectiles : ne tire pas dans son W."
+        ],
+        [
+          "E",
+          "Immobilisation en zone."
+        ]
+      ],
+      "do": [
+        "Attendre la fin de son W"
+      ],
+      "dont": [
+        "Lancer un sort dans son W"
+      ]
+    },
+    "Ashe": {
+      "s": [
+        [
+          "R",
+          "Flèche qui étourdit de très loin : surveille-la."
+        ],
+        [
+          "W",
+          "Poke en cône : derrière tes sbires."
+        ]
+      ],
+      "do": [
+        "L'engager, elle n'a aucune fuite"
+      ],
+      "dont": [
+        "Marcher en ligne droite vers elle"
+      ]
+    },
+    "Teemo": {
+      "s": [
+        [
+          "Q",
+          "Aveugle tes attaques."
+        ],
+        [
+          "R",
+          "Champignons : pink les buissons."
+        ]
+      ],
+      "do": [
+        "Acheter une pink dès le premier retour"
+      ],
+      "dont": [
+        "Entrer dans un buisson sans vision"
+      ]
+    },
+    "Shaco": {
+      "s": [
+        [
+          "W",
+          "Boîtes qui terrifient dans les buissons : pink."
+        ]
+      ],
+      "do": [
+        "Garder une pink dans les buissons de lane"
+      ],
+      "dont": [
+        "Entrer dans un buisson sans vision"
+      ]
+    },
+    "Jinx": {
+      "s": [
+        [
+          "W",
+          "Ralentit en ligne : derrière tes sbires."
+        ],
+        [
+          "E",
+          "Pièges : ne marche pas dessus."
+        ]
+      ],
+      "do": [
+        "La punir tôt, elle est faible avant ses objets"
+      ],
+      "dont": [
+        "Engager dans ses pièges"
+      ]
+    },
+    "Draven": {
+      "s": [
+        [
+          "Q",
+          "Il doit rattraper ses haches : place-toi là où elles tombent."
+        ],
+        [
+          "E",
+          "Repousse : garde ton engage pour après."
+        ]
+      ],
+      "do": [
+        "Lui faire rater ses haches"
+      ],
+      "dont": [
+        "Échanger longtemps au niveau 1-3"
+      ]
+    },
+    "Caitlyn": {
+      "s": [
+        [
+          "W",
+          "Pièges : ne marche pas dessus, surtout après son E."
+        ],
+        [
+          "E",
+          "Filet + recul : engage après son E."
+        ]
+      ],
+      "do": [
+        "Tenir les niveaux 1-5 et gérer la vague"
+      ],
+      "dont": [
+        "Rester à sa portée pour un last-hit"
+      ]
+    },
+    "Lucian": {
+      "s": [
+        [
+          "E",
+          "Dash puis double coup : trade quand son E est en recharge."
+        ]
+      ],
+      "do": [
+        "Engager après son E"
+      ],
+      "dont": [
+        "Échanger quand son passif est chargé"
+      ]
+    },
+    "MissFortune": {
+      "s": [
+        [
+          "Q",
+          "Rebondit sur le sbire qui meurt : ne reste pas derrière un sbire bas."
+        ],
+        [
+          "R",
+          "Canalisé en cône : interromps-le ou sors du cône."
+        ]
+      ],
+      "do": [
+        "Garder un contrôle pour couper son R"
+      ],
+      "dont": [
+        "Rester derrière un sbire bas en PV"
+      ]
+    },
+    "Ezreal": {
+      "s": [
+        [
+          "Q",
+          "Poke en ligne : derrière tes sbires."
+        ],
+        [
+          "E",
+          "Saut : engage après son E."
+        ]
+      ],
+      "do": [
+        "Engager après son E"
+      ],
+      "dont": [
+        "Lui laisser du poke gratuit"
+      ]
+    },
+    "Kaisa": {
+      "s": [
+        [
+          "Q",
+          "Forte sur une cible isolée : reste près des sbires."
+        ],
+        [
+          "R",
+          "Saute sur une cible marquée."
+        ]
+      ],
+      "do": [
+        "L'engager tôt"
+      ],
+      "dont": [
+        "T'isoler de tes sbires"
+      ]
+    },
+    "Samira": {
+      "s": [
+        [
+          "W",
+          "Bloque les projectiles : ne lance pas tes sorts dans son W."
+        ],
+        [
+          "E",
+          "Dash : garde ton contrôle pour quand elle saute."
+        ]
+      ],
+      "do": [
+        "Garder un contrôle pour son engage"
+      ],
+      "dont": [
+        "Lancer des sorts dans son W"
+      ]
+    },
+    "Kalista": {
+      "s": [
+        [
+          "E",
+          "Cumule des lances : évite les longs échanges."
+        ],
+        [
+          "R",
+          "Projette son support sur vous : écarte-toi."
+        ]
+      ],
+      "do": [
+        "Trade court et repars"
+      ],
+      "dont": [
+        "Rester à portée trop longtemps"
+      ]
+    },
+    "Vayne": {
+      "s": [
+        [
+          "E",
+          "Étourdit contre un mur : reste loin des murs."
+        ]
+      ],
+      "do": [
+        "La punir tôt, elle est faible avant 10 min"
+      ],
+      "dont": [
+        "Rester près des murs"
+      ]
+    },
+    "Twitch": {
+      "s": [
+        [
+          "Q",
+          "Invisible : pink les buissons."
+        ],
+        [
+          "R",
+          "Portée énorme pendant son ultime : recule."
+        ]
+      ],
+      "do": [
+        "Le punir quand il n'est pas invisible"
+      ],
+      "dont": [
+        "Jouer sans pink dans les buissons"
+      ]
+    },
+    "Zeri": {
+      "s": [
+        [
+          "W",
+          "Laser à travers les murs."
+        ]
+      ],
+      "do": [
+        "L'engager tôt"
+      ],
+      "dont": [
+        "Lui laisser farmer tranquille"
+      ]
+    },
+    "Aphelios": {
+      "s": [
+        [
+          "R",
+          "Gros dégâts en zone : écarte-toi de ton ADC."
+        ]
+      ],
+      "do": [
+        "L'engager, il n'a pas de fuite"
+      ],
+      "dont": [
+        "Faire un long combat"
+      ]
+    },
+    "Varus": {
+      "s": [
+        [
+          "R",
+          "Lien qui se propage : écarte-toi de ton ADC."
+        ],
+        [
+          "Q",
+          "Poke chargé : bouge latéralement."
+        ]
+      ],
+      "do": [
+        "L'engager, il n'a pas de fuite"
+      ],
+      "dont": [
+        "Te grouper face à son R"
+      ]
+    },
+    "Jhin": {
+      "s": [
+        [
+          "W",
+          "Immobilise si tu es marqué : bouge après un de ses coups."
+        ],
+        [
+          "Q",
+          "Rebondit sur les sbires qui meurent."
+        ]
+      ],
+      "do": [
+        "L'engager après son 4e tir (rechargement)"
+      ],
+      "dont": [
+        "Rester immobile une fois marqué"
+      ]
+    },
+    "Xayah": {
+      "s": [
+        [
+          "E",
+          "Ses plumes reviennent et immobilisent : ne reste pas sur leur ligne."
+        ]
+      ],
+      "do": [
+        "Garder un contrôle pour après son R"
+      ],
+      "dont": [
+        "Rester sur la ligne des plumes"
+      ]
+    },
+    "Tristana": {
+      "s": [
+        [
+          "W",
+          "Saut : garde ton contrôle pour quand elle saute."
+        ],
+        [
+          "E",
+          "Bombe : recule avant l'explosion."
+        ]
+      ],
+      "do": [
+        "Garder un contrôle pour son saut"
+      ],
+      "dont": [
+        "Rester sous sa bombe chargée"
+      ]
+    },
+    "Sivir": {
+      "s": [
+        [
+          "E",
+          "Bloque un sort : n'engage pas dedans."
+        ]
+      ],
+      "do": [
+        "Feinter puis engager après son E"
+      ],
+      "dont": [
+        "Lancer ton engage dans son E"
+      ]
+    },
+    "Nilah": {
+      "s": [
+        [
+          "W",
+          "Esquive les attaques de base : utilise tes sorts."
+        ],
+        [
+          "E",
+          "Dash : garde ton contrôle."
+        ]
+      ],
+      "do": [
+        "Garder la distance, elle est au corps à corps"
+      ],
+      "dont": [
+        "Lui offrir un all-in au corps à corps"
+      ]
+    },
+    "KogMaw": {
+      "s": [
+        [
+          "R",
+          "Artillerie : bouge latéralement."
+        ]
+      ],
+      "do": [
+        "L'engager tôt, il est très faible"
+      ],
+      "dont": [
+        "Lui laisser du farm gratuit"
+      ]
+    },
+    "Smolder": {
+      "s": [
+        [
+          "Q",
+          "Il grandit en cumulant : refuse-lui le farm."
+        ]
+      ],
+      "do": [
+        "L'engager tôt"
+      ],
+      "dont": [
+        "Le laisser farmer tranquille"
+      ]
+    },
+    "Corki": {
+      "s": [
+        [
+          "R",
+          "Missiles longue portée : derrière tes sbires."
+        ]
+      ],
+      "do": [
+        "L'engager"
+      ],
+      "dont": [
+        "Rester à portée de ses missiles"
+      ]
+    },
+    "Ziggs": {
+      "s": [
+        [
+          "W",
+          "Explose et repousse : attention sous la tour."
+        ]
+      ],
+      "do": [
+        "L'engager, il n'a pas de fuite"
+      ],
+      "dont": [
+        "Jouer le poke contre lui"
+      ]
+    },
+    "Yasuo": {
+      "s": [
+        [
+          "W",
+          "Mur de vent : bloque tes projectiles."
+        ]
+      ],
+      "do": [
+        "Attendre la fin de son mur"
+      ],
+      "dont": [
+        "Lancer un sort dans son mur"
+      ]
+    }
   }
 }
