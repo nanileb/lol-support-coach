@@ -35,6 +35,7 @@ const S = {
   settings: Object.assign({ pool: [], riotId: 'Nanileb#1996', platform: 'euw1', proxy: '', sound: true, vibrate: true, notif: false, lead: 15 }, LS.get('settings', {})),
   match: (() => { const m = Object.assign(defMatch(), LS.get('match', {})); const d = defMatch(); m.ally = Object.assign(d.ally, m.ally); m.enemy = Object.assign(d.enemy, m.enemy); return m; })(),
   timer: LS.get('timer', { start: null }),
+  bought: LS.get('bought', { ids: [] }),
   kills: LS.get('kills', { drakes: [], soul: null }),
   meta: null, champs: {}, byKey: {}, version: null, items: null, fired: {}, view: 'draft'
 };
@@ -55,7 +56,7 @@ async function loadDD(force) {
   try {
     const versions = await getJSON(DD + '/api/versions.json', { cache: 'no-cache' });
     S.version = versions[0];
-    const cached = LS.get('dd', null);
+    const cached = LS.get('dd2', null);
     if (!force && cached && cached.v === S.version) { S.champs = cached.champs; S.items = cached.items; }
     else {
       const [c, it] = await Promise.all([
@@ -65,11 +66,11 @@ async function loadDD(force) {
       S.champs = {};
       for (const [id, ch] of Object.entries(c.data)) S.champs[id] = { id, key: ch.key, name: ch.name, tags: ch.tags, info: ch.info, img: ch.image.full };
       S.items = null;
-      if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) S.items[iid] = { name: x.name, gold: x.gold && x.gold.total }; }
-      LS.set('dd', { v: S.version, champs: S.champs, items: S.items });
+      if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) S.items[iid] = { name: x.name, gold: x.gold && x.gold.total, from: x.from || [] }; }
+      LS.set('dd2', { v: S.version, champs: S.champs, items: S.items });
     }
   } catch (e) {
-    const cached = LS.get('dd', null);
+    const cached = LS.get('dd2', null);
     if (cached) { S.version = cached.v; S.champs = cached.champs; S.items = cached.items; }
   }
   S.byKey = {};
@@ -262,17 +263,53 @@ function renderBuild() {
   const upId = ['Senna', 'Ashe'].includes(me) ? I.upgrades.attack : I.upgrades[arch];
   const eadc = S.match.enemy.adc, aggro = eadc && ['hyper', 'allin'].includes(adcProfile(eadc).style);
   const sums = (A.ass.length >= 2 || aggro) ? 'Flash + Exhaust (leur menace : ' + (aggro ? cname(eadc) : A.ass.map(cname).join(', ')) + ')' : (p.early >= 3 ? 'Flash + Ignite (lane agressive)' : 'Flash + Exhaust');
+  // Ordre d'achat : 1er objet, bottes, puis la suite
+  const urgent = sit.filter(x => /anti-soins|plongeurs/.test(x.why));
+  const rest = sit.filter(x => !urgent.includes(x));
+  const seq = [];
+  const addSeq = (id, why) => { if (id && itemExists(id) && !seq.find(x => x.id === id)) seq.push({ id, why }); };
+  urgent.forEach(x => addSeq(x.id, x.why));
+  addSeq(core[0], 'objet clé ' + ARCH_FR[arch].toLowerCase());
+  addSeq(boots, 'bottes : ' + bootsWhy);
+  rest.forEach(x => addSeq(x.id, x.why));
+  core.slice(1).forEach(id => addSeq(id, 'objet de base'));
+  const order = seq.slice(0, 5);
+  const gk = S.bought.key, bought = new Set(S.bought.ids || []);
+  const nextIdx = order.findIndex(x => !bought.has(String(x.id)));
+  const gold = id => (S.items && S.items[id] && S.items[id].gold) || null;
+  const comps = id => ((S.items && S.items[id] && S.items[id].from) || []).filter(itemExists);
+  const big = (id, sz) => `<img class="ico" style="width:${sz}px;height:${sz}px" src="${iimg(id)}" alt="" loading="lazy">`;
+  const nx = nextIdx >= 0 ? order[nextIdx] : null;
   out.innerHTML = `
-    <div class="card" style="background:var(--bg2)"><h3>Départ et quête</h3>
-      <div class="steps">${[3865, 3866, 3867].map(id => itemHTML(id)).join('<span class="arrow">→</span>')}</div>
-      ${upId && itemExists(upId) ? `<p class="note">Amélioration de la ward conseillée : <b>${esc(iname(upId))}</b></p>` : ''}
-      <p class="note">+ 2 potions et une ward. Achète une pink à chaque retour (40 po une fois la quête finie).</p></div>
-    <div class="card" style="background:var(--bg2)"><h3>Bottes</h3><div class="items">${itemHTML(boots, bootsWhy)}</div></div>
-    ${sit.length ? `<div class="card" style="background:var(--bg2)"><h3>À adapter contre eux (en priorité)</h3><div class="items">${sit.map(x => itemHTML(x.id, x.why)).join('')}</div></div>` : ''}
-    <div class="card" style="background:var(--bg2)"><h3>Objets de base ${esc(ARCH_FR[arch].toLowerCase())}</h3><div class="items">${core.map(id => itemHTML(id)).join('')}</div></div>
-    <div class="card" style="background:var(--bg2)"><h3>Runes et sorts</h3><p>${esc((S.meta.keystones || {})[arch] || '')}</p><p class="note">${esc(sums)}</p></div>
+    ${nx ? `<div class="nextbuy"><div class="lbl">Prochain achat · ${nextIdx + 1}/${order.length}</div>
+      <div class="nb-main">${big(nx.id, 76)}<div class="grow"><div class="nb-name">${esc(iname(nx.id))}</div>
+        ${gold(nx.id) ? `<div class="nb-gold num">${gold(nx.id)} po</div>` : ''}<div class="nb-why">${esc(nx.why)}</div></div></div>
+      ${comps(nx.id).length ? `<div class="lbl" style="margin-top:12px">Pas assez d'or ? Achète d'abord :</div>
+        <div class="comps">${comps(nx.id).map(c => `<div class="comp">${big(c, 44)}<span class="num">${gold(c) || ''} po</span></div>`).join('')}</div>` : ''}
+      <div class="row" style="margin-top:12px"><button class="btn primary grow" data-buy="${nx.id}">Acheté ✓</button><span class="pink-hint">+ 1 pink</span></div>
+    </div>` : `<div class="nextbuy"><div class="lbl">Build complet</div><p>Plus que des pinks et, si besoin, un objet de la liste « contre eux ».</p></div>`}
+    <div class="card"><h3>Ordre d'achat</h3><ol class="order">
+      ${order.map((x, i) => `<li class="${bought.has(String(x.id)) ? 'done' : ''} ${i === nextIdx ? 'cur' : ''}">
+        <span class="n">${i + 1}</span>${big(x.id, 52)}<div class="grow"><b>${esc(iname(x.id))}</b><small>${esc(x.why)}</small></div>
+        <button class="tick" data-buy="${x.id}" aria-label="Marquer comme acheté">${bought.has(String(x.id)) ? '✓' : ''}</button></li>`).join('')}
+    </ol>${bought.size ? '<button class="btn small ghost" id="resetBuy">Remettre à zéro</button>' : ''}</div>
+    <div class="card"><h3>Départ et quête support</h3>
+      <div class="startrow">${[3865, 2003, 2003].filter(itemExists).map(id => big(id, 48)).join('')}<span class="note">+ ward</span></div>
+      <div class="startrow quest">${[3865, 3866, 3867].filter(itemExists).map(id => big(id, 40)).join('<span class="arrow">→</span>')}${upId && itemExists(upId) ? '<span class="arrow">→</span>' + big(upId, 40) : ''}</div>
+      <p class="note">La quête se fait toute seule en farmant avec ton objet support.${upId && itemExists(upId) ? ' Amélioration conseillée : <b>' + esc(iname(upId)) + '</b>.' : ''} À chaque retour : 1 pink (40 po une fois la quête finie).</p></div>
+    <div class="card"><h3>Runes et sorts</h3><p>${esc((S.meta.keystones || {})[arch] || '')}</p><p class="note">${esc(sums)}</p></div>
     ${A.n ? '' : '<p class="note">Ajoute l\'équipe adverse pour adapter les objets.</p>'}`;
+  void gk;
 }
+function toggleBuy(id) {
+  id = String(id); const ids = new Set(S.bought.ids || []);
+  ids.has(id) ? ids.delete(id) : ids.add(id);
+  S.bought.ids = [...ids]; LS.set('bought', S.bought); renderBuild();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-buy]'); if (b) { toggleBuy(b.dataset.buy); if (navigator.vibrate) navigator.vibrate(30); return; }
+  if (e.target.id === 'resetBuy') { S.bought = { ids: [] }; LS.set('bought', S.bought); renderBuild(); }
+});
 
 /* ---------------- Botlane ---------------- */
 function laneScores(sup, adc) {
@@ -516,6 +553,7 @@ async function loadLive() {
     S.match.ally = Object.assign({ top: null, jungle: null, mid: null, adc: null }, aR);
     S.match.enemy = Object.assign({ top: null, jungle: null, mid: null, adc: null, support: null }, eR);
     if (!S.settings.pool.includes(meP.id) && S.meta.supports[meP.id] == null) { /* champion hors pool, ok */ }
+    S.bought = { ids: [] }; LS.set('bought', S.bought);
     const len = Number(g.gameLength) || 0;
     if (len > 0) { await startClock(len); }
     save(); renderAll();
@@ -595,7 +633,7 @@ function show(v) {
 }
 $$('nav.tabs button').forEach(b => b.onclick = () => show(b.dataset.v));
 $('#btnLive').onclick = loadLive;
-$('#clearDraft').onclick = () => { const me = S.match.me, side = S.match.side; S.match = defMatch(); S.match.me = me; S.match.side = side; S.kills = { drakes: [], soul: null }; save(); renderAll(); };
+$('#clearDraft').onclick = () => { const me = S.match.me, side = S.match.side; S.match = defMatch(); S.match.me = me; S.match.side = side; S.kills = { drakes: [], soul: null }; S.bought = { ids: [] }; LS.set('bought', S.bought); save(); renderAll(); };
 $('#btnStart').onclick = () => { S.kills = { drakes: [], soul: null }; startClock(0); toast('Chrono lancé, garde l\'app ouverte'); };
 $('#btnPlus').onclick = () => { if (S.timer.start) { S.timer.start -= 10000; save(); markPastFired(); renderTimeline(); } };
 $('#btnMinus').onclick = () => { if (S.timer.start) { S.timer.start += 10000; save(); markPastFired(); renderTimeline(); } };
