@@ -49,7 +49,7 @@ async function loadMeta(force) {
     S.meta = await getJSON('meta.json' + (force ? '?t=' + Date.now() : ''), { cache: force ? 'reload' : 'default' });
     LS.set('meta', S.meta);
   } catch (e) { S.meta = LS.get('meta', null); }
-  if (!S.meta) S.meta = { patch: '?', tiers: {}, winrates: {}, supports: {}, adcs: {}, pairs: {}, counters: {}, engagers: [], frontline: [], healers: [], assassins: [], hookers: [], junglers: {}, timers: { dragon: 300, dragonRespawn: 300, grubs: 480, grubsDespawn: 885, herald: 900, baron: 1200, elderAfterSoul: 360, scuttle: 210, platesFall: 840 }, supportRules: [], items: { start: [], boots: {}, core: {}, situational: {}, upgrades: {}, names: {} }, keystones: {}, sources: [] };
+  if (!S.meta) S.meta = { patch: '?', tiers: {}, winrates: {}, supports: {}, adcs: {}, pairs: {}, counters: {}, engagers: [], frontline: [], healers: [], assassins: [], hookers: [], junglers: {}, timers: { dragon: 300, dragonRespawn: 300, platesDecay: 660, laneEnd: 840, grubs: 480, grubsDespawn: 885, herald: 900, baron: 1200, elderAfterSoul: 360, scuttle: 175 }, supportRules: [], items: { start: [], boots: {}, core: {}, situational: {}, upgrades: {}, names: {} }, keystones: {}, sources: [] };
 }
 
 async function loadDD(force) {
@@ -407,7 +407,7 @@ function renderBot() {
   (Les.do || []).forEach(x => DO.push(x)); (Lea.do || []).forEach(x => DO.push(x));
   DO.push(ARCH_DO[sp.arch](m));
   if (P[2].c === 'adv' && P[0].c !== 'adv') DO.push('Jouer safe jusqu\'au 6 et aux premiers objets : vous scalez mieux');
-  if (P[2].c === 'dis' && P[0].c !== 'dis') DO.push('Convertir votre avance avant 14:00 (plaques, drake) : ils scalent mieux');
+  if (P[2].c === 'dis' && P[0].c !== 'dis') DO.push('Convertir votre avance avant 11:00 (plaques à 120 po, drake) : ils scalent mieux');
   DO.push(total > 1.5 ? 'Pousser et prendre les plaques, roam mid dès le niveau 5' : total < -1.5 ? 'Laisser la vague venir à votre tour, ward le tri-bush, demander un gank niveau 3-4' : 'Slow push avant chaque retour et avant le drake');
   if (cMe.includes(es)) DO.push(`${cname(me)} contre ${cname(es)} : sois agressif`);
   // À éviter
@@ -446,7 +446,7 @@ function mapSVG(keys) {
   const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
   const st = x => { const c = x[0] === 'b' ? '#3a8fe0' : '#e0463a'; return x[1] === 't' ? `<rect x="${x[2] - 1.4}" y="${x[3] - 1.4}" width="2.8" height="2.8" rx=".4" fill="${c}" stroke="#010a13" stroke-width=".5"/>` : `<circle cx="${x[2]}" cy="${x[3]}" r="1.5" fill="none" stroke="${c}" stroke-width=".8"/>`; };
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec tours, buissons et emplacements de ward">
-    <image href="map-sr.jpg?v=13" x="0" y="0" width="100" height="100"/>
+    <image href="map-sr.jpg?v=14" x="0" y="0" width="100" height="100"/>
     ${STRUCTS.map(st).join('')}
     <text x="66.2" y="77" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
     <text x="42" y="30.5" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
@@ -484,8 +484,9 @@ function buildEvents() {
   E(T.grubs, 'obj', 'Larves du Néant (8:00)', 'Un seul groupe, pas de réapparition.', null, 'grubs');
   E(600, 'ward', 'Renouvelle ta vision', "Pink rivière bot, ward la rivière mid si tu roam. Utilise tes charges de trinket.", wardSpots('mid', side), 'w10');
   E(720, 'lane', 'Reset et pinks', 'Pousse, rentre, achète 2 pinks (40 po avec la quête finie).');
-  E(T.platesFall - 30, 'ward', 'Dernières plaques', 'Ward profond la jungle adverse côté bot pour prendre les plaques en sécurité.', wardSpots('deep', side), 'wplates');
-  E(T.platesFall, 'obj', 'Fin des plaques (14:00)', "Fin de la phase de lane : passe à l'Oracle si ta quête est finie, regroupe mid.", null, 'plates');
+  E((T.platesDecay || 660) - 60, 'ward', 'Plaques à prendre avant 11:00', 'Ward profond la jungle adverse côté bot et pousse : les plaques valent 120 po jusqu\'à 11:00.', wardSpots('deep', side), 'wplates');
+  E(T.platesDecay || 660, 'obj', 'Plaques : valeur en baisse (11:00)', 'Les plaques ne tombent plus, mais perdent 10 po par minute jusqu\'à 15:00 (80 po ensuite) et la tour externe s\'affaiblit. Bonne fenêtre pour la tour elle-même.', null, 'plates');
+  E(T.laneEnd || 840, 'lane', 'Fin de la phase de lane (14:00)', "Vagues toutes les 25 s, retour en base plus rapide. Passe à l'Oracle si ta quête est finie et regroupe mid.", null, 'laneend');
   E(T.herald - 30, 'ward', 'Prépare le Héraut', 'Balaye et ward autour du pit top.', wardSpots('grubs', side), 'wherald');
   E(T.grubsDespawn, 'obj', 'Les larves disparaissent', 'Si elles sont encore là, c\'est la dernière chance.', null, 'grubsend');
   E(T.herald, 'obj', 'Héraut (15:00)', 'Une seule apparition dans le pit top.', null, 'herald');

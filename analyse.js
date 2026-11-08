@@ -67,7 +67,7 @@ function diagnose(g) {
   else good.push(`Bonne vision : ${me.vspm.toFixed(1)}/min${vsOpp('vspm')}`);
   if (me.ctrl < Math.min(TARGET.ctrl, Math.round(g.dur / 7))) bad.push({ w: 2, t: `Seulement ${me.ctrl} pink${me.ctrl > 1 ? 's' : ''} achetée${me.ctrl > 1 ? 's' : ''}`, a: '1 pink à chaque retour, toujours. Avec la quête finie, elle coûte 40 po.' });
   if (me.wkpm < TARGET.wkpm * 0.7) bad.push({ w: 1, t: `Peu de wards adverses détruites (${Math.round(me.wkpm * g.dur)})`, a: 'Passe à l\'Oracle après la phase de lane et nettoie avant chaque objectif.' });
-  if (!g.oracle || g.oracle > 1200) bad.push({ w: 1, t: g.oracle ? `Oracle pris tard (${fmt(g.oracle)})` : 'Jamais passé à l\'Oracle (balayeur)', a: 'Échange ton trinket vers 14:00, quand les plaques tombent.' });
+  if (!g.oracle || g.oracle > 1200) bad.push({ w: 1, t: g.oracle ? `Oracle pris tard (${fmt(g.oracle)})` : 'Jamais passé à l\'Oracle (balayeur)', a: 'Échange ton trinket vers 14:00, à la fin de la phase de lane.' });
   if (me.kp != null && me.kp < TARGET.kp) bad.push({ w: 2, t: `Participation aux kills : ${Math.round(me.kp * 100)} %${vsOpp('kp', 100)}`, a: 'Après 14:00, colle ton jungler/mid et sois là pour chaque objectif.' });
   else if (me.kp != null) good.push(`Participation aux kills : ${Math.round(me.kp * 100)} %`);
   if (g.early > TARGET.early) bad.push({ w: 3, t: `${g.early} morts avant 14:00`, a: 'Avant chaque avancée, regarde la minimap : où est leur jungler ? Pas de vision = pas d\'engage.' });

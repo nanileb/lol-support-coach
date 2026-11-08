@@ -1,6 +1,6 @@
 {
   "patch": "26.22",
-  "updated": "2026-11-06",
+  "updated": "2026-11-08",
   "sources": [
     {
       "label": "Tier list support 26.22 (Lexu, Émeraude+)",
@@ -21,6 +21,18 @@
     {
       "label": "Patch notes officiels",
       "url": "https://www.leagueoflegends.com/fr-fr/news/tags/patch-notes/"
+    },
+    {
+      "label": "Notes officielles 26.22",
+      "url": "https://www.leagueoflegends.com/en-us/news/game-updates/league-of-legends-patch-26-22-notes/"
+    },
+    {
+      "label": "Notes officielles 26.16 (quête support)",
+      "url": "https://www.leagueoflegends.com/en-us/news/game-updates/league-of-legends-patch-26-16-notes/"
+    },
+    {
+      "label": "Notes officielles 26.1 (plaques, objectifs)",
+      "url": "https://www.leagueoflegends.com/en-us/news/game-updates/patch-26-1-notes/"
     }
   ],
   "tiers": {
@@ -1740,29 +1752,30 @@
     "herald": 900,
     "baron": 1200,
     "elderAfterSoul": 360,
-    "scuttle": 210,
-    "platesFall": 840
+    "scuttle": 175,
+    "platesDecay": 660,
+    "laneEnd": 840
   },
   "supportRules": [
     {
       "title": "Quête de rôle support",
-      "text": "800 points, gagnés via l'or de ton objet support (Atlas du monde puis Boussole runique). Récompense : Butin des mondes, pink à 40 po au lieu de 75, stockées dans l'emplacement de quête (tu en portes 2 sans prendre de case d'inventaire)."
+      "text": "Tu la remplis en farmant avec ton objet support (Atlas, puis Boussole runique, puis Trésor des mondes et son amélioration). Quête finie : pink à 40 po au lieu de 75, et tu en stockes 2 dans l'emplacement de quête sans prendre de case. Depuis 26.19, l'objet donne plus de régénération de PV et moins de PV bruts au début."
     },
     {
-      "title": "Pénalité de roam avant niveau 5",
-      "text": "Jusqu'au niveau 5, les sbires tués hors de la bot lane rapportent 33 % d'or et d'XP en moins (et ralentissent ta quête). Ne quitte pas la lane avant niv 5 sauf pour un objectif ou un kill sûr."
+      "title": "Pénalité de roam avant niveau 5 (26.16)",
+      "text": "Jusqu'au niveau 5, les sbires tués hors de la bot lane rapportent 33 % d'or et d'XP en moins et ta quête avance moins vite. Les dégâts sur les champions ne font plus avancer la quête. Reste en lane jusqu'au niveau 5, sauf pour un objectif ou un kill sûr."
     },
     {
-      "title": "Crédit de roam",
-      "text": "À partir du niveau 3, chaque tranche de 2 min passée en lane te donne 1 min de roam sans pénalité (max 60 s). Un roam court et préparé ne coûte rien."
+      "title": "Plaques de tour (depuis 26.1)",
+      "text": "Les plaques ne tombent plus à 14:00 : elles restent toute la partie. Chaque plaque vaut 120 po, puis 10 po de moins par minute de 11:00 à 15:00 (80 po ensuite). La tour externe perd aussi 15 armure/RM par minute à partir de 11:00. Les plaques les plus rentables se prennent avant 11:00. Première tour de la partie : +300 po partagés."
     },
     {
-      "title": "Atakhan et Roses de sang",
-      "text": "Supprimés depuis le patch 26.1. Baron apparaît à 20:00."
+      "title": "Objectifs",
+      "text": "Crabes à 2:55. Premier drake à 5:00, puis 5 min après chaque drake. Larves du Néant : un seul groupe à 8:00, disparaissent à 14:45. Héraut à 15:00. Baron à 20:00. Atakhan est supprimé depuis 26.1."
     },
     {
-      "title": "Larves du Néant",
-      "text": "Un seul groupe à 8:00, pas de réapparition. Disparaissent à 14:45 (14:55 en combat). Le Héraut prend le même pit à 15:00."
+      "title": "À 14:00",
+      "text": "Fin de la phase de lane : les vagues arrivent toutes les 25 s et le retour en base donne +150 % de vitesse. Passe à l'Oracle et regroupe-toi avec ton jungler et ton mid."
     }
   ],
   "items": {
@@ -1804,7 +1817,7 @@
       "antiheal": {
         "engage": 3076,
         "warden": 3076,
-        "enchanter": 3011,
+        "enchanter": 3916,
         "mage": 3165
       },
       "vsAP": [
@@ -1844,41 +1857,41 @@
       "attack": 3877
     },
     "names": {
-      "3865": "Atlas du monde",
+      "3865": "Atlas",
       "3866": "Boussole runique",
-      "3867": "Butin des mondes",
+      "3867": "Trésor des mondes",
       "3869": "Opposition céleste",
-      "3870": "Façonneur de rêves",
-      "3871": "Pointe dimensionnelle de Zaz'Zak",
+      "3870": "Rêve éveillé",
+      "3871": "Pique dimensionnelle de Zaz'Zak",
       "3876": "Traîneau du solstice",
-      "3877": "Chant du sang",
+      "3877": "Mélodie du sang",
       "3190": "Médaillon de l'Iron Solari",
       "3050": "Convergence de Zeke",
       "3109": "Vœu du chevalier",
       "3110": "Cœur gelé",
-      "6617": "Pierre de lune renouvelée",
+      "6617": "Régénérateur de pierre de lune",
       "3504": "Encensoir ardent",
-      "6616": "Bâton de l'eau vive",
+      "6616": "Bâton des flots",
       "3107": "Rédemption",
       "6653": "Tourment de Liandry",
       "3165": "Morellonomicon",
       "4005": "Mandat impérial",
-      "3116": "Sceptre de cristal de Rylai",
-      "3076": "Veste épineuse",
-      "3011": "Putréfacteur chimtech",
+      "3116": "Sceptre de Rylai",
+      "3076": "Armure roncière",
       "8020": "Masque abyssal",
-      "2504": "Kaenic Rookern",
+      "2504": "Rookern kaénique",
       "3143": "Présage de Randuin",
       "3075": "Cotte épineuse",
       "3222": "Bénédiction de Mikael",
-      "3111": "Bottes de mercure",
+      "3111": "Sandales de Mercure",
       "3157": "Sablier de Zhonya",
-      "8010": "Malédiction du saigneur",
+      "8010": "Malédiction du sanguinaire",
       "3135": "Bâton du vide",
-      "3158": "Bottes ioniennes de lucidité",
-      "3047": "Coques en acier renforcé",
-      "3009": "Bottes de rapidité",
-      "3020": "Chaussures du sorcier"
+      "3158": "Bottes de lucidité",
+      "3047": "Coques en acier",
+      "3009": "Bottes de célérité",
+      "3020": "Chaussures de sorcier",
+      "3916": "Orbe de l'oubli"
     }
   },
   "keystones": {
@@ -3110,5 +3123,6 @@
         "Lancer un sort dans son mur"
       ]
     }
-  }
+  },
+  "verified": "Vérifié le 08/11/2026 : notes officielles 26.1, 26.16 à 26.22 et Data Dragon 16.22.1"
 }
