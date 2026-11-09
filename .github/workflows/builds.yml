@@ -20,9 +20,12 @@ jobs:
         with:
           node-version: 20
       - run: node tools/collect.mjs ${{ github.event.inputs.matches || '2500' }}
+      - name: Garde-fous sur les nouveaux builds (informatif)
+        continue-on-error: true
+        run: bash tools/checks/get-dd.sh && node tools/checks/checks.mjs
       - run: |
           git config user.name "builds-bot"
           git config user.email "builds-bot@users.noreply.github.com"
-          git add builds.json
+          git add builds.json data/samples.json.gz
           git diff --cached --quiet || git commit -m "Builds mis à jour (meilleurs joueurs EUW + KR)"
           git pull --rebase origin main && git push

@@ -1,0 +1,23 @@
+// Charge le vrai app.js + analyse.js dans Node avec un faux DOM. REPO = racine du dépôt (défaut : ../..), DD_DIR = dossier Data Dragon fr_FR.
+import fs from 'fs'; import vm from 'vm';
+import path from 'path'; import { fileURLToPath } from 'url';
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const REPO = process.env.REPO || path.resolve(HERE, '..', '..');
+const DDDIR = process.env.DD_DIR || path.join(HERE, 'dd');
+const els = {};
+const mkEl = (sel) => { const e = { _sel: sel, innerHTML: '', textContent: '', value: '', hidden: false, checked: false, style: {}, dataset: {}, classList: { toggle(){}, add(){}, remove(){} }, addEventListener(){}, setAttribute(){}, insertAdjacentHTML(p,h){ this.innerHTML = h + this.innerHTML; }, focus(){}, firstChild: null, onclick: null }; return e; };
+const document = { querySelector: s => els[s] || (els[s] = mkEl(s)), querySelectorAll: () => [], addEventListener(){}, documentElement: { style: { setProperty(){} } }, body: { classList: { toggle(){} } }, visibilityState: 'visible' };
+const store = {};
+const files = { 'meta.json': REPO+'/meta.json', 'builds.json': REPO+'/builds.json' };
+const fetch = async (url) => { let p = null; for (const k in files) if (url.startsWith(k)) p = files[k];
+  if (url.includes('versions.json')) return { ok: true, json: async () => ['16.22.1'] };
+  const m = url.match(/fr_FR\/(\w+)\.json/); if (m) p = path.join(DDDIR, m[1]+'.json');
+  if (!p || !fs.existsSync(p)) return { ok: false, status: 404, json: async () => ({}) };
+  return { ok: true, status: 200, json: async () => JSON.parse(fs.readFileSync(p, 'utf8')) }; };
+const ctx = { document, fetch, console, localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => store[k] = v }, location: { protocol: 'file:' }, navigator: {}, window: {}, matchMedia: () => ({ matches: false }), setInterval: () => 0, setTimeout, clearTimeout, Date, Math, JSON, Promise, scrollTo(){} };
+ctx.window = ctx; vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(REPO+'/app.js','utf8'), ctx, { filename: 'app.js' });
+vm.runInContext(fs.readFileSync(REPO+'/analyse.js','utf8'), ctx, { filename: 'analyse.js' });
+await new Promise(r => setTimeout(r, 1500));
+export const run = (code) => vm.runInContext(code, ctx);
+export { els };

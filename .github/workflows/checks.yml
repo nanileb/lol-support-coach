@@ -1,0 +1,18 @@
+name: Garde-fous de logique
+on:
+  push:
+    branches: [main]
+    paths: ['app.js', 'analyse.js', 'meta.json', 'tools/checks/**']
+  pull_request:
+    paths: ['app.js', 'analyse.js', 'meta.json', 'tools/checks/**']
+  workflow_dispatch:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: bash tools/checks/get-dd.sh
+      - run: node tools/checks/checks.mjs

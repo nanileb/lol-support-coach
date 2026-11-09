@@ -1,12 +1,14 @@
 // Calcule les builds par champion et par poste à partir des parties classées des meilleurs joueurs
 // (Challenger / Grandmaster, EUW + KR), via le relais Riot de l'app. Écrit builds.json.
 // Usage : node tools/collect.mjs [maxMatches]   (variable RELAY facultative)
-import { writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { gzipSync, gunzipSync } from 'node:zlib';
 
 const RELAY = (process.env.RELAY || 'https://lol-support-coach.62z7h87vzm.workers.dev').replace(/\/+$/, '');
 const MAX = Number(process.argv[2] || process.env.MAX_MATCHES || 2500);
 const REGIONS = (process.env.REGIONS || 'euw1,kr').split(',');
-const PLAYERS = Number(process.env.PLAYERS || 350);
+const PLAYERS = Number(process.env.PLAYERS || 500);
+const STORE = 'data/samples.json.gz'; // parties déjà analysées sur ce patch, cumulées d'une collecte à l'autre
 const DD = 'https://ddragon.leagueoflegends.com';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -43,7 +45,7 @@ const ASSASSIN = new Set(Object.values(champs).filter(c => c.tags.includes('Assa
 const queue = [];
 for (const pf of REGIONS) {
   const seen = new Set();
-  for (const tier of ['challenger', 'grandmaster']) {
+  for (const tier of ['challenger', 'grandmaster', 'master']) {
     const l = await relay(`/ladder?platform=${pf}&tier=${tier}`);
     (l && l.puuids || []).forEach(p => seen.add(p));
     if (seen.size >= PLAYERS) break;
@@ -63,7 +65,10 @@ for (let i = 0; i < queue.length && ids.size < MAX * 1.6; i++) {
   if (i % 50 === 0) log('ids', i, '/', queue.length, '→', ids.size, 'parties');
 }
 
-/* 3. Détail des parties */
+/* 3. Détail des parties (on saute celles déjà analysées lors d'une collecte précédente du même patch) */
+const prev = existsSync(STORE) ? JSON.parse(gunzipSync(readFileSync(STORE)).toString()) : { patch: null, samples: [] };
+const prevMids = new Set(prev.samples.map(s => s.mid));
+log('déjà en stock :', prevMids.size, 'parties du patch', prev.patch);
 const games = [];
 let newest = null;
 // On compte seulement les parties du patch le plus récent : on continue tant qu'on n'en a pas MAX (dans la limite de 1,6 × MAX lues).
@@ -71,12 +76,13 @@ const onNewest = () => games.filter(g => g.ver === newest).length;
 let read = 0;
 for (const [id, pf] of ids) {
   if (onNewest() >= MAX || read >= MAX * 1.6) break;
+  if (prevMids.has(id)) continue;
   read++;
   const m = await relay(`/match?id=${id}&platform=${pf}`, 2);
   if (!m || m.queueId !== 420 || m.gameDuration < 900 || !m.events) continue;
   const ver = (m.gameVersion || '').split('.').slice(0, 2).join('.');
   if (!newest || ver > newest) newest = ver;
-  games.push({ ...m, ver });
+  games.push({ ...m, ver, id: m.id || id });
   if (games.length % 100 === 0) log('parties', games.length, '· patch récent', onNewest());
 }
 // garder le patch le plus récent, compléter avec le précédent si trop peu de parties
@@ -128,10 +134,21 @@ for (const g of used) {
       spells: [me.summoner1Id, me.summoner2Id].sort((a, b) => a - b).join(','), runes: rp, ks: me.perks && me.perks.s ? me.perks.s[0].sel[0] : null,
       skills: maxed.slice(0, 3).map(s => 'QWE'[s - 1]).join(''), early: first3.map(s => 'QWE'[s - 1]).join(''),
       opp: opp && opp.championName, duo: duo && duo.championName,
-      mates: mates.map(p => p.championName), foes: foes.map(p => p.championName)
+      mates: mates.map(p => p.championName), foes: foes.map(p => p.championName), mid: g.id || g.matchId, ver: g.ver,
+      st: (() => { const tk = [me, ...mates].reduce((a, x) => a + (x.kills || 0), 0) || 1, td = [me, ...mates].reduce((a, x) => a + (x.totalDamageDealtToChampions || 0), 0) || 1, r = x => Math.round(x * 1000) / 1000;
+        return { csm: r(((me.totalMinionsKilled || 0) + (me.neutralMinionsKilled || 0)) / dur), vspm: r((me.visionScore || 0) / dur), ctrl: me.visionWardsBoughtInGame, wkpm: r((me.wardsKilled || 0) / dur), deaths: me.deaths, kp: r(((me.kills || 0) + (me.assists || 0)) / tk), dmg: r((me.totalDamageDealtToChampions || 0) / td) }; })()
     });
   }
 }
+
+// Atlas : objet de départ des supports, absent de la timeline Riot (500 po de départ = Atlas 400 + 2 potions)
+samples.forEach(s => { if (s.key.endsWith('|UTILITY') && !s.start.split(',').includes('3865')) s.start = ['3865', ...s.start.split(',').filter(Boolean)].sort().join(','); });
+// Cumul avec les collectes précédentes du même patch
+if (prev.patch === vers[0]) { const have = new Set(samples.map(s => s.mid)); prev.samples.forEach(s => { if (!have.has(s.mid)) samples.push(s); }); }
+const totalGames = new Set(samples.map(s => s.mid)).size;
+log('échantillons :', samples.length, '·', totalGames, 'parties au total');
+mkdirSync('data', { recursive: true });
+writeFileSync(STORE, gzipSync(JSON.stringify({ patch: vers[0], samples: samples.filter(s => s.ver === vers[0]) })));
 
 /* 5. Seuils « beaucoup de X » : quartile haut sur l'ensemble des parties */
 const q = (arr, p) => { const s = [...arr].sort((a, b) => a - b); return s[Math.floor(p * (s.length - 1))]; };
@@ -197,24 +214,14 @@ for (const [key, S] of Object.entries(groups)) {
 const med = arr => { const v = arr.filter(x => x != null && isFinite(x)).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
 const targets = {};
 for (const pos of ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY']) {
-  const rows = [];
-  for (const g of used) {
-    const dur = g.gameDuration / 60;
-    for (const p of g.participants) {
-      if (p.teamPosition !== pos) continue;
-      const team = g.participants.filter(x => x.teamId === p.teamId);
-      const tk = team.reduce((a, x) => a + (x.kills || 0), 0) || 1, td = team.reduce((a, x) => a + (x.totalDamageDealtToChampions || 0), 0) || 1;
-      rows.push({ csm: ((p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0)) / dur, vspm: (p.visionScore || 0) / dur, ctrl: p.visionWardsBoughtInGame, wkpm: (p.wardsKilled || 0) / dur,
-        deaths: p.deaths, kp: ((p.kills || 0) + (p.assists || 0)) / tk, dmg: (p.totalDamageDealtToChampions || 0) / td });
-    }
-  }
+  const rows = samples.filter(x => x.key.endsWith('|' + pos) && x.st).map(x => x.st);
   const r2 = x => x == null ? null : Math.round(x * 100) / 100;
   targets[pos] = Object.fromEntries(['csm', 'vspm', 'ctrl', 'wkpm', 'deaths', 'kp', 'dmg'].map(k => [k, r2(med(rows.map(r => r[k])))]));
   targets[pos].n = rows.length;
 }
 log('références', JSON.stringify(targets));
-const res = { patch: vers[0], dd: V, generated: new Date().toISOString(), games: used.length, regions: REGIONS, players: 'Challenger + Grandmaster', thresholds: TH, targets, builds: out };
+const res = { patch: vers[0], dd: V, generated: new Date().toISOString(), games: totalGames, regions: REGIONS, players: 'Challenger + Grandmaster + Master', thresholds: TH, targets, builds: out };
 if (Object.keys(out).length < 40 && existsSync('builds.json')) { console.error('Trop peu de données, builds.json conservé.'); process.exit(1); }
 writeFileSync('builds.json', JSON.stringify(res));
-log('builds.json :', Object.keys(out).length, 'champion/poste,', used.length, 'parties');
+log('builds.json :', Object.keys(out).length, 'champion/poste,', totalGames, 'parties');
 void readFileSync;

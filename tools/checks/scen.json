@@ -1,0 +1,406 @@
+[
+{
+"id": "T1",
+"role": "top",
+"pool": [
+"Jayce",
+"Camille",
+"Olaf",
+"KSante",
+"Malphite",
+"Gnar"
+],
+"ally": {
+"jungle": "LeeSin",
+"mid": "Syndra",
+"adc": "Kaisa"
+},
+"enemy": {
+"top": "Jax",
+"jungle": "JarvanIV",
+"mid": "Yone",
+"adc": "Jhin"
+},
+"expect": [
+"Malphite"
+]
+},
+{
+"id": "T2",
+"role": "top",
+"pool": [
+"Jayce",
+"Camille",
+"Olaf",
+"KSante",
+"Malphite",
+"Gnar"
+],
+"ally": {
+"jungle": "Vi",
+"mid": "Orianna",
+"support": "Nautilus"
+},
+"enemy": {
+"top": "KSante",
+"jungle": "Nidalee",
+"mid": "Ahri",
+"support": "Rakan"
+},
+"expect": [
+"Jayce"
+]
+},
+{
+"id": "T3",
+"role": "top",
+"pool": [
+"Jayce",
+"Camille",
+"Olaf",
+"KSante",
+"Malphite",
+"Gnar"
+],
+"ally": {
+"jungle": "JarvanIV",
+"mid": "Ahri",
+"adc": "Ezreal"
+},
+"enemy": {
+"jungle": "Kindred",
+"mid": "Orianna",
+"adc": "Jhin",
+"support": "Thresh"
+},
+"expect": [
+"KSante",
+"Gnar",
+"Malphite"
+]
+},
+{
+"id": "J1",
+"role": "jungle",
+"pool": [
+"LeeSin",
+"JarvanIV",
+"Vi",
+"Khazix",
+"Nidalee",
+"Viego"
+],
+"ally": {
+"top": "Camille",
+"mid": "Syndra",
+"adc": "Jhin"
+},
+"enemy": {
+"top": "Malphite",
+"jungle": "Graves",
+"mid": "Yone",
+"support": "Nautilus"
+},
+"expect": [
+"Vi",
+"JarvanIV"
+]
+},
+{
+"id": "J2",
+"role": "jungle",
+"pool": [
+"LeeSin",
+"JarvanIV",
+"Vi",
+"Khazix",
+"Nidalee",
+"Viego"
+],
+"ally": {
+"top": "KSante",
+"mid": "Orianna",
+"support": "Lulu"
+},
+"enemy": {
+"top": "Jayce",
+"jungle": "Kindred",
+"mid": "Leblanc",
+"adc": "Kaisa"
+},
+"expect": [
+"JarvanIV"
+]
+},
+{
+"id": "J3",
+"role": "jungle",
+"pool": [
+"LeeSin",
+"JarvanIV",
+"Vi",
+"Khazix",
+"Nidalee",
+"Viego"
+],
+"ally": {
+"top": "Jax",
+"mid": "Ekko",
+"adc": "Ezreal"
+},
+"enemy": {
+"top": "Gnar",
+"mid": "Syndra",
+"adc": "Yunara",
+"support": "Alistar"
+},
+"expect": [
+"Vi",
+"JarvanIV"
+]
+},
+{
+"id": "M1",
+"role": "mid",
+"pool": [
+"Syndra",
+"Orianna",
+"Ahri",
+"Galio",
+"Yone",
+"Sylas"
+],
+"ally": {
+"top": "Camille",
+"jungle": "LeeSin",
+"adc": "Kaisa"
+},
+"enemy": {
+"top": "Malphite",
+"jungle": "Vi",
+"adc": "Jhin",
+"support": "Nautilus"
+},
+"expect": [
+"Galio",
+"Orianna",
+"Sylas"
+]
+},
+{
+"id": "M2",
+"role": "mid",
+"pool": [
+"Syndra",
+"Orianna",
+"Ahri",
+"Galio",
+"Yone",
+"Sylas"
+],
+"ally": {
+"top": "KSante",
+"jungle": "JarvanIV",
+"support": "Rakan"
+},
+"enemy": {
+"top": "Jayce",
+"jungle": "Nidalee",
+"mid": "Leblanc",
+"adc": "Ezreal"
+},
+"expect": [
+"Sylas",
+"Galio"
+]
+},
+{
+"id": "M3",
+"role": "mid",
+"pool": [
+"Syndra",
+"Orianna",
+"Ahri",
+"Galio",
+"Yone",
+"Sylas"
+],
+"ally": {
+"top": "Gnar",
+"jungle": "Viego",
+"adc": "Jhin"
+},
+"enemy": {
+"top": "Olaf",
+"jungle": "Khazix",
+"mid": "Yasuo",
+"support": "Alistar"
+},
+"expect": [
+"Ahri",
+"Syndra",
+"Orianna"
+]
+},
+{
+"id": "A1",
+"role": "adc",
+"pool": [
+"Jhin",
+"Ezreal",
+"Kaisa",
+"Caitlyn",
+"Corki",
+"Zeri"
+],
+"ally": {
+"top": "KSante",
+"jungle": "LeeSin",
+"mid": "Orianna"
+},
+"enemy": {
+"top": "Jayce",
+"jungle": "Vi",
+"adc": "Kalista",
+"support": "Nautilus"
+},
+"expect": [
+"Ezreal",
+"Jhin"
+]
+},
+{
+"id": "A2",
+"role": "adc",
+"pool": [
+"Jhin",
+"Ezreal",
+"Kaisa",
+"Caitlyn",
+"Corki",
+"Zeri"
+],
+"ally": {
+"support": "Lulu",
+"mid": "Syndra",
+"jungle": "Vi"
+},
+"enemy": {
+"adc": "Jhin",
+"support": "Bard",
+"top": "Camille",
+"jungle": "Khazix"
+},
+"expect": [
+"Zeri"
+]
+},
+{
+"id": "A3",
+"role": "adc",
+"pool": [
+"Jhin",
+"Ezreal",
+"Kaisa",
+"Caitlyn",
+"Corki",
+"Zeri"
+],
+"ally": {
+"support": "Nautilus",
+"top": "Malphite",
+"jungle": "JarvanIV"
+},
+"enemy": {
+"adc": "Ezreal",
+"support": "Karma",
+"mid": "Syndra",
+"jungle": "Graves"
+},
+"expect": [
+"Kaisa",
+"Jhin",
+"Corki"
+]
+},
+{
+"id": "S1",
+"role": "support",
+"pool": [
+"Nautilus",
+"Alistar",
+"Lulu",
+"Thresh",
+"Rakan",
+"Karma"
+],
+"ally": {
+"adc": "Zeri",
+"mid": "Syndra",
+"jungle": "LeeSin"
+},
+"enemy": {
+"adc": "Draven",
+"support": "Leona",
+"top": "Jax",
+"jungle": "Kindred"
+},
+"expect": [
+"Lulu",
+"Alistar"
+]
+},
+{
+"id": "S2",
+"role": "support",
+"pool": [
+"Nautilus",
+"Alistar",
+"Lulu",
+"Thresh",
+"Rakan",
+"Karma"
+],
+"ally": {
+"adc": "Kalista",
+"top": "KSante",
+"mid": "Orianna"
+},
+"enemy": {
+"adc": "Ezreal",
+"support": "Karma",
+"jungle": "Nidalee",
+"mid": "Syndra"
+},
+"expect": [
+"Alistar",
+"Nautilus"
+]
+},
+{
+"id": "S3",
+"role": "support",
+"pool": [
+"Nautilus",
+"Alistar",
+"Lulu",
+"Thresh",
+"Rakan",
+"Karma"
+],
+"ally": {
+"adc": "Jhin",
+"jungle": "Vi",
+"mid": "Ahri"
+},
+"enemy": {
+"adc": "Kaisa",
+"support": "Rakan",
+"top": "Camille",
+"jungle": "Khazix"
+},
+"expect": [
+"Nautilus"
+]
+}
+]

@@ -54,7 +54,13 @@ function summarize(m, puuid) {
     const nextObj = objs.find(o => o.t / 1000 >= t && o.t / 1000 - t <= 75 && o.killerTeamId !== myT);
     if (nextObj) tags.push('juste avant leur ' + objName(nextObj));
     const z = zoneName(e.position, myT); if (z) tags.push(z);
-    return { t, tags, n: inv.length };
+    // cause probable et ce qu'il fallait faire
+    let fix = 'Regarde la minimap avant d\'avancer : sans vision sur leur jungler, reste derrière ta vague.';
+    if (inv.length >= 3) fix = `À ${inv.length} contre toi : recule dès que plusieurs adversaires disparaissent de la carte.`;
+    if (tags.some(x => x.startsWith('gank'))) fix = 'Gank : ward la rivière ou le tri-bush avant ses fenêtres de gank (onglet Timings) et garde ton Flash.';
+    if (tags.some(x => x.startsWith('juste avant'))) fix = 'Avant un objectif, avance en groupe et pose la vision avec un allié, jamais seul dans le brouillard.';
+    if (tags.includes('jungle/zone adverse')) fix = 'Isolé chez eux : n\'y va qu\'avec un allié et repars dès que la ward est posée.';
+    return { t, tags, n: inv.length, fix };
   });
   const items = ev.filter(e => e.type === 'ITEM_PURCHASED' && e.participantId === pid);
   const firstBig = items.find(e => S.items && S.items[e.itemId] && S.items[e.itemId].gold >= 2000 && !(S.items[e.itemId].from || []).includes('1001'));
@@ -70,21 +76,23 @@ function summarize(m, puuid) {
     dmg: p.challenges.teamDamagePercentage != null ? p.challenges.teamDamagePercentage : null,
     early3: p.challenges.takedownsFirstXMinutes != null ? p.challenges.takedownsFirstXMinutes : null
   };
-  const teamObj = (() => { const o = ev.filter(e => e.type === 'ELITE_MONSTER_KILL' && ['DRAGON', 'HORDE', 'RIFTHERALD', 'BARON_NASHOR'].includes(e.monsterType)); return o.length ? o.filter(e => e.killerTeamId === myT).length / o.length : null; })();
+  const teamObj = (() => { const o = ev.filter(e => e.type === 'ELITE_MONSTER_KILL' && ['DRAGON', 'HORDE', 'RIFTHERALD', 'BARON_NASHOR'].includes(e.monsterType)), wt = e => e.monsterType === 'HORDE' ? 1 / 3 : 1, tot = o.reduce((a, e) => a + wt(e), 0); return tot ? o.filter(e => e.killerTeamId === myT).reduce((a, e) => a + wt(e), 0) / tot : null; })();
   return {
     id: m.id, at: m.gameCreation, dur, win: me.win, pos: me.teamPosition, side: myT === 100 ? 'bleu' : 'rouge',
     me: stat(me), opp: stat(opp), adc: adc && adc.championName, eAdc: (P.find(p => p.teamId !== myT && p.teamPosition === 'BOTTOM') || {}).championName,
     eJg: eJg && eJg.championName, roam, l5, deaths, early: deaths.filter(d => d.t < 840).length,
     ctrlPlaced, firstItem: firstBig ? firstBig.t / 1000 : null, oracle: oracle ? oracle.t / 1000 : null,
-    queue: m.queueId, teamObj, v: 2
+    queue: m.queueId, teamObj, v: 3,
+    bought: items.filter(e => S.items && S.items[e.itemId] && S.items[e.itemId].gold >= 2000).map(e => String(e.itemId)).filter((x, i, a) => a.indexOf(x) === i),
+    foes: P.filter(p => p.teamId !== myT).map(p => p.championName)
   };
 }
 
 /* ---------- diagnostic ---------- */
 function diagnose(g) {
   const role = POS_ROLE[g.pos] || 'support';
-  if (role !== 'support') return diagnoseRole(g, role);
-  const bad = [], good = [], me = g.me, op = g.opp;
+  if (role !== 'support') return groupCauses(diagnoseRole(g, role), g, role);
+  const bad = [], good = [], me = g.me, op = g.opp, TARGET = targetsFor('support');
   const vsOpp = (k, f = 1) => op && op[k] != null ? ` (${cname(champIdByName(op.champ))} : ${(op[k] * f).toFixed(k === 'kp' ? 0 : 1)}${k === 'kp' ? ' %' : ''})` : '';
   if (me.vspm < TARGET.vspm * 0.85) bad.push({ w: 3, t: `Vision faible : ${me.vspm.toFixed(1)}/min${vsOpp('vspm')}`, a: 'Utilise ton trinket dès qu\'il a 2 charges et pose tes wards de quête à chaque sortie de base.' });
   else good.push(`Bonne vision : ${me.vspm.toFixed(1)}/min${vsOpp('vspm')}`);
@@ -107,9 +115,27 @@ function diagnose(g) {
   else if (me.prep.n >= 2) good.push(`Vision posée avant ${me.prep.ok}/${me.prep.n} objectifs`);
   if (op && me.gold14 != null && op.gold14 != null && op.gold14 - me.gold14 > 400) bad.push({ w: 1, t: `${op.gold14 - me.gold14} po de retard sur le support adverse à 14:00`, a: 'Termine ta quête plus vite : reste sur les sbires de ta lane et évite les morts.' });
   if (g.firstItem && g.firstItem > 14 * 60) bad.push({ w: 1, t: `1er objet complété tard (${fmt(g.firstItem)})`, a: 'Rentre avec assez d\'or pour finir ton 1er objet, ne garde pas l\'or sur toi.' });
-  return { bad: bad.sort((a, b) => b.w - a.w), good };
+  // soins / boucliers pour les enchanteurs, contrôles pour les engages
+  const arch = supProfile(champIdByName(me.champ)).arch, permin = v => v / g.dur;
+  if (arch === 'enchanter' && me.heal != null) { const v = permin(me.heal), o = op && op.heal != null ? permin(op.heal) : null; if (o != null && v < o * 0.7) bad.push({ w: 1, t: `Soins et boucliers : ${Math.round(v)}/min (${cname(champIdByName(op.champ))} : ${Math.round(o)})`, a: 'Garde tes soins et boucliers pour les trades de ton ADC, pas pour toi.' }); else if (v) good.push(`Soins et boucliers : ${Math.round(v)}/min`); }
+  if (arch === 'engage' && me.cc != null) { const v = permin(me.cc), o = op && op.cc != null ? permin(op.cc) : null; if (o != null && v < o * 0.7) bad.push({ w: 1, t: `Temps de contrôle : ${v.toFixed(1)} s/min (${cname(champIdByName(op.champ))} : ${o.toFixed(1)})`, a: 'Engage plus souvent quand leur sort défensif est tombé : ton rôle est de créer les combats.' }); else if (v) good.push(`Temps de contrôle : ${v.toFixed(1)} s/min`); }
+  return groupCauses({ bad: bad.sort((a, b) => b.w - a.w), good }, g, role);
 }
 
+// Regroupe les reproches par cause racine (morts / farm / vision / build) : un seul point par cause, le plus grave en premier.
+function groupCauses(d, g, role) {
+  // build réel : anti-soins oubliés contre des soigneurs
+  if (g.bought && g.foes) {
+    const healers = g.foes.map(champIdByName).filter(c => inList('healers', c));
+    const gw = g.bought.some(id => S.items && S.items[id] && S.items[id].gw);
+    if (healers.length >= 2 && !gw) d.bad.push({ w: 2, t: `Pas d'anti-soins contre ${healers.map(cname).join(', ')}`, a: 'Achète le composant anti-soins (800 po) dès le 2e retour contre 2 soigneurs ou plus.', c: 'build' });
+  }
+  const cause = x => x.c || (/mort/i.test(x.t) ? 'morts' : /sbires|po de retard|objet complété/i.test(x.t) ? 'farm' : /vision|ward|pink|oracle/i.test(x.t) ? 'vision' : x.t);
+  const groups = {};
+  d.bad.forEach(x => { const k = cause(x); (groups[k] = groups[k] || []).push(x); });
+  d.bad = Object.values(groups).map(l => { l.sort((a, b) => b.w - a.w); const top = l[0]; return l.length === 1 ? top : { w: top.w + 0.5 * (l.length - 1), t: top.t, a: top.a + ' Lié : ' + l.slice(1).map(x => x.t.charAt(0).toLowerCase() + x.t.slice(1)).join(' · ') + '.' }; }).sort((a, b) => b.w - a.w);
+  return d;
+}
 function diagnoseRole(g, role) {
   const bad = [], good = [], me = g.me, op = g.opp, T = targetsFor(role), on = op ? cname(champIdByName(op.champ)) : 'ton adversaire';
   const lane = role !== 'jungle';
@@ -140,7 +166,7 @@ function diagnoseRole(g, role) {
   if (preObj) bad.push({ w: 2, t: `${preObj} mort${preObj > 1 ? 's' : ''} juste avant un objectif adverse`, a: 'Avant un objectif, avance en groupe et jamais seul dans le brouillard.' });
   if (me.vspm < T.vspm * 0.75) bad.push({ w: 1, t: `Vision : ${me.vspm.toFixed(1)}/min`, a: 'Utilise ton trinket dès qu\'il est prêt et achète une pink à chaque retour.' });
   if (me.ctrl < Math.min(T.ctrl, Math.round(g.dur / 10))) bad.push({ w: 1, t: `${me.ctrl} pink${me.ctrl > 1 ? 's' : ''} achetée${me.ctrl > 1 ? 's' : ''}`, a: 'Une pink à chaque retour, dans un buisson près de ta lane ou d\'un objectif.' });
-  if (g.firstItem && g.firstItem > 13 * 60) bad.push({ w: 1, t: `1er objet complété tard (${fmt(g.firstItem)})`, a: 'Rentre quand tu as l\'or d\'un composant important, ne garde pas l\'or sur toi.' });
+  if (g.firstItem && g.firstItem > ({ adc: 810, mid: 810, top: 870, jungle: 870 }[role] || 840)) bad.push({ w: 1, t: `1er objet complété tard (${fmt(g.firstItem)})`, a: 'Rentre quand tu as l\'or d\'un composant important, ne garde pas l\'or sur toi.' });
   return { bad: bad.sort((a, b) => b.w - a.w), good };
 }
 
@@ -162,7 +188,7 @@ async function loadAnalyse(force) {
     for (const id of AN.ids) {
       if (found >= WANT) break;
       const c = AN.sums[id];
-      if (c && c.v === 2 && !force) { if (c.pos === RP) found++; continue; }
+      if (c && c.v === 3 && !force) { if (c.pos === RP) found++; continue; }
       if (n >= MAXNEW) break;
       st.textContent = `Recherche de tes parties en ${ROLE_FR[myRole()]}… ${found}/${WANT}`; n++;
       const mr = await fetch(`${base}/match?id=${id}&platform=${S.settings.platform}`);
@@ -223,7 +249,7 @@ function renderAnalyse() {
     <div class="lbl-s">Ce que tu as raté</div>
     ${d.bad.length ? `<ul class="checks dont">${d.bad.slice(0, 5).map(x => `<li><b>${esc(x.t)}</b><br><span class="adv">${esc(x.a)}</span></li>`).join('')}</ul>` : '<p class="note">Rien de marquant, belle partie.</p>'}
     ${d.good.length ? `<div class="lbl-s">Bien joué</div><ul class="checks do">${d.good.slice(0, 3).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-    ${last.deaths.length ? `<div class="lbl-s">Tes morts</div><div class="deaths">${last.deaths.map(x => `<div class="death"><b class="num">${fmt(x.t)}</b><span>${esc(x.tags.join(' · ') || 'en lane')}</span></div>`).join('')}</div>` : ''}
+    ${last.deaths.length ? `<div class="lbl-s">Tes morts</div><div class="deaths">${last.deaths.map(x => `<div class="death"><b class="num">${fmt(x.t)}</b><span>${esc(x.tags.join(' · ') || 'en lane')}${x.fix ? `<br><small class="note">${esc(x.fix)}</small>` : ''}</span></div>`).join('')}</div>` : ''}
   </div>
   ${prio.length ? `<div class="card"><h3>Tes 3 priorités (${G.length} parties)</h3><ol class="prio">${prio.map(x => `<li><b>${esc(x.l)} : ${x.fmt(x.v)}</b> <span class="note">objectif ${x.fmt(x.t)}</span><br>${esc(x.a)}</li>`).join('')}</ol></div>` : ''}
   <div class="card"><h3>Toi vs ${role === 'jungle' ? 'junglers' : ROLE_FR[role] + 's'} adverses</h3>
