@@ -96,6 +96,36 @@ async function loadBuilds() {
   catch (e) { S.builds = LS.get('builds', null); }
 }
 const BUILD = (id, role) => (S.builds && S.builds.builds && S.builds.builds[id + '|' + POS[role || myRole()]]) || null;
+// Counters et synergies : grand échantillon de parties (matchups.json, mis à jour chaque jour), sinon les parties des builds
+async function loadMatchups() { try { S.mu = await getJSON('matchups.json', { cache: 'no-cache' }); S._st = {}; } catch (e) { S.mu = S.mu || null; } }
+function STAT(id, role) {
+  role = role || myRole(); const key = id + '|' + POS[role], b = BUILD(id, role), mm = S.mu && S.mu.m && S.mu.m[key];
+  if (!mm || (b && b.n > mm[0])) return b;
+  S._st = S._st || {}; if (S._st[key]) return S._st[key];
+  const pct = x => Math.round(x[1] / x[0] * 100), list = o => Object.entries(o).map(([c, x]) => [c, x[0], pct(x)]).sort((a, c) => c[1] - a[1]);
+  const byChamp = (o, pos) => { const r = {}; for (const [k, x] of Object.entries(o)) { const [c, p] = k.split('|'); if (pos && p !== pos) continue; const y = r[c] = r[c] || [0, 0]; y[0] += x[0]; y[1] += x[1]; } return r; };
+  const duoPos = role === 'adc' ? 'UTILITY' : role === 'support' ? 'BOTTOM' : null;
+  return (S._st[key] = { ...(b || {}), n: mm[0], wr: pct(mm), opp: list(mm[2]), vsAll: list(byChamp(mm[3])), with: list(byChamp(mm[4])), duo: duoPos ? list(byChamp(mm[4], duoPos)) : [], big: true });
+}
+// Ce qui contre un champion à un poste (et ce qu'il contre), d'après ses duels de lane
+function countersOf(opp, role) {
+  const st = STAT(opp, role), rows = ((st && st.opp) || []).filter(x => x[1] >= 12 && x[0] !== opp);
+  const sc = rows.map(([c, n, w]) => ({ c, n, wr: 100 - w, s: shrink(100 - w, n, 40) }));
+  return { n: rows.length, beats: sc.filter(x => x.s > 50.5).sort((a, c) => c.s - a.s), loses: sc.filter(x => x.s < 49.5).sort((a, c) => a.s - c.s), src: st && st.big ? 'big' : 'builds' };
+}
+function countersHTML(opp, role, opts = {}) {
+  const C = countersOf(opp, role), pool = new Set(myPool()), T = takenChamps('me'), on = esc(cname(opp));
+  const row = (x, good) => `<div class="item cnt ${pool.has(x.c) ? 'mine' : ''}">${cimg(x.c) ? `<img src="${cimg(x.c)}" alt="">` : ''}<div><b>${esc(cname(x.c))}${pool.has(x.c) ? ' ★' : ''}</b><small>${good ? `${x.wr} % de victoires contre ${on}` : `${on} gagne ${100 - x.wr} %`} · ${x.n} parties</small></div>${opts.pick && good && pool.has(x.c) && !T[x.c] ? `<button class="btn small" data-pickme="${x.c}">Jouer</button>` : ''}</div>`;
+  if (!C.beats.length && !C.loses.length) {
+    const ex = Object.keys(S.meta.counters).filter(c => (S.meta.counters[c] || []).includes(opp));
+    return `<p class="note">Pas encore assez de parties de ${on} en ${ROLE_FR[role]} chez les meilleurs joueurs.${ex.length ? ` Counters connus : ${ex.map(c => esc(cname(c))).join(', ')}.` : ''}</p>`;
+  }
+  const mineB = C.beats.filter(x => pool.has(x.c)), top = C.beats.slice(0, opts.max || 8);
+  mineB.forEach(x => { if (!top.includes(x)) top.push(x); });
+  return `<h4 class="cnt-h">Le contrent</h4><div class="cnt-list">${top.map(x => row(x, true)).join('') || '<p class="note">Aucun counter net : ce champion tient ses duels.</p>'}</div>
+    <h4 class="cnt-h">Il contre</h4><div class="cnt-list">${C.loses.slice(0, opts.maxL || 5).map(x => row(x, false)).join('') || '<p class="note">Aucun duel nettement gagné.</p>'}</div>
+    <p class="note">Duels de lane chez les Challenger / GM / Master (${C.src === 'big' ? `${S.mu.games} parties EUW + Corée, patch ${esc(gamePatch(S.mu.patch) || S.mu.patch)}, mis à jour chaque jour` : 'parties des builds'}). Taux corrigés quand il y a peu de parties. ★ = ton pool.</p>`;
+}
 const gamePatch = v => { if (!v) return null; const [a, b] = v.split('.').map(Number); return (a >= 10 && a < 20 ? a + 10 : a) + '.' + b; };
 const champ = id => S.champs[id];
 const cname = id => (champ(id) ? champ(id).name : id) || '';
@@ -240,7 +270,7 @@ function duelHeuristic(me, opp) {
 const BLIND_SAFE = { top: ['KSante', 'Gnar', 'Malphite', 'Ornn', 'Jax', 'Sion'], jungle: ['JarvanIV', 'Vi', 'Sejuani', 'Maokai'], mid: ['Orianna', 'Ahri', 'Galio', 'Taliyah', 'Syndra'], adc: ['Ezreal', 'Jhin', 'Caitlyn', 'Varus'], support: ['Nautilus', 'Rakan', 'Karma', 'Braum', 'Bard'] };
 const COUNTERABLE = { top: ['Olaf', 'Renekton', 'Darius', 'Garen', 'Teemo', 'Vayne', 'Nasus'], jungle: ['Nidalee', 'Evelynn', 'Shaco'], mid: ['Kassadin', 'Veigar', 'Lux', 'Xerath', 'Zed'], adc: ['Draven', 'Samira', 'Twitch', 'Nilah'], support: ['Yuumi', 'Sona', 'Soraka', 'Pyke'] };
 function scoreRole(id) {
-  const role = myRole(), m = S.match, R = [], b = BUILD(id);
+  const role = myRole(), m = S.match, R = [], b = STAT(id);
   const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
   if (!b) return role === 'support' ? scoreSupport(id) : { id, score: 50, reasons: ['pas assez de parties Challenger sur ce champion à ce poste'], tier: null, label: t, n: 0, est: false };
   const base = shrink(b.wr, b.n, 100);
@@ -253,15 +283,15 @@ function scoreRole(id) {
     const a = m.ally[r]; if (!a) return;
     const e = ((role === 'adc' && r === 'support') || (role === 'support' && r === 'adc')) ? (find(b.duo, a) || find(b.with, a)) : find(b.with, a);
     if (e) add(pairDelta(e, b.wr), `${e[2]} % avec ${cname(a)} au lieu de ${b.wr} % (${e[1]} parties)`);
-    else { const ab = BUILD(a, r), e2 = ab && find(ab.with, id); if (e2) add(pairDelta(e2, ab.wr), `${e2[2]} % quand ${cname(a)} joue avec lui (${e2[1]} parties)`); }
+    else { const ab = STAT(a, r), e2 = ab && find(ab.with, id); if (e2) add(pairDelta(e2, ab.wr), `${e2[2]} % quand ${cname(a)} joue avec lui (${e2[1]} parties)`); }
   });
   // adversaires : duel direct d'abord, puis le reste de l'équipe
   ROLES.forEach(r => {
     const e = m.enemy[r]; if (!e) return;
     const direct = r === role, x = (direct && find(b.opp, e)) || find(b.vsAll, e);
     if (x) add(pairDelta(x, b.wr) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties)`);
-    else if (direct && !(BUILD(e, r) && find(direct ? BUILD(e, r).opp : null, id))) { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, pas assez de parties sur ce duel)'); }
-    else { const eb = BUILD(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], 100, eb.wr)) * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties)`); }
+    else if (direct && !(STAT(e, r) && find(STAT(e, r).opp, id))) { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, pas assez de parties sur ce duel)'); }
+    else { const eb = STAT(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], 100, eb.wr)) * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties)`); }
   });
   // besoins de compo : ce qui manque à ton équipe et ce qui répond à la leur
   const need = (v, txt) => { s += v; parts.push([v, txt]); };
@@ -287,7 +317,7 @@ function scoreRole(id) {
     if ((COUNTERABLE[role] || []).includes(id)) { need(-3, 'risque de contre-pick : ton adversaire choisit après toi'); R.blind = true; }
   }
   parts.sort((a, b2) => Math.abs(b2[0]) - Math.abs(a[0]));
-  R.push(`${b.wr} % de victoires en Challenger (${b.n} parties)`);
+  R.push(`${b.wr} % de victoires chez les meilleurs joueurs (${b.n} parties)`);
   parts.forEach(([v, txt]) => R.push(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt · ${txt}`));
   return { id, score: Math.round(50 + 10 * Math.tanh((s - 50) / 10)), raw: s, reasons: R, tier: null, label: t, n: b.n, est: true, blind: !!R.blind };
 }
@@ -319,6 +349,24 @@ function renderRanking() {
     </div>`).join('') +
     gone.map(id => `<div class="ritem taken">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : '<span class="ph"></span>'}<div style="min-width:0"><div class="nm">${esc(cname(id))}</div><div class="why">Déjà pris par ${T[id] === 'adversaire' ? 'l\'adversaire' : 'un allié'}</div></div><div></div></div>`).join('');
 }
+
+// Draft : counters de n'importe quel champion à ton poste (par défaut ton adversaire direct)
+function renderCounters() {
+  const sel = $('#counterSel'), out = $('#counterOut'); if (!sel || !out) return;
+  const role = myRole(), opp = S.match.enemy[role], P = POS[role];
+  $('#counterTitle').textContent = `Counters en ${ROLE_FR[role]}`;
+  const ids = new Set();
+  Object.keys((S.mu && S.mu.m) || {}).forEach(k => { const [c, p] = k.split('|'); if (p === P) ids.add(c); });
+  Object.keys((S.builds && S.builds.builds) || {}).forEach(k => { const [c, p] = k.split('|'); if (p === P) ids.add(c); });
+  const list = [...ids].filter(c => champ(c)).sort((a, b) => cname(a).localeCompare(cname(b), 'fr'));
+  if (!list.length) { sel.hidden = true; out.innerHTML = '<p class="note">Les counters des meilleurs joueurs sont en cours de calcul, reviens dans un moment.</p>'; return; }
+  sel.hidden = false;
+  if (opp && S.cntFor !== opp + role) { S.cntFor = opp + role; S.cntSel = opp; }
+  if (!list.includes(S.cntSel)) S.cntSel = opp && list.includes(opp) ? opp : null;
+  sel.innerHTML = `<option value="">Choisis un champion…</option>` + list.map(c => `<option value="${c}" ${c === S.cntSel ? 'selected' : ''}>${esc(cname(c))}${c === opp ? ' (en face)' : ''}</option>`).join('');
+  out.innerHTML = S.cntSel ? countersHTML(S.cntSel, role, { pick: S.cntSel === opp }) : `<p class="note">Choisis un champion pour voir ce qui le contre à ton poste (${list.length} champions disponibles).</p>`;
+}
+document.addEventListener('change', e => { if (e.target.id === 'counterSel') { S.cntSel = e.target.value || null; renderCounters(); } });
 
 /* ---------------- Build ---------------- */
 function analyzeEnemies() {
@@ -689,6 +737,8 @@ const ADC_DO = {
 function renderBot() {
   renderBotInner();
   const role = myRole(), opp = S.match.enemy[role], me = S.match.me, lc = laneCounter(me && BUILD(me), opp), out = $('#botOut');
+  const dOpp = role === 'adc' || role === 'support' ? S.match.enemy[role] : opp;
+  if (dOpp && out) out.insertAdjacentHTML('beforeend', `<div class="card"><h3>Counters de ${esc(cname(dOpp))}</h3>${countersHTML(dOpp, role, { max: 6, maxL: 4 })}</div>`);
   if (lc.length && out) out.insertAdjacentHTML('afterbegin', `<div class="card"><h3>Objet clé contre ${esc(cname(opp))}</h3>${lc.map(x => `<div class="item"><img src="${iimg(x.id)}" alt="" loading="lazy"><div><b>${esc(iname(x.id))}</b><small>${esc(x.why)}</small>${x.tip ? `<small class="tip">${esc(x.tip)}</small>` : ''}</div></div>`).join('')}<p class="note">Déjà placé dans ton build (onglet Build).</p></div>`);
 }
 function renderBotInner() {
@@ -712,7 +762,7 @@ function renderBotInner() {
   const P = [ph('early', 'Niv 1-2', 'trades'), ph('allin', 'Niv 3-6', 'all-in'), ph('late', 'Après 6', 'scaling')];
   const total = P.reduce((s, x) => s + x.d, 0);
   // Verdict : résultat réel des Challenger / GM s'il existe (≥ 20 parties), sinon les profils de champions
-  const myC = m.me, mb = BUILD(myC), dOpp = isAdc ? ea : es, oOpp = isAdc ? es : ea;
+  const myC = m.me, mb = STAT(myC), dOpp = isAdc ? ea : es, oOpp = isAdc ? es : ea;
   const fd = (l, c) => (l || []).find(x => x[0] === c && x[1] >= 20);
   const xd = mb && fd(mb.opp, dOpp), xo = mb && fd(mb.vsAll, oOpp);
   let verdict, verdictSrc;
@@ -764,7 +814,7 @@ function renderDuel() {
   const role = myRole(), m = S.match, me = m.me, opp = m.enemy[role], out = $('#botOut');
   if (!me || !opp) { out.innerHTML = `<div class="card"><p>Ajoute ${!me ? 'ton champion' : ''}${!me && !opp ? ' et ' : ''}${!opp ? (role === 'jungle' ? 'le jungler adverse' : 'ton adversaire direct') : ''} (cases au-dessus).</p></div>`; return; }
   loadSpells(opp);
-  const b = BUILD(me), ob = BUILD(opp), o = b && (b.opp || []).find(x => x[0] === opp), r2 = ob && (ob.opp || []).find(x => x[0] === me);
+  const b = STAT(me), ob = STAT(opp), o = b && (b.opp || []).find(x => x[0] === opp), r2 = ob && (ob.opp || []).find(x => x[0] === me);
   const raw = o && o[1] >= 10 ? o[2] : r2 && r2[1] >= 10 ? 100 - r2[2] : null, n = o ? o[1] : r2 ? r2[1] : 0;
   const wr = raw == null ? null : Math.round(shrink(raw, n, 30)); // ramené vers 50 % sur peu de parties
   const verdict = wr == null ? ['warn', 'Pas assez de parties sur ce duel'] : wr >= 53 ? ['good', `Duel favorable : ${wr} % (${n} parties)`] : wr <= 47 ? ['bad', `Duel difficile : ${wr} % (${n} parties)`] : ['warn', `Duel équilibré : ${wr} % (${n} parties)`];
@@ -1049,7 +1099,7 @@ function renderPicker() {
   let list = Object.values(S.champs);
   if (!list.length) { $('#pickGrid').innerHTML = '<p class="empty">Liste des champions indisponible (pas de connexion ?).</p>'; return; }
   const pref = PK.prefer;
-  const played = c => !!(S.builds && S.builds.builds && S.builds.builds[c.id + '|' + POS[pref]]);
+  const played = c => !!(POS[pref] && STAT(c.id, pref));
   const rank = c => pref === 'support' ? (S.meta.supports[c.id] ? 0 : c.tags.includes('Support') ? 1 : 2) : pref === 'adc' ? (S.meta.adcs[c.id] || played(c) ? 0 : 1) : POS[pref] ? (played(c) ? 0 : 1) : 0;
   const tk = c => PK.taken[c.id] ? 1 : 0;
   list = list.filter(c => !q || norm(c.name).includes(q) || norm(c.id).includes(q)).sort((a, b) => tk(a) - tk(b) || rank(a) - rank(b) || a.name.localeCompare(b.name, 'fr'));
@@ -1146,7 +1196,7 @@ function renderAll() {
   const live = gamePatch(S.version), b = $('#patchBadge');
   b.textContent = 'Patch ' + (live || S.meta.patch); b.classList.toggle('stale', !!(live && live !== S.meta.patch));
   b.title = live && live !== S.meta.patch ? `Données méta du patch ${S.meta.patch}` : 'Données à jour';
-  renderSlots(); renderRanking(); renderBuild(); renderBot(); renderSettings();
+  renderSlots(); renderRanking(); renderCounters(); renderBuild(); renderBot(); renderSettings();
   if (S.view === 'home') show('home');
   if (S.view === 'time') renderTimeline();
 }
@@ -1156,7 +1206,7 @@ function renderAll() {
   S.builds = LS.get('builds', null);
   renderAll();
   show(S.settings.role ? 'home' : 'role');
-  await Promise.all([loadDD(false), loadBuilds()]);
+  await Promise.all([loadDD(false), loadBuilds(), loadMatchups()]);
   renderAll();
   if (S.timer.start) markPastFired();
   setInterval(() => tick(false), 500);

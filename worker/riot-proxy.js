@@ -5,6 +5,7 @@
 //   /match?id=&platform=                une partie + sa chronologie, résumées pour l'analyse
 //   /ladder?platform=&tier=             joueurs Challenger / Grandmaster / Master (puuid), pour calculer les builds
 //   /ids?puuid=&platform=&count=&start= parties classées d'un joueur (ids)
+//   /match?id=&platform=&lite=1          résumé léger d'une partie (champions, postes, victoire)
 // Variables : RIOT_KEY (secret, obligatoire), ALLOWED_ORIGIN (ex. https://nanileb.github.io, conseillé).
 
 const REGION = { euw1: 'europe', eun1: 'europe', tr1: 'europe', me1: 'europe', ru: 'europe', na1: 'americas', br1: 'americas', la1: 'americas', la2: 'americas', oc1: 'sea', kr: 'asia', jp1: 'asia' };
@@ -86,6 +87,14 @@ export default {
     if (url.pathname === '/match') {
       const id = url.searchParams.get('id') || '';
       if (!/^[A-Z0-9]+_\d+$/.test(id)) return json({ error: 'bad_request' }, 400);
+      // lite=1 : seulement le résumé de la partie (1 appel Riot au lieu de 2), pour les statistiques de matchups
+      const lite = url.searchParams.get('lite') === '1';
+      if (lite) {
+        const m = await riot(`https://${region}.api.riotgames.com/lol/match/v5/matches/${id}`);
+        if (!m.ok) return fail(m);
+        const info = (await m.json()).info;
+        return json({ id, queueId: info.queueId, gameVersion: info.gameVersion, gameDuration: info.gameDuration, p: info.participants.map(p => [p.championName, p.teamPosition, p.teamId, p.win ? 1 : 0]) });
+      }
       const [m, t] = await Promise.all([
         riot(`https://${region}.api.riotgames.com/lol/match/v5/matches/${id}`),
         riot(`https://${region}.api.riotgames.com/lol/match/v5/matches/${id}/timeline`)

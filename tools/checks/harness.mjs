@@ -8,7 +8,7 @@ const els = {};
 const mkEl = (sel) => { const e = { _sel: sel, innerHTML: '', textContent: '', value: '', hidden: false, checked: false, style: {}, dataset: {}, classList: { toggle(){}, add(){}, remove(){} }, addEventListener(){}, setAttribute(){}, insertAdjacentHTML(p,h){ this.innerHTML = h + this.innerHTML; }, focus(){}, firstChild: null, onclick: null }; return e; };
 const document = { querySelector: s => els[s] || (els[s] = mkEl(s)), querySelectorAll: () => [], addEventListener(){}, documentElement: { style: { setProperty(){} } }, body: { classList: { toggle(){} } }, visibilityState: 'visible' };
 const store = {};
-const files = { 'meta.json': REPO+'/meta.json', 'builds.json': REPO+'/builds.json' };
+const files = { 'meta.json': REPO+'/meta.json', 'builds.json': REPO+'/builds.json', 'matchups.json': REPO+'/matchups.json' };
 const fetch = async (url) => { let p = null; for (const k in files) if (url.startsWith(k)) p = files[k];
   if (url.includes('versions.json')) return { ok: true, json: async () => ['16.22.1'] };
   const m = url.match(/fr_FR\/(\w+)\.json/); if (m) p = path.join(DDDIR, m[1]+'.json');

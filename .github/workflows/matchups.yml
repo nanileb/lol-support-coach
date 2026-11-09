@@ -1,0 +1,28 @@
+name: Counters et synergies (meilleurs joueurs)
+on:
+  schedule:
+    - cron: '0 8 * * *'   # chaque jour 8:00 UTC, cumulé sur le patch
+  workflow_dispatch:
+    inputs:
+      matches:
+        description: Nouvelles parties maximum
+        default: '8000'
+permissions:
+  contents: write
+concurrency: riot   # même clé Riot que les builds : jamais en même temps
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 270
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/matchups.mjs ${{ github.event.inputs.matches || '8000' }}
+      - run: |
+          git config user.name "builds-bot"
+          git config user.email "builds-bot@users.noreply.github.com"
+          git add matchups.json data/lite.json.gz
+          git diff --cached --quiet || git commit -m "Counters mis à jour (meilleurs joueurs EUW + KR)"
+          git pull --rebase origin main && git push

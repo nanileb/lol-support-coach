@@ -9,7 +9,7 @@ on:
         default: '2500'
 permissions:
   contents: write
-concurrency: builds
+concurrency: riot   # même clé Riot que les counters : jamais en même temps
 jobs:
   collect:
     runs-on: ubuntu-latest
