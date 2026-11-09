@@ -1,5 +1,5 @@
 // Coach Support — service worker : app hors-ligne, méta toujours rafraîchie, images Data Dragon en cache.
-const SHELL = 'cs-shell-v18', IMG = 'cs-img-v1';
+const SHELL = 'cs-shell-v19', IMG = 'cs-img-v1';
 const FILES = ['./', 'index.html', 'app.js', 'analyse.js', 'meta.json', 'manifest.webmanifest', 'map-sr.jpg', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => ![SHELL, IMG].includes(k)).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

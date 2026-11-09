@@ -189,7 +189,27 @@ for (const [key, S] of Object.entries(groups)) {
   };
 }
 
-const res = { patch: vers[0], dd: V, generated: new Date().toISOString(), games: used.length, regions: REGIONS, players: 'Challenger + Grandmaster', thresholds: TH, builds: out };
+/* 7. Références par poste (médianes des meilleurs joueurs) pour l'onglet Analyse */
+const med = arr => { const v = arr.filter(x => x != null && isFinite(x)).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
+const targets = {};
+for (const pos of ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY']) {
+  const rows = [];
+  for (const g of used) {
+    const dur = g.gameDuration / 60;
+    for (const p of g.participants) {
+      if (p.teamPosition !== pos) continue;
+      const team = g.participants.filter(x => x.teamId === p.teamId);
+      const tk = team.reduce((a, x) => a + (x.kills || 0), 0) || 1, td = team.reduce((a, x) => a + (x.totalDamageDealtToChampions || 0), 0) || 1;
+      rows.push({ csm: ((p.totalMinionsKilled || 0) + (p.neutralMinionsKilled || 0)) / dur, vspm: (p.visionScore || 0) / dur, ctrl: p.visionWardsBoughtInGame, wkpm: (p.wardsKilled || 0) / dur,
+        deaths: p.deaths, kp: ((p.kills || 0) + (p.assists || 0)) / tk, dmg: (p.totalDamageDealtToChampions || 0) / td });
+    }
+  }
+  const r2 = x => x == null ? null : Math.round(x * 100) / 100;
+  targets[pos] = Object.fromEntries(['csm', 'vspm', 'ctrl', 'wkpm', 'deaths', 'kp', 'dmg'].map(k => [k, r2(med(rows.map(r => r[k])))]));
+  targets[pos].n = rows.length;
+}
+log('références', JSON.stringify(targets));
+const res = { patch: vers[0], dd: V, generated: new Date().toISOString(), games: used.length, regions: REGIONS, players: 'Challenger + Grandmaster', thresholds: TH, targets, builds: out };
 if (Object.keys(out).length < 40 && existsSync('builds.json')) { console.error('Trop peu de données, builds.json conservé.'); process.exit(1); }
 writeFileSync('builds.json', JSON.stringify(res));
 log('builds.json :', Object.keys(out).length, 'champion/poste,', used.length, 'parties');

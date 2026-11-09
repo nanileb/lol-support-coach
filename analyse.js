@@ -12,6 +12,12 @@ const TARGETS = {
   top: { vspm: 0.8, ctrl: 2, kp: 0.4, deaths: 4.5, early: 1, cs10: 68, csm: 7.3, dmg: 0.22, gold14: 0 },
   jungle: { vspm: 1.3, ctrl: 3, kp: 0.6, deaths: 5, early: 1, csm: 5.5, obj: 0.55, early3: 3, gold14: 0 }
 };
+// Références réelles : médianes des joueurs Challenger / GM à ce poste (builds.json), sinon valeurs par défaut
+function targetsFor(role) {
+  const base = Object.assign({}, TARGETS[role]), r = S.builds && S.builds.targets && S.builds.targets[POS[role]];
+  if (r) ['csm', 'vspm', 'ctrl', 'wkpm', 'deaths', 'kp', 'dmg'].forEach(k => { if (r[k] != null && (k in base || k === 'wkpm')) base[k] = r[k]; });
+  return base;
+}
 const POS_ROLE = { TOP: 'top', JUNGLE: 'jungle', MIDDLE: 'mid', BOTTOM: 'adc', UTILITY: 'support' };
 const champIdByName = n => (S.champs[n] ? n : (Object.values(S.champs).find(c => c.name === n) || {}).id || n);
 
@@ -105,7 +111,7 @@ function diagnose(g) {
 }
 
 function diagnoseRole(g, role) {
-  const bad = [], good = [], me = g.me, op = g.opp, T = TARGETS[role], on = op ? cname(champIdByName(op.champ)) : 'ton adversaire';
+  const bad = [], good = [], me = g.me, op = g.opp, T = targetsFor(role), on = op ? cname(champIdByName(op.champ)) : 'ton adversaire';
   const lane = role !== 'jungle';
   if (lane && me.cs10 != null) {
     if (me.cs10 < T.cs10 * 0.85) bad.push({ w: 3, t: `${me.cs10} sbires à 10:00${op && op.cs10 != null ? ` (${on} : ${op.cs10})` : ''}`, a: `Objectif ≈ ${T.cs10}. Last-hit avant de trade, et rentre quand ta vague arrive à ta tour plutôt qu'au milieu.` });
@@ -186,7 +192,7 @@ function renderAnalyse() {
   const last = games[0], d = diagnose(last), meC = champIdByName(last.me.champ), opC = last.opp && champIdByName(last.opp.champ);
   const ago = h => { const m = Math.round((Date.now() - h) / 60000); return m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} j`; };
   // tendances
-  const role = myRole(), RP = POS[role], T = TARGETS[role];
+  const role = myRole(), RP = POS[role], T = targetsFor(role);
   const mine = games, G = games;
   const R = x => (x.roles || ['support']).includes(role);
   const axes = [
@@ -197,7 +203,7 @@ function renderAnalyse() {
     { k: 'obj', roles: ['jungle'], l: 'Objectifs pris', f: g => g.teamObj, o: () => null, t: T.obj, fmt: pct, a: 'Prépare chaque objectif 1 minute avant.' },
     { k: 'vspm', roles: ['support', 'adc', 'mid', 'top', 'jungle'], l: 'Vision / min', f: g => g.me.vspm, o: g => g.opp && g.opp.vspm, t: T.vspm, fmt: v => v.toFixed(1), a: role === 'support' ? 'Trinket dès 2 charges, wards de quête à chaque sortie de base.' : 'Trinket dès qu\'il est prêt, pink à chaque retour.' },
     { k: 'ctrl', roles: ['support', 'adc', 'mid', 'top', 'jungle'], l: 'Pinks / partie', f: g => g.me.ctrl, o: g => g.opp && g.opp.ctrl, t: T.ctrl, fmt: v => v.toFixed(1), a: '1 pink à chaque retour.' },
-    { k: 'wkpm', l: 'Wards détruites / min', f: g => g.me.wkpm, o: g => g.opp && g.opp.wkpm, t: TARGET.wkpm, fmt: v => v.toFixed(2), a: 'Oracle vers 14:00 et pink dans les zones des objectifs.' },
+    { k: 'wkpm', l: 'Wards détruites / min', f: g => g.me.wkpm, o: g => g.opp && g.opp.wkpm, t: T.wkpm || TARGET.wkpm, fmt: v => v.toFixed(2), a: 'Oracle vers 14:00 et pink dans les zones des objectifs.' },
     { k: 'kp', roles: ['support', 'adc', 'mid', 'top', 'jungle'], l: 'Participation kills', f: g => g.me.kp, o: g => g.opp && g.opp.kp, t: T.kp, fmt: pct, a: 'Après la lane, reste groupé et arrive tôt aux objectifs.' },
     { k: 'deaths', roles: ['support', 'adc', 'mid', 'top', 'jungle'], l: 'Morts / partie', f: g => g.me.deaths, o: g => g.opp && g.opp.deaths, t: T.deaths, fmt: v => v.toFixed(1), inv: 1, a: 'Pas d\'avancée sans vision, regarde la minimap.' },
     { k: 'early', roles: ['support', 'adc', 'mid', 'top', 'jungle'], l: 'Morts avant 14:00', f: g => g.early, o: () => null, t: T.early, fmt: v => v.toFixed(1), inv: 1, a: 'Respecte les fenêtres de gank (onglet Timings).' },
@@ -223,7 +229,7 @@ function renderAnalyse() {
   <div class="card"><h3>Toi vs ${role === 'jungle' ? 'junglers' : ROLE_FR[role] + 's'} adverses</h3>
     <div class="cmp"><div class="cmp-h"><span></span><span>Toi</span><span>Eux</span><span>Cible</span></div>
     ${axes.map(x => `<div class="cmp-r ${x.score < 0.9 ? 'low' : 'ok'}"><span>${esc(x.l)}</span><b class="num">${x.v == null ? '–' : x.fmt(x.v)}</b><span class="num">${x.o == null ? '–' : x.fmt(x.o)}</span><span class="num">${x.fmt(x.t)}</span></div>`).join('')}</div>
-    <p class="note">Rouge = sous l'objectif. « Eux » = moyenne de tes adversaires directs. Uniquement tes ${mine.length} dernières parties en ${ROLE_FR[role]}.</p></div>
+    <p class="note">Rouge = sous l'objectif. « Eux » = moyenne de tes adversaires directs. ${S.builds && S.builds.targets ? '« Cible » = médiane des joueurs Challenger / GM à ce poste.' : ''} Uniquement tes ${mine.length} dernières parties en ${ROLE_FR[role]}.</p></div>
   <div class="card"><h3>Tes champions ${ROLE_FR[role]} · ${wins}V ${G.length - wins}D</h3>
     <div class="wr">${champs.map(([c, s]) => wrRow(c, s)).join('')}</div>
     ${adcs.length ? `<h3 style="margin-top:6px">Avec tes ADC</h3><div class="wr">${adcs.map(([c, s]) => wrRow(c, s)).join('')}</div>` : ''}</div>`;
