@@ -100,12 +100,15 @@ const BUILD = (id, role) => (S.builds && S.builds.builds && S.builds.builds[id +
 async function loadMatchups() { try { S.mu = await getJSON('matchups.json', { cache: 'no-cache' }); S._st = {}; } catch (e) { S.mu = S.mu || null; } }
 function STAT(id, role) {
   role = role || myRole(); const key = id + '|' + POS[role], b = BUILD(id, role), mm = S.mu && S.mu.m && S.mu.m[key];
-  if (!mm || (b && b.n > mm[0])) return b;
+  if (!mm) return b;
   S._st = S._st || {}; if (S._st[key]) return S._st[key];
   const pct = x => Math.round(x[1] / x[0] * 100), list = o => Object.entries(o).map(([c, x]) => [c, x[0], pct(x)]).sort((a, c) => c[1] - a[1]);
   const byChamp = (o, pos) => { const r = {}; for (const [k, x] of Object.entries(o)) { const [c, p] = k.split('|'); if (pos && p !== pos) continue; const y = r[c] = r[c] || [0, 0]; y[0] += x[0]; y[1] += x[1]; } return r; };
   const duoPos = role === 'adc' ? 'UTILITY' : role === 'support' ? 'BOTTOM' : null;
-  return (S._st[key] = { ...(b || {}), n: mm[0], wr: pct(mm), opp: list(mm[2]), vsAll: list(byChamp(mm[3])), with: list(byChamp(mm[4])), duo: duoPos ? list(byChamp(mm[4], duoPos)) : [], big: true });
+  // pour chaque paire, la source qui a le plus de parties (builds cumulés ou collecte des counters)
+  const merge = (a, c) => { const r = new Map(); [...(a || []), ...(c || [])].forEach(x => { const y = r.get(x[0]); if (!y || x[1] > y[1]) r.set(x[0], x); }); return [...r.values()].sort((x, y) => y[1] - x[1]); };
+  const big = !b || mm[0] >= b.n;
+  return (S._st[key] = { ...(b || {}), n: big ? mm[0] : b.n, wr: big ? pct(mm) : b.wr, opp: merge(b && b.opp, list(mm[2])), vsAll: merge(b && b.vsAll, list(byChamp(mm[3]))), with: merge(b && b.with, list(byChamp(mm[4]))), duo: duoPos ? merge(b && b.duo, list(byChamp(mm[4], duoPos))) : [], big: true });
 }
 // Ce qui contre un champion à un poste (et ce qu'il contre), d'après ses duels de lane
 function countersOf(opp, role) {
@@ -272,27 +275,40 @@ const COUNTERABLE = { top: ['Olaf', 'Renekton', 'Darius', 'Garen', 'Teemo', 'Vay
 function scoreRole(id) {
   const role = myRole(), m = S.match, R = [], b = STAT(id);
   const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
-  if (!b) return role === 'support' ? scoreSupport(id) : { id, score: 50, reasons: ['pas assez de parties Challenger sur ce champion à ce poste'], tier: null, label: t, n: 0, est: false };
+  if (!b) return role === 'support' ? scoreSupport(id) : { id, score: 50, reasons: ['pas assez de parties chez les meilleurs joueurs sur ce champion à ce poste'], tier: null, label: t, n: 0, est: false };
   const base = shrink(b.wr, b.n, 100);
   let s = base; const parts = [];
-  const add = (v, txt) => { v = Math.max(-4, Math.min(4, v)); if (Math.abs(v) < 0.5) return; s += v; parts.push([v, txt]); };
-  const find = (list, c) => (list || []).find(x => x[0] === c && x[1] >= 20);
-  const pairDelta = (e, prior) => shrink(e[2], e[1], 100, prior) - prior; // écart par rapport au WR habituel
+  // Poids de chaque paire selon l'interaction réelle en partie :
+  // 1 = duel de lane, duo bot (allié ou adverse) ; 0,5 = jungler avec n'importe quel poste ; 0,25 = paires qui se croisent peu.
+  const W = (r, enemy) => { const bot = ['adc', 'support'];
+    if (enemy && r === role) return 1;
+    if (bot.includes(role) && bot.includes(r)) return 1;
+    if (role === 'jungle' || r === 'jungle') return 0.5;
+    return 0.25; };
+  const CFG = { 1: { min: 20, k: 100, cap: 4 }, 0.5: { min: 30, k: 150, cap: 2 }, 0.25: { min: 50, k: 200, cap: 1.5 } };
+  const off = []; // paires hors lane, plafonnées ensemble à ±4
+  const add = (v, txt, w = 1) => { v = Math.max(-CFG[w].cap, Math.min(CFG[w].cap, v)); if (Math.abs(v) < 0.5) return; if (w < 1) return off.push([v, txt, w]); s += v; parts.push([v, txt, w]); };
+  const finder = w => (list, c) => (list || []).find(x => x[0] === c && x[1] >= CFG[w].min);
+  const pairDelta = (e, prior, w) => (shrink(e[2], e[1], CFG[w].k, prior) - prior) * w; // écart par rapport au WR habituel, pondéré
+  const wtag = w => w === 1 ? '' : w === 0.5 ? ', poids ½' : ', poids ¼';
   // alliés
   ROLES.filter(r => r !== role).forEach(r => {
     const a = m.ally[r]; if (!a) return;
+    const w = W(r, false), find = finder(w);
     const e = ((role === 'adc' && r === 'support') || (role === 'support' && r === 'adc')) ? (find(b.duo, a) || find(b.with, a)) : find(b.with, a);
-    if (e) add(pairDelta(e, b.wr), `${e[2]} % avec ${cname(a)} au lieu de ${b.wr} % (${e[1]} parties)`);
-    else { const ab = STAT(a, r), e2 = ab && find(ab.with, id); if (e2) add(pairDelta(e2, ab.wr), `${e2[2]} % quand ${cname(a)} joue avec lui (${e2[1]} parties)`); }
+    if (e) add(pairDelta(e, b.wr, w), `${e[2]} % avec ${cname(a)} au lieu de ${b.wr} % (${e[1]} parties${wtag(w)})`, w);
+    else { const ab = STAT(a, r), e2 = ab && find(ab.with, id); if (e2) add(pairDelta(e2, ab.wr, w), `${e2[2]} % quand ${cname(a)} joue avec lui (${e2[1]} parties${wtag(w)})`, w); }
   });
   // adversaires : duel direct d'abord, puis le reste de l'équipe
   ROLES.forEach(r => {
     const e = m.enemy[r]; if (!e) return;
-    const direct = r === role, x = (direct && find(b.opp, e)) || find(b.vsAll, e);
-    if (x) add(pairDelta(x, b.wr) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties)`);
+    const direct = r === role, w = W(r, true), find = finder(w), x = (direct && find(b.opp, e)) || find(b.vsAll, e);
+    if (x) add(pairDelta(x, b.wr, w) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties${wtag(w)})`, w);
     else if (direct && !(STAT(e, r) && find(STAT(e, r).opp, id))) { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, pas assez de parties sur ce duel)'); }
-    else { const eb = STAT(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], 100, eb.wr)) * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties)`); }
+    else { const eb = STAT(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], CFG[w].k, eb.wr)) * w * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties${wtag(w)})`, w); }
   });
+  { const tot = off.reduce((a2, x) => a2 + x[0], 0), k2 = Math.abs(tot) > 4 ? 4 / Math.abs(tot) : 1;
+    off.forEach(([v, txt, w]) => { v *= k2; if (Math.abs(v) < 0.3) return; s += v; parts.push([v, txt, w]); }); }
   // besoins de compo : ce qui manque à ton équipe et ce qui répond à la leur
   const need = (v, txt) => { s += v; parts.push([v, txt]); };
   const al = allies(), en = enemies(), T = tags(id), tanky = T.includes('Tank') || isFront(id);
@@ -319,7 +335,7 @@ function scoreRole(id) {
   parts.sort((a, b2) => Math.abs(b2[0]) - Math.abs(a[0]));
   R.push(`${b.wr} % de victoires chez les meilleurs joueurs (${b.n} parties)`);
   parts.forEach(([v, txt]) => R.push(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt · ${txt}`));
-  return { id, score: Math.round(50 + 10 * Math.tanh((s - 50) / 10)), raw: s, reasons: R, tier: null, label: t, n: b.n, est: true, blind: !!R.blind };
+  return { id, score: Math.round(50 + 10 * Math.tanh((s - 50) / 10)), raw: s, reasons: R, parts, tier: null, label: t, n: b.n, est: true, blind: !!R.blind };
 }
 
 function renderRanking() {
@@ -509,7 +525,7 @@ function laneCounter(b, opp, skip) {
   const res = [], ok = id => itemExists(id) && !isB(id) && !(skip || []).includes(id) && !res.find(x => x.id === id);
   const tip = id => (CHAMP_TIP[opp] || {})[id] || ITEM_TIP[id] || '';
   const TH = laneThreats(opp);
-  ((b.lane || {})[opp] || []).forEach(x => { if (ok(x[0]) && TH.some(t => fitsFlag(x[0], t))) res.push({ id: x[0], data: 1, why: `${x[1]} % des meilleurs joueurs le prennent contre ${cname(opp)} (${x[3]} parties)`, tip: tip(x[0]) }); });
+  ((b.lane || {})[opp] || []).forEach(x => { if (x[3] >= 20 && ok(x[0]) && TH.some(t => fitsFlag(x[0], t))) res.push({ id: x[0], data: 1, why: `${x[1]} % des meilleurs joueurs le prennent contre ${cname(opp)} (${x[3]} parties)`, tip: tip(x[0]) }); });
   if (!res.length) for (const th of laneThreats(opp)) {
     const id = LANE_ITEMS[th].map(String).find(i => ok(i) && inPool(i));
     if (id && fitsFlag(id, th)) { res.push({ id, data: 0, why: `${THREAT_FR[th]} : objet de contre classique, joué sur ${cname(S.match.me)} par les meilleurs joueurs`, tip: tip(id) }); break; }
@@ -545,11 +561,15 @@ function renderBuild() {
   const isB = id => S.items && S.items[id] && (S.items[id].tags || []).includes('Boots') && id !== '1001';
   const inPool = id => (b.pool || []).some(x => x[0] === String(id));
   // bottes : celles des meilleurs joueurs, adaptées à la compo si ils les achètent aussi sur ce champion
-  const bl = (b.boots || []).filter(x => itemExists(x[0]));
+  // bottes de niveau 3 (Broyeuses à chaînes, Avancée blindée…) : pas achetables, elles viennent de la quête de rôle du mid.
+  // On conseille les bottes de niveau 2 correspondantes.
+  const tier2 = id => { const x = S.items && S.items[id], f = x && x.from && x.from.length === 1 ? String(x.from[0]) : null; return f && isB(f) && (x.base || 0) === 0 ? f : String(id); };
+  const bl = Object.values((b.boots || []).reduce((m, [id, p]) => { const k = tier2(id); (m[k] = m[k] || [k, 0])[1] += p; return m; }, {})).sort((x, y) => y[1] - x[1]).filter(x => itemExists(x[0]));
   let boots = bl[0] && bl[0][1] >= 15 ? bl[0][0] : null, bootsWhy = boots ? `${bl[0][1]} % des meilleurs joueurs` : '';
   const has = id => bl.some(x => x[0] === String(id) && x[1] >= 5);
   if (boots && F.ad && has(3047) && boots !== '3047') { boots = '3047'; bootsWhy = 'équipe très AD'; }
   else if (boots && (F.cc || F.ap) && has(3111) && boots !== '3111') { boots = '3111'; bootsWhy = F.cc ? 'beaucoup de contrôles' : 'équipe AP'; }
+  if (boots && role === 'mid') bootsWhy += ' · passent au niveau 3 gratuitement à la fin de ta quête de mid';
   // objets de base : l'enchaînement le plus joué. Un objet « de situation » (présent dans b.vs) n'entre pas dans la base,
   // et un objet qui contredit la compo (RM sans AP en face, armure sans AD, anti-soins sans soins…) est écarté.
   const it = id => (S.items && S.items[id]) || {};
@@ -642,7 +662,7 @@ function renderBuild() {
       ${role === 'support' ? `<div><b>Chaque retour :</b> 1 pink${upId && itemExists(upId) ? ` · <b>Ward finale :</b> ${esc(iname(upId))}` : ''}</div>` : ''}
       ${vs ? `<div class="bp-vs"><b>Contre eux :</b> ${vs}</div>` : ''}
       <div class="bp-rs">${runes}<div class="bp-sk">${sums}${sk ? `<span><b>Sorts :</b> ${esc(sk)}${b.early ? ` <small>(début ${esc(b.early.split('').join(' '))})</small>` : ''}</span>` : ''}</div></div>
-      <div class="note">${b.n} parties Challenger / Grandmaster (EUW + Corée), patch ${esc(gamePatch(S.builds.dd) || S.builds.patch)}.${A.n ? '' : ' Ajoute l\'équipe adverse (plus bas) pour adapter les objets.'}</div>
+      <div class="note">${(() => { const st = STAT(me), N = st && st.n > b.n ? st.n : 0; return N ? `Objets : ${b.n} parties de ${esc(cname(me))} (avec le détail des achats) · classement et counters : ${N} parties` : `${b.n} parties de ${esc(cname(me))}`; })()}, Challenger / GM / Master (EUW + Corée), patch ${esc(gamePatch(S.builds.dd) || S.builds.patch)}.${A.n ? '' : ' Ajoute l\'équipe adverse (plus bas) pour adapter les objets.'}</div>
     </div>`;
 }
 // Découpe le build en achats réels (composants puis assemblage), en réutilisant ce qui est déjà dans l'inventaire.
@@ -758,24 +778,30 @@ function renderBotInner() {
   if (cMe.includes(es) || cMe.includes(ea)) { mine.early += 1; mine.allin += 1; }
   if (cThem.includes(me) || cThem.includes(a)) { theirs.early += 1; theirs.allin += 1; }
   mine.allin += ((S.meta.pairs[me] || {})[a] || 0) / 10; theirs.allin += ((S.meta.pairs[es] || {})[ea] || 0) / 10;
-  const ph = (k, label, sub) => { const d = mine[k] - theirs[k]; const c = d > 0.8 ? 'adv' : d < -0.8 ? 'dis' : 'even'; return { c, d, html: `<div class="phase ${c}"><small>${label}</small><b>${c === 'adv' ? 'Avantage' : c === 'dis' ? 'Désavant.' : 'Égal'}</b><small>${sub}</small></div>` }; };
-  const P = [ph('early', 'Niv 1-2', 'trades'), ph('allin', 'Niv 3-6', 'all-in'), ph('late', 'Après 6', 'scaling')];
-  const total = P.reduce((s, x) => s + x.d, 0);
-  // Verdict : résultat réel des Challenger / GM s'il existe (≥ 20 parties), sinon les profils de champions
+  // Résultat réel des meilleurs joueurs s'il existe (≥ 20 parties) : il recale les phases et le verdict
   const myC = m.me, mb = STAT(myC), dOpp = isAdc ? ea : es, oOpp = isAdc ? es : ea;
   const fd = (l, c) => (l || []).find(x => x[0] === c && x[1] >= 20);
   const xd = mb && fd(mb.opp, dOpp), xo = mb && fd(mb.vsAll, oOpp);
-  let verdict, verdictSrc;
+  let w = null; const src = [];
   if (xd || xo) {
-    let w = mb.wr; const src = [];
+    w = mb.wr;
     if (xd) { w += shrink(xd[2], xd[1], 100, mb.wr) - mb.wr; src.push(`${xd[2]} % contre ${cname(dOpp)} (${xd[1]} parties)`); }
     if (xo) { w += shrink(xo[2], xo[1], 100, mb.wr) - mb.wr; src.push(`${xo[2]} % contre ${cname(oOpp)} (${xo[1]} parties)`); }
     w = Math.round(w);
+  }
+  const tone = w == null ? null : w >= 53 ? 'aggro' : w <= 47 ? 'safe' : 'even', shift = w == null ? 0 : (w - 50) / 5;
+  const ph = (k, label, sub) => { const d = mine[k] - theirs[k] + shift; const c = d > 0.8 ? 'adv' : d < -0.8 ? 'dis' : 'even';
+    const note = tone === 'aggro' && c === 'dis' ? 'plus faibles ici malgré une lane favorable' : tone === 'safe' && c === 'adv' ? 'plus forts ici malgré une lane difficile' : sub;
+    return { c, d, html: `<div class="phase ${c}"><small>${label}</small><b>${c === 'adv' ? 'Avantage' : c === 'dis' ? 'Désavant.' : 'Égal'}</b><small>${note}</small></div>` }; };
+  const P = [ph('early', 'Niv 1-2', 'trades'), ph('allin', 'Niv 3-6', 'all-in'), ph('late', 'Après 6', 'scaling')];
+  const total = P.reduce((s, x) => s + x.d, 0);
+  let verdict, verdictSrc;
+  if (w != null) {
     verdict = w >= 53 ? ['good', `Lane favorable : ${w} % estimés`] : w <= 47 ? ['bad', `Lane difficile : ${w} % estimés, sécurité d'abord`] : ['warn', `Lane équilibrée : ${w} % estimés`];
-    verdictSrc = `Résultats Challenger / GM de ${cname(myC)} : ${src.join(', ')}. Les phases ci-dessous viennent des profils des champions.`;
+    verdictSrc = `Résultats Challenger / GM / Master de ${cname(myC)} : ${src.join(', ')}. Les phases ci-dessous combinent ces résultats et les profils des champions.`;
   } else {
     verdict = total > 1.5 ? ['good', 'Vous avez l\'avantage'] : total < -1.5 ? ['bad', 'Lane difficile : sécurité d\'abord'] : ['warn', 'Lane équilibrée : tout se joue sur les sorts'];
-    verdictSrc = 'Pas assez de parties Challenger sur ce duel : verdict estimé à partir des profils des champions.';
+    verdictSrc = 'Moins de 20 parties chez les meilleurs joueurs sur ce duel : verdict estimé à partir des profils des champions.';
   }
   const sp = supProfile(me), esp = supProfile(es), eap = adcProfile(ea);
   const L = S.meta.lane || {}, Les = L[es] || {}, Lea = L[ea] || {};
@@ -784,6 +810,8 @@ function renderBotInner() {
   const spells = [...(Les.s || genericS(es, esp)).map(x => spellRow(es, x[0], x[1])), ...(Lea.s || []).map(x => spellRow(ea, x[0], x[1]))];
   // À faire
   const DO = [];
+  if (tone === 'aggro') DO.push('Lane favorable chez les meilleurs joueurs : prends l\'initiative dès le niveau 2');
+  if (tone === 'safe') DO.push('Lane difficile chez les meilleurs joueurs : sécurité d\'abord, farm et attends ton jungler');
   if (P[0].c === 'adv') DO.push('Course au niveau 2 (1re vague + 3 sbires mêlée) puis engage tout de suite');
   else DO.push('Niveau 2 = 1re vague + 3 sbires mêlée : recule d\'un cran s\'ils l\'ont avant vous');
   (Les.do || []).forEach(x => DO.push(x)); (Lea.do || []).forEach(x => DO.push(x));
@@ -806,18 +834,37 @@ function renderBotInner() {
   out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><p class="note" style="margin-top:6px">${esc(verdictSrc)}</p><div class="phases">${P.map(x => x.html).join('')}</div></div>
     <div class="card"><h3>Sorts à surveiller</h3><div class="spells">${spells.join('') || '<p class="note">Pas de fiche pour ces champions.</p>'}</div>
       <p class="note">Recharges du patch en cours, du niveau 1 au rang max.</p></div>
-    <div class="card dolist"><h3>Pour gagner la lane</h3><ul class="checks do">${uniq(DO).slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <div class="card dolist"><h3>Pour gagner la lane</h3><ul class="checks do">${coherentPlan(uniq(DO), tone || (total > 1.5 ? 'aggro' : total < -1.5 ? 'safe' : null)).slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
     <div class="card dolist"><h3>À éviter</h3><ul class="checks dont">${uniq(DONT).slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+}
+// Un seul plan de lane : les conseils « pousse / pression » et « survis / farm en sécurité » ne s'affichent jamais ensemble.
+const PUSHY = /pousse|pression|prends l'avantage|agressi|engage tout de suite|prendre les plaques|roam mid dès/i;
+const SAFE = /survis|farm près|laisse la vague|laisser la vague|farm prudemment|sécurité|jouer safe|recule d'un cran/i;
+function coherentPlan(DO, tone) {
+  const out = []; let side = tone === 'aggro' ? 'push' : tone === 'safe' ? 'safe' : null;
+  for (const t of DO) {
+    const k = PUSHY.test(t) && !SAFE.test(t) ? 'push' : SAFE.test(t) && !PUSHY.test(t) ? 'safe' : PUSHY.test(t) ? 'mixed' : null;
+    if (k === 'mixed') { if (side) continue; out.push(t); continue; }
+    if (k) { if (!side) side = k; if (k !== side) continue; }
+    out.push(t);
+  }
+  return out;
+}
+// Résultat d'un duel chez les meilleurs joueurs (≥ 20 parties), des deux côtés de la paire
+function duelResult(me, opp, role) {
+  const b = STAT(me, role), ob = STAT(opp, role), o = b && (b.opp || []).find(x => x[0] === opp), r2 = ob && (ob.opp || []).find(x => x[0] === me);
+  const x = o && (!r2 || o[1] >= r2[1]) ? [o[2], o[1]] : r2 ? [100 - r2[2], r2[1]] : null;
+  if (!x || x[1] < 20) return { wr: null, n: x ? x[1] : 0 };
+  return { wr: Math.round(shrink(x[0], x[1], 30)), n: x[1] };
 }
 // Top, mid, jungle : ton champion contre ton adversaire direct
 function renderDuel() {
   const role = myRole(), m = S.match, me = m.me, opp = m.enemy[role], out = $('#botOut');
   if (!me || !opp) { out.innerHTML = `<div class="card"><p>Ajoute ${!me ? 'ton champion' : ''}${!me && !opp ? ' et ' : ''}${!opp ? (role === 'jungle' ? 'le jungler adverse' : 'ton adversaire direct') : ''} (cases au-dessus).</p></div>`; return; }
   loadSpells(opp);
-  const b = STAT(me), ob = STAT(opp), o = b && (b.opp || []).find(x => x[0] === opp), r2 = ob && (ob.opp || []).find(x => x[0] === me);
-  const raw = o && o[1] >= 10 ? o[2] : r2 && r2[1] >= 10 ? 100 - r2[2] : null, n = o ? o[1] : r2 ? r2[1] : 0;
-  const wr = raw == null ? null : Math.round(shrink(raw, n, 30)); // ramené vers 50 % sur peu de parties
-  const verdict = wr == null ? ['warn', 'Pas assez de parties sur ce duel'] : wr >= 53 ? ['good', `Duel favorable : ${wr} % (${n} parties)`] : wr <= 47 ? ['bad', `Duel difficile : ${wr} % (${n} parties)`] : ['warn', `Duel équilibré : ${wr} % (${n} parties)`];
+  const { wr, n } = duelResult(me, opp, role); // au moins 20 parties, ramené vers 50 % quand il y en a peu
+  const tone = wr == null ? null : wr >= 53 ? 'aggro' : wr <= 47 ? 'safe' : 'even';
+  const verdict = wr == null ? ['warn', `Pas assez de parties sur ce duel${n ? ` (${n})` : ''}`] : wr >= 53 ? ['good', `Duel favorable : ${wr} % (${n} parties)`] : wr <= 47 ? ['bad', `Duel difficile : ${wr} % (${n} parties)`] : ['warn', `Duel équilibré : ${wr} % (${n} parties)`];
   // fiches de sorts : seulement celles écrites pour ce poste (les fiches botlane ne servent pas en top / mid)
   const L = S.meta.lane[opp + '|' + POS[role]] || {};
   const rows = L.s ? L.s.map(x => spellRow(opp, x[0], x[1])) : ['Q', 'W', 'E', 'R'].map(k => spellRow(opp, k, ((SPELLS[opp] || {})[k] || {}).desc || (k === 'R' ? 'Ultime : joue prudemment quand il est disponible.' : 'Punis-le quand ce sort est en recharge.')));
@@ -825,7 +872,7 @@ function renderDuel() {
   const engAllies = allies().filter(isEngager);
   const DO = [], DONT = [];
   if (role === 'top') {
-    DO.push(wr != null && wr <= 47 ? 'Laisse la vague venir à ta tour et farm en sécurité jusqu\'à ton premier objet' : 'Prends l\'avantage aux niveaux 1-3 et pousse pour les plaques avant 11:00');
+    DO.push(tone === 'safe' ? 'Laisse la vague venir à ta tour et farm en sécurité jusqu\'à ton premier objet' : tone === 'aggro' ? 'Prends l\'avantage aux niveaux 1-3 et pousse pour les plaques avant 11:00' : 'Échange quand ses sorts clés sont en recharge, avance seulement avec de la vision');
     DO.push('Ward la rivière top ou le tri-bush avant 3:00 (premier gank possible)');
     DO.push('Pousse ta vague avant 8:00 pour aider ton jungler sur les larves');
     DONT.push('Pousser sans vision quand le jungler adverse n\'est pas visible');
@@ -852,14 +899,14 @@ function renderDuel() {
     if (to.includes('Assassin') && (tm.includes('Mage') || tm.includes('Marksman'))) { DO.push(`Garde un sort de contrôle ou ton Flash pour l'engage de ${on}`); DONT.push(`Rester seul en vague sans vision après son niveau 6`); }
     if (to[0] === 'Tank') DO.push(`${on} est un tank : prends l'avantage tôt et ses plaques avant 11:00, il devient fort en fin de partie`);
     if (tm[0] === 'Tank' && (to.includes('Fighter') || to.includes('Assassin'))) DO.push('Tu es solide : survis à la lane et sois prêt pour le premier combat d\'équipe');
-    if (wr != null && wr <= 47) DO.unshift('Duel difficile chez les Challenger : farm près de ta tour et appelle ton jungler');
-    if (wr != null && wr >= 53) DO.unshift('Duel favorable chez les Challenger : mets la pression dès le niveau 1');
+    if (tone === 'safe') DO.unshift('Duel difficile chez les meilleurs joueurs : farm près de ta tour et appelle ton jungler');
+    if (tone === 'aggro') DO.unshift('Duel favorable chez les meilleurs joueurs : mets la pression dès le niveau 1');
   }
   if (L.do) L.do.forEach(x => DO.push(x)); if (L.dont) L.dont.forEach(x => DONT.push(x));
   if (role !== 'jungle' && jp) DONT.push(`Avancer sans ward : ${cname(ejg)} ${jp.note}`);
-  out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><p class="note" style="margin-top:6px">Résultat des parties Challenger / Grandmaster où ${esc(cname(me))} affronte ${esc(cname(opp))}.</p></div>
+  out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><p class="note" style="margin-top:6px">${wr == null ? `Moins de 20 parties Challenger / GM / Master où ${esc(cname(me))} affronte ${esc(cname(opp))} : conseils tirés des profils des champions.` : `Résultat des parties Challenger / GM / Master où ${esc(cname(me))} affronte ${esc(cname(opp))}.`}</p></div>
     <div class="card"><h3>Sorts de ${esc(cname(opp))}</h3><div class="spells">${rows.join('')}</div><p class="note">Recharges du patch en cours, du niveau 1 au rang max.</p></div>
-    <div class="card dolist"><h3>Pour gagner</h3><ul class="checks do">${[...new Set(DO)].slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <div class="card dolist"><h3>Pour gagner</h3><ul class="checks do">${coherentPlan([...new Set(DO)], tone).slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
     <div class="card dolist"><h3>À éviter</h3><ul class="checks dont">${[...new Set(DONT)].slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
 }
 
@@ -1149,7 +1196,7 @@ function renderSettings() {
   $('#optSound').checked = S.settings.sound; $('#optVibrate').checked = S.settings.vibrate; $('#optNotif').checked = S.settings.notif; $('#optLead').value = String(S.settings.lead);
   const live = gamePatch(S.version);
   $('#metaInfo').innerHTML = `Patch en jeu : <b>${esc(live || 'inconnu')}</b> (Data Dragon ${esc(S.version || '?')}). Données méta : patch <b>${esc(S.meta.patch)}</b>, mises à jour le ${esc(S.meta.updated || '?')}.` + (live && live !== S.meta.patch ? `<br><span style="color:var(--warn)">Nouveau patch détecté : les champions et objets sont déjà à jour, les tiers et timings le seront à la prochaine mise à jour des données.</span>` : '');
-  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / Grandmaster (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.` : 'Builds des meilleurs joueurs : en cours de calcul.';
+  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / GM / Master (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.${S.mu ? ` Counters : ${S.mu.games} parties, mis à jour chaque jour.` : ''}` : 'Builds des meilleurs joueurs : en cours de calcul.';
   $('#metaSources').innerHTML = 'Sources : ' + (S.meta.sources || []).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join(' · ');
 }
 $('#editPool').onclick = editPool;

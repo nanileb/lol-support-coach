@@ -94,12 +94,12 @@ function diagnose(g) {
   if (role !== 'support') return groupCauses(diagnoseRole(g, role), g, role);
   const bad = [], good = [], me = g.me, op = g.opp, TARGET = targetsFor('support');
   const vsOpp = (k, f = 1) => op && op[k] != null ? ` (${cname(champIdByName(op.champ))} : ${(op[k] * f).toFixed(k === 'kp' ? 0 : 1)}${k === 'kp' ? ' %' : ''})` : '';
-  if (me.vspm < TARGET.vspm * 0.85) bad.push({ w: 3, t: `Vision faible : ${me.vspm.toFixed(1)}/min${vsOpp('vspm')}`, a: 'Utilise ton trinket dès qu\'il a 2 charges et pose tes wards de quête à chaque sortie de base.' });
+  if (me.vspm < TARGET.vspm * 0.85) bad.push({ w: 3, k: 'vspm', t: `Vision sous la médiane Challenger (${TARGET.vspm.toFixed(1)}/min) : ${me.vspm.toFixed(1)}/min${vsOpp('vspm')}`, a: 'Utilise ton trinket dès qu\'il a 2 charges et pose tes wards de quête à chaque sortie de base.' });
   else good.push(`Bonne vision : ${me.vspm.toFixed(1)}/min${vsOpp('vspm')}`);
-  if (me.ctrl < Math.min(TARGET.ctrl, Math.round(g.dur / 7))) bad.push({ w: 2, t: `Seulement ${me.ctrl} pink${me.ctrl > 1 ? 's' : ''} achetée${me.ctrl > 1 ? 's' : ''}`, a: '1 pink à chaque retour, toujours. Avec la quête finie, elle coûte 40 po.' });
-  if (me.wkpm < TARGET.wkpm * 0.7) bad.push({ w: 1, t: `Peu de wards adverses détruites (${Math.round(me.wkpm * g.dur)})`, a: 'Passe à l\'Oracle après la phase de lane et nettoie avant chaque objectif.' });
+  if (me.ctrl < Math.min(TARGET.ctrl, Math.round(g.dur / 7))) bad.push({ w: 2, k: 'ctrl', t: `Seulement ${me.ctrl} pink${me.ctrl > 1 ? 's' : ''} achetée${me.ctrl > 1 ? 's' : ''}`, a: '1 pink à chaque retour, toujours. Avec la quête finie, elle coûte 40 po.' });
+  if (me.wkpm < TARGET.wkpm * 0.7) bad.push({ w: 1, k: 'wkpm', t: `Peu de wards adverses détruites (${Math.round(me.wkpm * g.dur)})`, a: 'Passe à l\'Oracle après la phase de lane et nettoie avant chaque objectif.' });
   if (!g.oracle || g.oracle > 1200) bad.push({ w: 1, t: g.oracle ? `Oracle pris tard (${fmt(g.oracle)})` : 'Jamais passé à l\'Oracle (balayeur)', a: 'Échange ton trinket vers 14:00, à la fin de la phase de lane.' });
-  if (me.kp != null && me.kp < TARGET.kp) bad.push({ w: 2, t: `Participation aux kills : ${Math.round(me.kp * 100)} %${vsOpp('kp', 100)}`, a: 'Après 14:00, colle ton jungler/mid et sois là pour chaque objectif.' });
+  if (me.kp != null && me.kp < TARGET.kp) bad.push({ w: 2, k: 'kp', t: `Participation aux kills : ${Math.round(me.kp * 100)} %${vsOpp('kp', 100)}`, a: 'Après 14:00, colle ton jungler/mid et sois là pour chaque objectif.' });
   else if (me.kp != null) good.push(`Participation aux kills : ${Math.round(me.kp * 100)} %`);
   if (g.early > TARGET.early) bad.push({ w: 3, t: `${g.early} morts avant 14:00`, a: 'Avant chaque avancée, regarde la minimap : où est leur jungler ? Pas de vision = pas d\'engage.' });
   const ganks = g.deaths.filter(d => d.tags.some(x => x.startsWith('gank'))).length;
@@ -130,43 +130,49 @@ function groupCauses(d, g, role) {
     const gw = g.bought.some(id => S.items && S.items[id] && S.items[id].gw);
     if (healers.length >= 2 && !gw) d.bad.push({ w: 2, t: `Pas d'anti-soins contre ${healers.map(cname).join(', ')}`, a: 'Achète le composant anti-soins (800 po) dès le 2e retour contre 2 soigneurs ou plus.', c: 'build' });
   }
+  // Un axe sous la médiane Challenger mais où tu fais mieux que ton adversaire direct n'est jamais prioritaire
+  const op = g.opp, me = g.me;
+  d.bad.forEach(x => {
+    if (!x.k || !op || op[x.k] == null || me[x.k] == null || me[x.k] < op[x.k]) return;
+    x.w = Math.min(x.w, 1); x.beat = true; x.t += ` · mieux que ${cname(champIdByName(op.champ))}`;
+  });
   const cause = x => x.c || (/mort/i.test(x.t) ? 'morts' : /sbires|po de retard|objet complété/i.test(x.t) ? 'farm' : /vision|ward|pink|oracle/i.test(x.t) ? 'vision' : x.t);
   const groups = {};
   d.bad.forEach(x => { const k = cause(x); (groups[k] = groups[k] || []).push(x); });
-  d.bad = Object.values(groups).map(l => { l.sort((a, b) => b.w - a.w); const top = l[0]; return l.length === 1 ? top : { w: top.w + 0.5 * (l.length - 1), t: top.t, a: top.a + ' Lié : ' + l.slice(1).map(x => x.t.charAt(0).toLowerCase() + x.t.slice(1)).join(' · ') + '.' }; }).sort((a, b) => b.w - a.w);
+  d.bad = Object.values(groups).map(l => { l.sort((a, b) => b.w - a.w); const top = l[0]; return l.length === 1 ? top : { w: top.w + 0.5 * (l.length - 1), t: top.t, a: top.a + ' Lié : ' + l.slice(1).map(x => x.t.charAt(0).toLowerCase() + x.t.slice(1)).join(' · ') + '.', beat: l.every(x => x.beat) }; }).sort((a, b) => (a.beat ? 1 : 0) - (b.beat ? 1 : 0) || b.w - a.w);
   return d;
 }
 function diagnoseRole(g, role) {
   const bad = [], good = [], me = g.me, op = g.opp, T = targetsFor(role), on = op ? cname(champIdByName(op.champ)) : 'ton adversaire';
   const lane = role !== 'jungle';
   if (lane && me.cs10 != null) {
-    if (me.cs10 < T.cs10 * 0.85) bad.push({ w: 3, t: `${me.cs10} sbires à 10:00${op && op.cs10 != null ? ` (${on} : ${op.cs10})` : ''}`, a: `Objectif ≈ ${T.cs10}. Last-hit avant de trade, et rentre quand ta vague arrive à ta tour plutôt qu'au milieu.` });
+    if (me.cs10 < T.cs10 * 0.85) bad.push({ w: 3, k: 'cs10', t: `${me.cs10} sbires à 10:00${op && op.cs10 != null ? ` (${on} : ${op.cs10})` : ''}`, a: `Objectif ≈ ${T.cs10}. Last-hit avant de trade, et rentre quand ta vague arrive à ta tour plutôt qu'au milieu.` });
     else good.push(`Bon farm en lane : ${me.cs10} sbires à 10:00`);
   }
-  if (me.csm < T.csm * 0.85) bad.push({ w: 2, t: `${me.csm.toFixed(1)} sbires / min sur la partie`, a: lane ? 'Après 14:00, prends les vagues de côté entre deux objectifs au lieu d\'attendre au milieu.' : 'Enchaîne tes camps entre les ganks : un jungler qui ne farm pas prend du retard sur tout le monde.' });
+  if (me.csm < T.csm * 0.85) bad.push({ w: 2, k: 'csm', t: `${me.csm.toFixed(1)} sbires / min sur la partie`, a: lane ? 'Après 14:00, prends les vagues de côté entre deux objectifs au lieu d\'attendre au milieu.' : 'Enchaîne tes camps entre les ganks : un jungler qui ne farm pas prend du retard sur tout le monde.' });
   if (op && me.gold14 != null && op.gold14 != null) {
     const d = me.gold14 - op.gold14;
     if (d < -500) bad.push({ w: 3, t: `${-d} po de retard sur ${on} à 14:00`, a: lane ? 'Morts, sbires ratés ou plaques perdues : regarde laquelle de ces raisons revient le plus.' : 'Il a plus farmé ou plus participé : compare vos chemins de jungle.' });
     else if (d > 500) good.push(`${d} po d'avance sur ${on} à 14:00`);
   }
   if (lane && me.dmg != null) {
-    if (me.dmg < T.dmg * 0.8) bad.push({ w: 2, t: `${Math.round(me.dmg * 100)} % des dégâts de ton équipe`, a: role === 'adc' ? 'En combat, place-toi pour taper sans arrêt la cible la plus proche plutôt que de chercher le carry.' : 'Participe aux combats avec tes sorts principaux, pas seulement en fin de combat.' });
+    if (me.dmg < T.dmg * 0.8) bad.push({ w: 2, k: 'dmg', t: `${Math.round(me.dmg * 100)} % des dégâts de ton équipe`, a: role === 'adc' ? 'En combat, place-toi pour taper sans arrêt la cible la plus proche plutôt que de chercher le carry.' : 'Participe aux combats avec tes sorts principaux, pas seulement en fin de combat.' });
     else good.push(`${Math.round(me.dmg * 100)} % des dégâts de ton équipe`);
   }
   if (role === 'jungle') {
     if (g.teamObj != null) { if (g.teamObj < T.obj * 0.8) bad.push({ w: 3, t: `Ton équipe a pris ${Math.round(g.teamObj * 100)} % des objectifs`, a: 'Prépare chaque drake et les larves 1 minute avant, avec la priorité de tes lanes.' }); else good.push(`${Math.round(g.teamObj * 100)} % des objectifs pour ton équipe`); }
     if (me.early3 != null && me.early3 < 2) bad.push({ w: 2, t: `${me.early3} kill${me.early3 > 1 ? 's' : ''} ou assist en début de partie`, a: 'Cherche un gank après ton premier tour de jungle, sur la lane la plus prête.' });
   }
-  if (me.kp != null && me.kp < T.kp) bad.push({ w: 2, t: `Participation aux kills : ${Math.round(me.kp * 100)} %`, a: role === 'top' ? 'Garde ta Téléportation pour les combats de drake et de larves.' : 'Après 14:00, reste groupé et sois là pour chaque objectif.' });
+  if (me.kp != null && me.kp < T.kp) bad.push({ w: 2, k: 'kp', t: `Participation aux kills : ${Math.round(me.kp * 100)} %`, a: role === 'top' ? 'Garde ta Téléportation pour les combats de drake et de larves.' : 'Après 14:00, reste groupé et sois là pour chaque objectif.' });
   else if (me.kp != null) good.push(`Participation aux kills : ${Math.round(me.kp * 100)} %`);
   if (g.early > T.early) bad.push({ w: 3, t: `${g.early} morts avant 14:00`, a: 'Regarde la minimap avant chaque avancée : sans vision sur leur jungler, tu ne pousses pas.' });
   const ganks = g.deaths.filter(d => d.tags.some(x => x.startsWith('gank'))).length;
   if (lane && ganks >= 2) bad.push({ w: 2, t: `${ganks} morts sur des ganks de ${cname(champIdByName(g.eJg))}`, a: 'Pose ton trinket avant ses fenêtres de gank (onglet Timings).' });
   const preObj = g.deaths.filter(d => d.tags.some(x => x.startsWith('juste avant'))).length;
   if (preObj) bad.push({ w: 2, t: `${preObj} mort${preObj > 1 ? 's' : ''} juste avant un objectif adverse`, a: 'Avant un objectif, avance en groupe et jamais seul dans le brouillard.' });
-  if (me.vspm < T.vspm * 0.75) bad.push({ w: 1, t: `Vision : ${me.vspm.toFixed(1)}/min`, a: 'Utilise ton trinket dès qu\'il est prêt et achète une pink à chaque retour.' });
-  if (me.ctrl < Math.min(T.ctrl, Math.round(g.dur / 10))) bad.push({ w: 1, t: `${me.ctrl} pink${me.ctrl > 1 ? 's' : ''} achetée${me.ctrl > 1 ? 's' : ''}`, a: 'Une pink à chaque retour, dans un buisson près de ta lane ou d\'un objectif.' });
-  if (g.firstItem && g.firstItem > ({ adc: 810, mid: 810, top: 870, jungle: 870 }[role] || 840)) bad.push({ w: 1, t: `1er objet complété tard (${fmt(g.firstItem)})`, a: 'Rentre quand tu as l\'or d\'un composant important, ne garde pas l\'or sur toi.' });
+  if (me.vspm < T.vspm * 0.75) bad.push({ w: 1, k: 'vspm', t: `Vision sous la médiane Challenger (${T.vspm.toFixed(1)}/min) : ${me.vspm.toFixed(1)}/min`, a: 'Utilise ton trinket dès qu\'il est prêt et achète une pink à chaque retour.' });
+  if (me.ctrl < Math.min(T.ctrl, Math.round(g.dur / 10))) bad.push({ w: 1, k: 'ctrl', t: `${me.ctrl} pink${me.ctrl > 1 ? 's' : ''} achetée${me.ctrl > 1 ? 's' : ''}`, a: 'Une pink à chaque retour, dans un buisson près de ta lane ou d\'un objectif.' });
+  if (g.firstItem && g.firstItem > ({ adc: 810, mid: 900, top: 870, jungle: 870 }[role] || 840)) bad.push({ w: 1, t: `1er objet complété tard (${fmt(g.firstItem)})`, a: 'Rentre quand tu as l\'or d\'un composant important, ne garde pas l\'or sur toi.' });
   return { bad: bad.sort((a, b) => b.w - a.w), good };
 }
 
@@ -236,7 +242,9 @@ function renderAnalyse() {
     { k: 'roam', l: 'Min hors bot avant niv 5', f: g => g.roam, o: () => null, t: TARGET.roam, fmt: v => v.toFixed(1), inv: 1, a: 'Reste en lane jusqu\'au niveau 5 (pénalité de −33 % sinon).' },
     { k: 'prep', l: 'Objectifs préparés', f: g => g.me.prep.n ? g.me.prep.ok / g.me.prep.n : null, o: g => g.opp && g.opp.prep.n ? g.opp.prep.ok / g.opp.prep.n : null, t: TARGET.prep, fmt: pct, a: 'Vision 60-90 s avant chaque drake/larves/Héraut.' }
   ].filter(R).map(x => { const v = avg(G, x.f), o = avg(G, x.o); const score = v == null ? 1 : x.diff ? (v >= -150 ? 1 : Math.max(0.3, 1 + v / 1500)) : x.inv ? (v <= x.t ? 1 : x.t / Math.max(v, 0.01)) : Math.min(1.2, v / x.t); return { ...x, v, o, score }; });
-  const prio = axes.filter(x => x.v != null && x.score < 0.9).sort((a, b) => a.score - b.score).slice(0, 3);
+  // un axe où tu fais mieux que tes adversaires directs passe après les autres (même sous la médiane Challenger)
+  const beats = x => x.o != null && (x.inv ? x.v <= x.o : x.v >= x.o);
+  const prio = axes.filter(x => x.v != null && x.score < 0.9).sort((a, b) => (beats(a) ? 1 : 0) - (beats(b) ? 1 : 0) || a.score - b.score).slice(0, 3);
   // champions & ADC
   const by = (f) => { const m = {}; G.forEach(g => { const k = f(g); if (!k) return; (m[k] = m[k] || { n: 0, w: 0 }); m[k].n++; if (g.win) m[k].w++; }); return Object.entries(m).sort((a, b) => b[1].n - a[1].n).slice(0, 6); };
   const champs = by(g => g.me.champ), adcs = role === 'support' ? by(g => g.adc) : [];

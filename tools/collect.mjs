@@ -119,7 +119,9 @@ for (const g of used) {
     const start = buys.filter(b => b.t < 70000).map(b => b.id).sort();
     const legs = []; buys.forEach(b => { if (isLegendary(b.id) && !legs.includes(b.id)) legs.push(b.id); });
     const fin = [0, 1, 2, 3, 4, 5].map(k => String(me['item' + k])).filter(id => id !== '0');
-    const boots = fin.find(isBoots) || buys.map(b => b.id).filter(isBoots).pop() || null;
+    // bottes de niveau 3 (récompense de la quête du mid, 0 po) ramenées à leurs bottes de niveau 2
+    const t2 = id => { const d = items[id], f = d && (d.from || []).length === 1 ? d.from[0] : null; return f && isBoots(f) && !d.gold.base ? f : id; };
+    const b0 = fin.find(isBoots) || buys.map(b => b.id).filter(isBoots).pop() || null, boots = b0 && t2(b0);
     // ordre des compétences
     const lv = { 1: 0, 2: 0, 3: 0 }, maxed = [], first3 = [];
     g.events.filter(e => e.type === 'SKILL_LEVEL_UP' && e.participantId === me.participantId).forEach(e => {
@@ -182,7 +184,7 @@ for (const [key, S] of Object.entries(groups)) {
   // objets ajoutés contre un adversaire direct précis (ex. Zhonya contre Zed)
   const lane = {};
   for (const [o, [k]] of Object.entries(vsOpp)) {
-    if (k < 6) continue;
+    if (k < 20) continue;
     const A = S.filter(s => s.opp === o), B = S.filter(s => s.opp !== o), res = [];
     for (const [id] of pool) {
       const ra = A.filter(s => s.items.includes(id)).length / A.length, rb = B.length ? B.filter(s => s.items.includes(id)).length / B.length : 0;

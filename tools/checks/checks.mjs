@@ -13,6 +13,8 @@ for (const s of SC) {
   const rank = run(`myPool().filter(id=>!takenChamps('me')[id]).map(scoreRole).sort((a,b)=>b.score-a.score)`);
   rank.forEach(r => { if (r.score > 62 || r.score < 38) fail(s.id, `score affiché irréaliste : ${r.id} ${r.score} %`); });
   if (Object.values(s.enemy).filter(Boolean).length >= 4 && rank.length >= 4) { const sp = rank[0].score - rank[rank.length - 1].score; if (sp < 3) fail(s.id, `classement plat : écart de ${sp} point(s) entre ${rank[0].id} et ${rank[rank.length - 1].id}`); }
+  // R1. Une paire qui se croise peu (poids < 1) ne déplace jamais le score de plus de 2 points
+  rank.forEach(r => (r.parts || []).forEach(([v, txt, w]) => { if (w != null && w < 1 && Math.abs(v) > 2) fail(s.id, `${r.id} : ${v.toFixed(1)} pt pour une paire de poids ${w} (${txt})`); }));
   if (s.expect && !s.expect.includes(rank[0].id)) warns.push(`${s.id} : 1er choix ${rank[0].id} (${rank[0].score} %), l'audit attendait ${s.expect.join('/')}`);
   const me = rank[0].id;
   run(`S.match.me=${JSON.stringify(me)}; renderBuild(); renderBot();`);
@@ -20,6 +22,23 @@ for (const s of SC) {
   const start = run(`(((BUILD(S.match.me)||{}).start||[])[0]||[[]])[0]`);
   const A = run(`analyzeEnemies()`);
   const items = seq.map(x => x.id).filter(id => !(it(id) && (it(id).tags || []).includes('Boots')));
+  // R3. Objet « contre ton adversaire » : jamais sur moins de 20 parties
+  seq.forEach(x => { const m = /le prennent contre .*\((\d+) parties\)/.exec(x.why || ''); if (m && Number(m[1]) < 20) fail(s.id, `${me} : ${x.why}`); });
+  // Bottes de niveau 3 : jamais conseillées à l'achat (récompense de la quête du mid)
+  seq.forEach(x => { const d = it(x.id); if (d && (d.tags || []).includes('Boots') && !d.base && (d.from || []).length === 1) fail(s.id, `${me} : bottes de niveau 3 (${d.name}) dans les achats`); });
+  // R2 / R4. Verdict de duel et plan de lane cohérents
+  for (const role of [s.role]) {
+    const opp = s.enemy[role]; if (!opp) continue;
+    const bot = els['#botOut'].innerHTML, doL = ((/<ul class="checks do">([\s\S]*?)<\/ul>/.exec(bot) || [])[1] || '').split('</li>').map(t => t.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+    const push = doL.filter(t => /pousse|pression|prends l'avantage|agressi|prendre les plaques/i.test(t) && !/survis|sécurité|farm près|laisse la vague/i.test(t));
+    const safe = doL.filter(t => /survis|sécurité|farm près|laisse la vague|jouer safe/i.test(t) && !/pousse|pression|prends l'avantage|agressi/i.test(t));
+    if (push.length && safe.length) fail(s.id, `${me} : conseils contradictoires « ${push[0]} » et « ${safe[0]} »`);
+    if (['top', 'mid', 'jungle'].includes(role)) {
+      const d = run(`duelResult(${JSON.stringify(me)}, ${JSON.stringify(opp)}, ${JSON.stringify(role)})`);
+      if (d.wr != null && /Pas assez de parties/.test(bot)) fail(s.id, `${me} contre ${opp} : ${d.n} parties mais verdict « pas assez de parties »`);
+      if (d.wr == null && doL.some(t => /pression dès|Duel favorable/i.test(t))) fail(s.id, `${me} contre ${opp} : conseil agressif sur un duel de ${d.n} parties`);
+    }
+  }
   const html = els['#buildOut'].innerHTML;
   // 1. Atlas au départ des supports
   if (s.role === 'support' && !/3865\.png/.test(html.split('Objet 1')[0])) fail(s.id, `${me} : pas d'Atlas (3865) au départ`);
