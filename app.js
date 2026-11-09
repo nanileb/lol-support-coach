@@ -211,7 +211,7 @@ function slotHTML(id, label, data, extra = '') {
 }
 function renderSlots() {
   const m = S.match, role = myRole();
-  $('#allySlots').innerHTML = allyRoles().map(r => slotHTML(m.ally[r], ROLE_FR[r], 'ally.' + r)).join('') + slotHTML(m.me, 'Toi · ' + ROLE_FR[role], 'me', 'me');
+  $('#allySlots').innerHTML = allyRoles().map(r => slotHTML(m.ally[r], ROLE_FR[r], 'ally.' + r)).join('') + slotHTML(m.me, 'Toi', 'me', 'me');
   const en = ROLES_ENEMY.map(r => slotHTML(m.enemy[r], ROLE_FR[r], 'enemy.' + r)).join('');
   $('#enemySlotsDraft').innerHTML = en; $('#enemySlotsGame').innerHTML = en;
   const me = slotHTML(m.me, 'Toi', 'me', 'me');
@@ -275,14 +275,14 @@ function scoreRole(id) {
   }
   parts.sort((a, b2) => Math.abs(b2[0]) - Math.abs(a[0]));
   R.push(`${b.wr} % de victoires en Challenger (${b.n} parties)`);
-  parts.forEach(([v, txt]) => R.push(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} ${txt}`));
+  parts.forEach(([v, txt]) => R.push(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt · ${txt}`));
   return { id, score: Math.round(50 + 8 * Math.tanh((s - 50) / 8)), reasons: R, tier: null, label: t, n: b.n, est: true, blind: !!R.blind };
 }
 
 function renderRanking() {
   const role = myRole(), pool = myPool().filter(id => champ(id) || !Object.keys(S.champs).length);
   const box = $('#ranking');
-  $('#draftTitle').textContent = `Quel ${ROLE_LONG[role]} jouer ?`;
+  $('#draftTitle').textContent = `Quel ${ROLE_LONG[role]} jouer\u00a0?`;
   { const n = $('#scoreNote'); if (n) n.textContent = '% = taux de victoire estimé : celui du champion chez les Challenger / GM de ce patch, corrigé avec chacun de tes alliés et contre chaque adversaire (le duel direct compte plus). Peu de parties = correction plus faible. Les champions déjà pris sont grisés.'; }
   if (!pool.length) {
     box.innerHTML = `<div class="empty">Ton pool ${ROLE_FR[role]} est vide. Choisis tes champions une fois, ils restent enregistrés.<br><br>
@@ -302,7 +302,7 @@ function renderRanking() {
         <div class="bar"><i style="width:${r.est ? Math.max(4, (r.score - 42) * 6) : r.score}%"></i></div>
         ${r.reasons.length > 1 ? `<details class="why-more"><summary>Détail du score</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
       </div>
-      <div><div class="pct num">${r.score}%</div>${r.est ? '<div class="note" style="font-size:10px;text-align:center">victoire estimée</div>' : ''}<button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
+      <div><div class="pct num">${r.score}%</div>${r.est ? '<div class="note" style="font-size:11px;text-align:center">victoire estimée</div>' : ''}<button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
     </div>`).join('') +
     gone.map(id => `<div class="ritem taken">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : '<span class="ph"></span>'}<div style="min-width:0"><div class="nm">${esc(cname(id))}</div><div class="why">Déjà pris par ${T[id] === 'adversaire' ? 'l\'adversaire' : 'un allié'}</div></div><div></div></div>`).join('');
 }
