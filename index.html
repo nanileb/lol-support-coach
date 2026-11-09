@@ -370,6 +370,9 @@ ol.prio b{color:var(--gold2)}
 .bp-sk{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .sum{width:26px;height:26px;border:1px solid var(--gline);border-radius:3px}
 .item small.tip{color:var(--gold2);margin-top:3px;font-size:12px}
+.pick.taken{opacity:.35;filter:grayscale(1);position:relative;cursor:not-allowed}
+.pick.taken em{position:absolute;top:2px;left:2px;right:2px;font-style:normal;font-size:9px;font-weight:700;text-transform:uppercase;background:#010a13cc;color:var(--fg);border-radius:2px;padding:1px 2px}
+.ritem.taken{opacity:.45;filter:grayscale(1)}
 </style>
 </head>
 <body>
@@ -422,7 +425,7 @@ ol.prio b{color:var(--gold2)}
     <div class="card">
       <h3>Ton pool classé</h3>
       <div class="rank" id="ranking"></div>
-      <p class="note">Score calculé : duo avec ton ADC, besoins de l'équipe (engage, dégâts AP, frontline), counters adverses et tier du patch.</p>
+      <p class="note" id="scoreNote">Score calculé : duo avec ton ADC, besoins de l'équipe (engage, dégâts AP, frontline), counters adverses et tier du patch.</p>
     </div>
   </section>
 
@@ -554,7 +557,7 @@ ol.prio b{color:var(--gold2)}
 <div id="alertBox"></div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="app.js?v=17"></script>
-<script src="analyse.js?v=17"></script>
+<script src="app.js?v=18"></script>
+<script src="analyse.js?v=18"></script>
 </body>
 </html>

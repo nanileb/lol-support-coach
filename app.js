@@ -123,6 +123,15 @@ function isAP(id) {
 const inList = (list, id) => (S.meta[list] || []).includes(id);
 const isEngager = id => inList('engagers', id) || (S.meta.supports[id] && S.meta.supports[id].engage >= 3);
 const isFront = id => inList('frontline', id) || tags(id).includes('Tank');
+// Champions déjà pris dans la partie (sauf la case qu'on modifie), avec le camp qui l'a pris
+function takenChamps(exceptPath) {
+  const m = S.match, T = {};
+  if (m.me && exceptPath !== 'me') T[m.me] = 'toi';
+  ROLES.forEach(r => { const a = m.ally[r], e = m.enemy[r];
+    if (a && exceptPath !== 'ally.' + r) T[a] = T[a] || 'allié';
+    if (e && exceptPath !== 'enemy.' + r) T[e] = 'adversaire'; });
+  return T;
+}
 const allies = () => allyRoles().map(r => S.match.ally[r]).filter(Boolean);
 const enemies = () => ROLES_ENEMY.map(r => S.match.enemy[r]).filter(Boolean);
 
@@ -239,14 +248,18 @@ function renderRanking() {
   const role = myRole(), pool = myPool().filter(id => champ(id) || !Object.keys(S.champs).length);
   const box = $('#ranking');
   $('#draftTitle').textContent = `Quel ${ROLE_LONG[role]} jouer ?`;
+  { const n = $('#scoreNote'); if (n) n.textContent = role === 'support' ? 'Score calculé : duo avec ton ADC, besoins de l\'équipe (engage, dégâts AP, frontline), counters adverses et tier du patch. Les champions déjà pris sont grisés.' : `Score calculé : victoires des Challenger / GM sur le champion, résultat contre ton adversaire direct${role === 'adc' ? ', duo avec ton support' : ''} et besoins de ta compo (AP/AD, frontline). Les champions déjà pris sont grisés.`; }
   if (!pool.length) {
     box.innerHTML = `<div class="empty">Ton pool ${ROLE_FR[role]} est vide. Choisis tes champions une fois, ils restent enregistrés.<br><br>
       <button class="btn primary" data-act="pool">Choisir mon pool</button></div>`;
     return;
   }
-  const res = pool.map(role === 'support' ? scoreSupport : scoreRole).sort((a, b) => b.score - a.score);
+  const T = takenChamps('me');
+  const res = pool.filter(id => !T[id]).map(role === 'support' ? scoreSupport : scoreRole).sort((a, b) => b.score - a.score);
+  const gone = pool.filter(id => T[id]);
   const hasInfo = allies().length || enemies().length;
-  box.innerHTML = (hasInfo ? '' : `<p class="note">Ajoute tes alliés et ton adversaire direct pour un vrai classement. En attendant : résultats des meilleurs joueurs seuls.</p>`) +
+  const noData = role !== 'support' && !(S.builds && S.builds.builds);
+  box.innerHTML = (noData ? `<p class="note">Les résultats des meilleurs joueurs ne sont pas encore arrivés : le classement ne tient compte pour l'instant que de ta compo. Il se met à jour tout seul dès qu'ils sont prêts.</p>` : hasInfo ? '' : `<p class="note">Ajoute tes alliés et ton adversaire direct pour un vrai classement. En attendant : résultats des meilleurs joueurs seuls.</p>`) +
     res.map((r, i) => `<div class="ritem ${i === 0 && hasInfo ? 'top1' : ''}">
       ${cimg(r.id) ? `<img src="${cimg(r.id)}" alt="">` : '<span class="ph"></span>'}
       <div style="min-width:0"><div class="nm">${esc(cname(r.id))}${r.tier ? `<span class="tier">${r.tier}</span>` : ''}</div>
@@ -255,7 +268,8 @@ function renderRanking() {
         ${r.reasons.length > 1 ? `<details class="why-more"><summary>Détail du score</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
       </div>
       <div><div class="pct num">${r.score}%</div><button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
-    </div>`).join('');
+    </div>`).join('') +
+    gone.map(id => `<div class="ritem taken">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : '<span class="ph"></span>'}<div style="min-width:0"><div class="nm">${esc(cname(id))}</div><div class="why">Déjà pris par ${T[id] === 'adversaire' ? 'l\'adversaire' : 'un allié'}</div></div><div></div></div>`).join('');
 }
 
 /* ---------------- Build ---------------- */
@@ -880,7 +894,8 @@ async function loadLive() {
 /* ---------------- Sélecteur de champion ---------------- */
 let PK = null;
 function openPicker(opts) {
-  PK = Object.assign({ multi: false, selected: [], prefer: null }, opts);
+  PK = Object.assign({ multi: false, selected: [], prefer: null, path: null }, opts);
+  PK.taken = PK.multi ? {} : takenChamps(PK.path);
   $('#pickTitle').textContent = PK.title; $('#pickSearch').value = ''; $('#pickNone').hidden = PK.multi;
   $('#picker').hidden = false; renderPicker();
   setTimeout(() => { if (!matchMedia('(pointer:coarse)').matches) $('#pickSearch').focus(); }, 50);
@@ -892,8 +907,9 @@ function renderPicker() {
   const pref = PK.prefer;
   const played = c => !!(S.builds && S.builds.builds && S.builds.builds[c.id + '|' + POS[pref]]);
   const rank = c => pref === 'support' ? (S.meta.supports[c.id] ? 0 : c.tags.includes('Support') ? 1 : 2) : pref === 'adc' ? (S.meta.adcs[c.id] || played(c) ? 0 : 1) : POS[pref] ? (played(c) ? 0 : 1) : 0;
-  list = list.filter(c => !q || norm(c.name).includes(q) || norm(c.id).includes(q)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'fr'));
-  $('#pickGrid').innerHTML = list.map(c => `<button class="pick ${PK.selected.includes(c.id) ? 'on' : ''}" data-id="${c.id}"><img src="${cimg(c.id)}" alt="" loading="lazy"><span>${esc(c.name)}</span></button>`).join('');
+  const tk = c => PK.taken[c.id] ? 1 : 0;
+  list = list.filter(c => !q || norm(c.name).includes(q) || norm(c.id).includes(q)).sort((a, b) => tk(a) - tk(b) || rank(a) - rank(b) || a.name.localeCompare(b.name, 'fr'));
+  $('#pickGrid').innerHTML = list.map(c => (PK.taken[c.id] ? `<button class="pick taken" disabled aria-disabled="true"><img src="${cimg(c.id)}" alt="" loading="lazy"><span>${esc(c.name)}</span><em>${PK.taken[c.id] === 'adversaire' ? 'Pris en face' : 'Déjà pris'}</em></button>` : `<button class="pick ${PK.selected.includes(c.id) ? 'on' : ''}" data-id="${c.id}"><img src="${cimg(c.id)}" alt="" loading="lazy"><span>${esc(c.name)}</span></button>`)).join('');
 }
 $('#pickGrid').addEventListener('click', e => {
   const b = e.target.closest('.pick'); if (!b) return; const id = b.dataset.id;
@@ -903,7 +919,7 @@ $('#pickGrid').addEventListener('click', e => {
 $('#pickSearch').addEventListener('input', renderPicker);
 // Suit la zone visible (clavier ouvert) pour garder le sélecteur entier à l'écran
 if (window.visualViewport) { const vv = window.visualViewport, fit = () => { document.documentElement.style.setProperty('--vvh', vv.height + 'px'); document.documentElement.style.setProperty('--vvt', vv.offsetTop + 'px'); }; vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit(); }
-$('#pickSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { const f = $('#pickGrid .pick'); if (f) f.click(); } });
+$('#pickSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { const f = $('#pickGrid .pick:not(.taken)'); if (f) f.click(); } });
 $('#pickClose').onclick = () => closePicker();
 $('#pickNone').onclick = () => { PK.onPick(null); closePicker(); };
 $('#picker').addEventListener('click', e => { if (e.target.id === 'picker') closePicker(); });
@@ -912,10 +928,10 @@ function closePicker() { $('#picker').hidden = true; PK = null; save(); renderAl
 
 function editSlot(path) {
   if (path === 'me') {
-    return openPicker({ title: 'Ton champion · ' + ROLE_FR[myRole()], prefer: myRole(), selected: [S.match.me].filter(Boolean), onPick: id => { S.match.me = id; } });
+    return openPicker({ title: 'Ton champion · ' + ROLE_FR[myRole()], prefer: myRole(), path: 'me', selected: [S.match.me].filter(Boolean), onPick: id => { S.match.me = id; } });
   }
   const [side, role] = path.split('.');
-  openPicker({ title: `${side === 'ally' ? 'Allié' : 'Adversaire'} · ${ROLE_FR[role]}`, prefer: role, selected: [S.match[side][role]].filter(Boolean), onPick: id => { S.match[side][role] = id; } });
+  openPicker({ title: `${side === 'ally' ? 'Allié' : 'Adversaire'} · ${ROLE_FR[role]}`, prefer: role, path: side + '.' + role, selected: [S.match[side][role]].filter(Boolean), onPick: id => { S.match[side][role] = id; } });
 }
 document.addEventListener('click', e => {
   const s = e.target.closest('[data-slot]'); if (s) return editSlot(s.dataset.slot);
