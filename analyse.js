@@ -146,22 +146,27 @@ async function loadAnalyse(force) {
   AN.busy = true; st.className = 'status'; st.textContent = 'Récupération de tes parties…';
   const base = (S.settings.proxy || RELAY).replace(/\/+$/, ''), q = `riotId=${encodeURIComponent(S.settings.riotId)}&platform=${S.settings.platform}`;
   try {
-    const r = await fetch(`${base}/matches?${q}&count=15`);
+    const r = await fetch(`${base}/matches?${q}&count=60`);
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(r.status === 404 && j.error === 'not_found' ? 'old_relay' : r.status === 403 ? 'key' : r.status === 429 ? 'rate' : 'err');
     AN.puuid = j.puuid; AN.ids = j.ids; LS.set('an_ids', AN.ids);
-    let n = 0;
+    // On ne garde que les parties jouées au poste choisi : on parcourt l'historique jusqu'à en trouver 15.
+    const RP = POS[myRole()], WANT = 15, MAXNEW = 40;
+    let n = 0, found = 0;
     for (const id of AN.ids) {
-      if (AN.sums[id] && AN.sums[id].v === 2 && !force) continue;
-      st.textContent = `Analyse des parties… ${++n}`;
+      if (found >= WANT) break;
+      const c = AN.sums[id];
+      if (c && c.v === 2 && !force) { if (c.pos === RP) found++; continue; }
+      if (n >= MAXNEW) break;
+      st.textContent = `Recherche de tes parties en ${ROLE_FR[myRole()]}… ${found}/${WANT}`; n++;
       const mr = await fetch(`${base}/match?id=${id}&platform=${S.settings.platform}`);
       if (mr.status === 429) { await new Promise(res => setTimeout(res, 3000)); continue; }
       if (!mr.ok) continue;
-      const s = summarize(await mr.json(), AN.puuid); if (s) AN.sums[id] = s;
+      const s = summarize(await mr.json(), AN.puuid); if (s) { AN.sums[id] = s; if (s.pos === RP) found++; }
       LS.set('an_sums', pruneSums()); renderAnalyse();
     }
-    AN.updated = Date.now(); LS.set('an_updated', AN.updated);
-    st.className = 'status ok'; st.textContent = `${AN.ids.filter(id => AN.sums[id]).length} parties classées analysées.`;
+    AN.updated = Date.now(); LS.set('an_updated', AN.updated); AN.role = myRole();
+    st.className = 'status ok'; st.textContent = found ? `${found} partie${found > 1 ? 's' : ''} classée${found > 1 ? 's' : ''} en ${ROLE_FR[myRole()]} analysée${found > 1 ? 's' : ''}.` : `Aucune partie classée en ${ROLE_FR[myRole()]} dans tes ${AN.ids.length} dernières parties.`;
   } catch (e) {
     st.className = 'status err';
     st.textContent = e.message === 'old_relay' ? 'Le relais doit être mis à jour (Cloudflare redéploie depuis GitHub, patiente quelques minutes).' : e.message === 'key' ? 'Clé Riot refusée par le relais.' : e.message === 'rate' ? 'Trop de requêtes, réessaie dans 2 minutes.' : 'Impossible de joindre le relais.';
@@ -175,14 +180,14 @@ const pct = v => Math.round(v * 100) + ' %';
 function avg(arr, f) { const v = arr.map(f).filter(x => x != null && !isNaN(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }
 function renderAnalyse() {
   const out = $('#anOut'); if (!out) return;
-  const games = (AN.ids || []).map(id => AN.sums[id]).filter(Boolean);
-  if (!games.length) { out.innerHTML = `<div class="card"><p>Aucune partie analysée pour l'instant.</p><p class="note">Appuie sur « Analyser mes parties » : l'app lit tes 15 dernières parties classées.</p></div>`; return; }
-  const last = games.find(g => g.pos === POS[myRole()]) || games[0], d = diagnose(last), meC = champIdByName(last.me.champ), opC = last.opp && champIdByName(last.opp.champ);
+  const all = (AN.ids || []).map(id => AN.sums[id]).filter(Boolean);
+  const games = all.filter(g => g.pos === POS[myRole()]).slice(0, 15);
+  if (!games.length) { out.innerHTML = `<div class="card"><p>${all.length ? `Aucune partie en ${ROLE_FR[myRole()]} parmi tes parties analysées.` : 'Aucune partie analysée pour l\'instant.'}</p><p class="note">Appuie sur « Analyser mes parties » : l'app cherche tes 15 dernières parties classées (solo et flex) jouées en ${ROLE_FR[myRole()]}. Les parties à d'autres postes sont ignorées.</p></div>`; return; }
+  const last = games[0], d = diagnose(last), meC = champIdByName(last.me.champ), opC = last.opp && champIdByName(last.opp.champ);
   const ago = h => { const m = Math.round((Date.now() - h) / 60000); return m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} j`; };
   // tendances
   const role = myRole(), RP = POS[role], T = TARGETS[role];
-  const mine = games.filter(g => g.pos === RP);
-  const G = mine.length ? mine : games;
+  const mine = games, G = games;
   const R = x => (x.roles || ['support']).includes(role);
   const axes = [
     { k: 'cs10', roles: ['adc', 'mid', 'top'], l: 'Sbires à 10:00', f: g => g.me.cs10, o: g => g.opp && g.opp.cs10, t: T.cs10, fmt: v => v.toFixed(0), a: 'Last-hit avant de trade, et entraîne-toi en partie personnalisée.' },
@@ -209,7 +214,6 @@ function renderAnalyse() {
     <div class="row"><h3 class="grow">Dernière partie · ${ago(last.at)}</h3><span class="chip ${last.win ? 'good' : 'bad'}">${last.win ? 'Victoire' : 'Défaite'}</span></div>
     <div class="lg-head">${cimg(meC) ? `<img src="${cimg(meC)}" alt="">` : ''}<div class="grow"><b>${esc(cname(meC))}</b> <span class="num">${last.me.kda.join(' / ')}</span>
       <div class="note">${Math.round(last.dur)} min · côté ${last.side}${last.adc ? ' · avec ' + esc(cname(champIdByName(last.adc))) : ''}${opC ? ' · contre ' + esc(cname(opC)) + (last.eAdc ? ' + ' + esc(cname(champIdByName(last.eAdc))) : '') : ''}</div></div></div>
-    ${last.pos !== POS[myRole()] ? `<p class="note">Aucune partie récente en ${ROLE_FR[myRole()]} : voici ta dernière partie, analysée pour son poste.</p>` : ''}
     <div class="lbl-s">Ce que tu as raté</div>
     ${d.bad.length ? `<ul class="checks dont">${d.bad.slice(0, 5).map(x => `<li><b>${esc(x.t)}</b><br><span class="adv">${esc(x.a)}</span></li>`).join('')}</ul>` : '<p class="note">Rien de marquant, belle partie.</p>'}
     ${d.good.length ? `<div class="lbl-s">Bien joué</div><ul class="checks do">${d.good.slice(0, 3).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
@@ -219,7 +223,7 @@ function renderAnalyse() {
   <div class="card"><h3>Toi vs ${role === 'jungle' ? 'junglers' : ROLE_FR[role] + 's'} adverses</h3>
     <div class="cmp"><div class="cmp-h"><span></span><span>Toi</span><span>Eux</span><span>Cible</span></div>
     ${axes.map(x => `<div class="cmp-r ${x.score < 0.9 ? 'low' : 'ok'}"><span>${esc(x.l)}</span><b class="num">${x.v == null ? '–' : x.fmt(x.v)}</b><span class="num">${x.o == null ? '–' : x.fmt(x.o)}</span><span class="num">${x.fmt(x.t)}</span></div>`).join('')}</div>
-    <p class="note">Rouge = sous l'objectif. « Eux » = moyenne de tes adversaires directs. ${mine.length ? `${mine.length} parties en ${ROLE_FR[role]}` : `Aucune partie récente en ${ROLE_FR[role]} : toutes tes parties sont comptées`}.</p></div>
+    <p class="note">Rouge = sous l'objectif. « Eux » = moyenne de tes adversaires directs. Uniquement tes ${mine.length} dernières parties en ${ROLE_FR[role]}.</p></div>
   <div class="card"><h3>Tes champions ${ROLE_FR[role]} · ${wins}V ${G.length - wins}D</h3>
     <div class="wr">${champs.map(([c, s]) => wrRow(c, s)).join('')}</div>
     ${adcs.length ? `<h3 style="margin-top:6px">Avec tes ADC</h3><div class="wr">${adcs.map(([c, s]) => wrRow(c, s)).join('')}</div>` : ''}</div>`;

@@ -908,7 +908,7 @@ function show(v) {
   if (v === 'time') renderTimeline();
   { const h = $('#hdrRole'); if (h) h.textContent = S.settings.role ? ROLE_FR[myRole()] : 'LoL'; }
   if (v === 'home') { const a = $('#homeAcc'); if (a) a.textContent = S.settings.riotId ? 'Compte : ' + S.settings.riotId : 'Ajoute ton Riot ID dans les Réglages.'; $('#homeRole').textContent = ROLE_FR[myRole()]; $('#homeGameSub').textContent = `Draft · Build · ${LANE_TAB[myRole()]} · Timings`; }
-  if (v === 'analyse' && typeof renderAnalyse === 'function') { renderAnalyse(); if (Date.now() - AN.updated > 10 * 60000) loadAnalyse(false); }
+  if (v === 'analyse' && typeof renderAnalyse === 'function') { renderAnalyse(); if (Date.now() - AN.updated > 10 * 60000 || AN.role !== myRole()) loadAnalyse(false); }
   window.scrollTo(0, 0);
 }
 $$('nav.tabs button').forEach(b => b.onclick = () => show(b.dataset.v));

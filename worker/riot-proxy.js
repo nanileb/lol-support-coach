@@ -58,7 +58,7 @@ export default {
 
     if (url.pathname === '/matches') {
       const a = await account(); if (a.err) return a.err;
-      const count = Math.min(30, Math.max(1, Number(url.searchParams.get('count')) || 15));
+      const count = Math.min(100, Math.max(1, Number(url.searchParams.get('count')) || 15));
       const r = await riot(`https://${region}.api.riotgames.com/lol/match/v5/matches/by-puuid/${a.puuid}/ids?type=ranked&start=0&count=${count}`);
       if (!r.ok) return fail(r);
       return json({ puuid: a.puuid, ids: await r.json() });
