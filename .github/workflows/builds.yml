@@ -1,0 +1,28 @@
+name: Builds des meilleurs joueurs
+on:
+  schedule:
+    - cron: '0 3 * * 2'   # chaque mardi 3:00 UTC
+  workflow_dispatch:
+    inputs:
+      matches:
+        description: Nombre de parties
+        default: '2500'
+permissions:
+  contents: write
+concurrency: builds
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/collect.mjs ${{ github.event.inputs.matches || '2500' }}
+      - run: |
+          git config user.name "builds-bot"
+          git config user.email "builds-bot@users.noreply.github.com"
+          git add builds.json
+          git diff --cached --quiet || git commit -m "Builds mis à jour (meilleurs joueurs EUW + KR)"
+          git pull --rebase origin main && git push
