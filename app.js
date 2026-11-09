@@ -340,6 +340,54 @@ const FLAG_FR = { ap: 'équipe AP', ad: 'équipe très AD', heal: 'beaucoup de s
 // Objets « contre eux » de secours, retenus seulement s'ils se jouent sur le champion
 const FALLBACK = { ap: [3102, 3156, 4401, 8020, 2504, 6665, 3157], ad: [3157, 3026, 6333, 3143, 3075, 3110, 3047], heal: [3123, 3033, 6609, 3916, 3165, 3076, 3011], tank: [3036, 3135, 8010, 6653, 3153, 3071, 6694], cc: [3111, 3139, 3222, 2504, 3102], assassin: [3157, 3026, 6333, 3156, 3102, 3190] };
 function enemyFlags(A) { return A.n ? { ap: A.ap >= 3, ad: A.ad >= 4, heal: A.heal.length >= 2, tank: A.front.length >= 3, cc: A.eng.length >= 3, assassin: A.ass.length >= 2 } : {}; }
+// Objets qui contrent ton adversaire direct : d'abord ce que les meilleurs joueurs achètent contre lui sur ton champion,
+// sinon l'objet de contre classique de sa catégorie, seulement s'il se joue sur ton champion.
+const LANE_ITEMS = {
+  apBurst: [3157, 3102, 3156, 4401, 2504, 3111], adBurst: [3157, 3026, 6333, 6673, 3143, 3047, 3110],
+  heal: [3123, 3033, 3916, 3165, 6609, 3076, 3075], tank: [3036, 3135, 6653, 3153, 3071, 6694, 3181],
+  ap: [3102, 3156, 4401, 8020, 3111], autos: [3143, 3110, 3075, 3047, 6333, 3026]
+};
+const THREAT_FR = { apBurst: 'assassin AP', adBurst: 'assassin AD', heal: 'beaucoup de soins', tank: 'tank', ap: 'dégâts magiques', autos: 'attaques de base' };
+const ITEM_TIP = {
+  3157: 'Actif : 2,5 s d\'invulnérabilité. Garde-le pour son engage ou son ultime, pas pour un simple trade.',
+  3102: 'Son bouclier bloque un sort : fais-le sauter avant de trade, ou garde-le pour son engage.',
+  3026: 'Te ressuscite une fois : il rate souvent son kill et toi tu restes dans le combat.',
+  6333: 'Étale les dégâts physiques reçus : son burst ne te tue plus d\'un coup.',
+  6673: 'Bouclier automatique quand tu passes en PV bas : il casse son burst.',
+  3156: 'Bouclier contre les dégâts magiques quand tu passes en PV bas.',
+  3123: 'Anti-soins : prends le composant tôt (800 PO), finis l\'objet plus tard.',
+  3916: 'Anti-soins : prends le composant tôt (800 PO), finis l\'objet plus tard.',
+  3076: 'Anti-soins quand il te frappe : prends-la tôt.',
+  3143: 'Réduit les dégâts des coups critiques et ralentit les attaquants.',
+  3110: 'Ralentit sa vitesse d\'attaque autour de toi.',
+  3075: 'Renvoie des dégâts et applique l\'anti-soins quand il te frappe.'
+};
+const CHAMP_TIP = {
+  Zed: { 3157: 'Contre Zed : active Zhonya juste avant que sa marque (R) explose, environ 3 s après qu\'il l\'a posée. Les dégâts de la marque sont annulés.' },
+  Karthus: { 3157: 'Contre Karthus : active Zhonya à la fin de la canalisation de son ultime (3 s) pour l\'esquiver.' }
+};
+function laneThreats(opp) {
+  const T = [], t = tags(opp), ass = inList('assassins', opp) || t.includes('Assassin'), ap = isAP(opp);
+  if (ass) T.push(ap ? 'apBurst' : 'adBurst');
+  if (inList('healers', opp)) T.push('heal');
+  if (isFront(opp)) T.push('tank');
+  if (!ass && ap) T.push('ap');
+  if (!ass && !ap && (t.includes('Marksman') || t.includes('Fighter'))) T.push('autos');
+  return T;
+}
+function laneCounter(b, opp, skip) {
+  if (!b || !opp) return [];
+  const isB = id => S.items && S.items[id] && (S.items[id].tags || []).includes('Boots');
+  const inPool = id => (b.pool || []).some(x => x[0] === String(id));
+  const res = [], ok = id => itemExists(id) && !isB(id) && !(skip || []).includes(id) && !res.find(x => x.id === id);
+  const tip = id => (CHAMP_TIP[opp] || {})[id] || ITEM_TIP[id] || '';
+  ((b.lane || {})[opp] || []).forEach(x => { if (ok(x[0])) res.push({ id: x[0], data: 1, why: `${x[1]} % des meilleurs joueurs le prennent contre ${cname(opp)} (${x[3]} parties)`, tip: tip(x[0]) }); });
+  if (!res.length) for (const th of laneThreats(opp)) {
+    const id = LANE_ITEMS[th].map(String).find(i => ok(i) && inPool(i));
+    if (id) { res.push({ id, data: 0, why: `${THREAT_FR[th]} : objet de contre classique, joué sur ${cname(S.match.me)} par les meilleurs joueurs`, tip: tip(id) }); break; }
+  }
+  return res.slice(0, 2);
+}
 function renderBuild() {
   const out = $('#buildOut'), me = S.match.me, role = myRole();
   const opgg = { euw1: 'euw', eun1: 'eune', na1: 'na', kr: 'kr', tr1: 'tr', br1: 'br', la1: 'lan', la2: 'las', jp1: 'jp', oc1: 'oce', me1: 'me' }[S.settings.platform] || 'euw';
@@ -380,6 +428,8 @@ function renderBuild() {
   ((b.core[0] || [])[0] || []).forEach(addC); (b.first || []).slice(0, 1).forEach(x => addC(x[0])); (b.pool || []).forEach(x => addC(x[0]));
   // contre eux : objets que les meilleurs joueurs ajoutent face à cette compo
   const sit = [];
+  const opp = S.match.enemy[role];
+  laneCounter(b, opp, core.slice(0, 1)).forEach(x => sit.push({ id: x.id, fl: 'lane', why: x.why, tag: 'contre ' + cname(opp) }));
   for (const fl of ['heal', 'assassin', 'ap', 'ad', 'tank', 'cc']) {
     if (!F[fl] || sit.length >= 3) continue;
     const data = ((b.vs || {})[fl] || []).filter(x => itemExists(x[0]) && !isB(x[0]) && !sit.find(y => y.id === x[0]));
@@ -390,9 +440,9 @@ function renderBuild() {
   const seq = [];
   const addS = (id, why) => { id = String(id); if (id && !seq.find(x => x.id === id)) seq.push({ id, why }); };
   addS(core[0], `1er objet de ${b.first && b.first[0] && b.first[0][0] === core[0] ? b.first[0][1] + ' % des' : 'nombreux'} meilleurs joueurs`);
-  sit.filter(x => x.fl === 'heal' || x.fl === 'assassin').forEach(x => addS(x.id, x.why));
+  sit.filter(x => x.fl === 'lane' || x.fl === 'heal' || x.fl === 'assassin').forEach(x => addS(x.id, x.why));
   core.slice(1, 2).forEach(id => addS(id, 'objet de base'));
-  sit.filter(x => x.fl !== 'heal' && x.fl !== 'assassin').forEach(x => addS(x.id, x.why));
+  sit.filter(x => x.fl !== 'lane' && x.fl !== 'heal' && x.fl !== 'assassin').forEach(x => addS(x.id, x.why));
   core.slice(2).forEach(id => addS(id, 'objet de base'));
   const order = seq.slice(0, 4).map(x => x.id);
   if (boots) order.splice(1, 0, boots);
@@ -404,7 +454,7 @@ function renderBuild() {
   const tile = st => `<div class="tl-i ${st.kind === 'finish' ? 'fin' : ''}"><img src="${iimg(st.id)}" alt="${esc(iname(st.id))}" loading="lazy">${st.qty > 1 ? `<i class="qty">×${st.qty}</i>` : ''}<span class="num">${st.cost || ''}</span></div>`;
   const label = g => {
     const mm = g.name.match(/^Objet (\d+) : (.*)$/);
-    if (mm) { const w = (seq.find(x => iname(x.id) === mm[2]) || {}).why; return `<b>Objet ${mm[1]}</b><small>${esc(mm[2])}</small>${w && sit.find(x => x.why === w) ? '<em class="vs-tag">contre eux</em>' : ''}`; }
+    if (mm) { const w = (seq.find(x => iname(x.id) === mm[2]) || {}).why; return `<b>Objet ${mm[1]}</b><small>${esc(mm[2])}</small>${(() => { const x = w && sit.find(y => y.why === w); return x ? `<em class="vs-tag">${esc(x.tag || 'contre eux')}</em>` : ''; })()}`; }
     if (g.name === 'Finir les bottes') { const f = g.items[g.items.length - 1]; return `<b>Bottes</b><small>${esc(iname(f.id))}</small>`; }
     return `<b>${esc(g.name)}</b>`;
   };
@@ -523,6 +573,11 @@ const ADC_DO = {
   mage: sup => `Profite du poke de ${cname(sup)} pour gagner la vague et les plaques.`
 };
 function renderBot() {
+  renderBotInner();
+  const role = myRole(), opp = S.match.enemy[role], me = S.match.me, lc = laneCounter(me && BUILD(me), opp), out = $('#botOut');
+  if (lc.length && out) out.insertAdjacentHTML('afterbegin', `<div class="card"><h3>Objet clé contre ${esc(cname(opp))}</h3>${lc.map(x => `<div class="item"><img src="${iimg(x.id)}" alt="" loading="lazy"><div><b>${esc(iname(x.id))}</b><small>${esc(x.why)}</small>${x.tip ? `<small class="tip">${esc(x.tip)}</small>` : ''}</div></div>`).join('')}<p class="note">Déjà placé dans ton build (onglet Build).</p></div>`);
+}
+function renderBotInner() {
   const role = myRole();
   $('#laneTitle').textContent = LANE_TAB[role];
   $('#laneTab').textContent = LANE_TAB[role];

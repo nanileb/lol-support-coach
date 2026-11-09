@@ -157,6 +157,17 @@ for (const [key, S] of Object.entries(groups)) {
   const core3 = mode(S.filter(s => s.legs.length >= 3).map(s => s.legs.slice(0, 3).join(',')), 2);
   const vsOpp = {}; S.forEach(s => { if (s.opp) { const o = vsOpp[s.opp] = vsOpp[s.opp] || [0, 0]; o[0]++; if (s.win) o[1]++; } });
   const duo = {}; S.forEach(s => { if (s.duo) { const o = duo[s.duo] = duo[s.duo] || [0, 0]; o[0]++; if (s.win) o[1]++; } });
+  // objets ajoutés contre un adversaire direct précis (ex. Zhonya contre Zed)
+  const lane = {};
+  for (const [o, [k]] of Object.entries(vsOpp)) {
+    if (k < 6) continue;
+    const A = S.filter(s => s.opp === o), B = S.filter(s => s.opp !== o), res = [];
+    for (const [id] of pool) {
+      const ra = A.filter(s => s.items.includes(id)).length / A.length, rb = B.length ? B.filter(s => s.items.includes(id)).length / B.length : 0;
+      if (ra >= 0.25 && ra / Math.max(rb, 0.03) >= 1.4) res.push([id, Math.round(ra * 100), Math.round(ra / Math.max(rb, 0.03) * 10) / 10, k]);
+    }
+    if (res.length) lane[o] = res.sort((a, b) => b[2] - a[2]).slice(0, 2);
+  }
   const ks = mode(S.map(s => s.ks))[0];
   out[key] = {
     n, wr: pct(wins, n),
@@ -165,7 +176,7 @@ for (const [key, S] of Object.entries(groups)) {
     boots: mode(S.map(s => s.boots)).slice(0, 3).map(([k, c]) => [k, pct(c, n)]),
     core: core3.slice(0, 2).map(([k, c]) => [k.split(','), pct(c, n)]),
     pool: pool.slice(0, 14).map(([id, r]) => [id, Math.round(r * 100)]),
-    vs,
+    vs, lane,
     spells: (mode(S.map(s => s.spells))[0] || [''])[0].split(',').filter(Boolean).map(Number),
     runes: ks ? (mode(S.filter(s => String(s.ks) === ks[0]).map(s => s.runes))[0] || [null])[0] : null,
     skills: (mode(S.map(s => s.skills))[0] || [''])[0], early: (mode(S.map(s => s.early))[0] || [''])[0],
