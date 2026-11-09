@@ -6,7 +6,7 @@ import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 const RELAY = (process.env.RELAY || 'https://lol-support-coach.62z7h87vzm.workers.dev').replace(/\/+$/, '');
 const MAX = Number(process.argv[2] || process.env.MAX_MATCHES || 2500);
 const REGIONS = (process.env.REGIONS || 'euw1,kr').split(',');
-const PLAYERS = Number(process.env.PLAYERS || 220);
+const PLAYERS = Number(process.env.PLAYERS || 350);
 const DD = 'https://ddragon.leagueoflegends.com';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -58,7 +58,7 @@ const since = Math.floor(Date.now() / 1000) - 10 * 86400;
 const ids = new Map();
 for (let i = 0; i < queue.length && ids.size < MAX * 1.6; i++) {
   const { pf, p } = queue[(i * 7919) % queue.length]; // ordre mélangé, régions alternées
-  const r = await relay(`/ids?platform=${pf}&puuid=${p}&count=12&start=${since}`);
+  const r = await relay(`/ids?platform=${pf}&puuid=${p}&count=20&start=${since}`);
   (r && r.ids || []).forEach(id => ids.has(id) || ids.set(id, pf));
   if (i % 50 === 0) log('ids', i, '/', queue.length, '→', ids.size, 'parties');
 }
@@ -66,14 +66,18 @@ for (let i = 0; i < queue.length && ids.size < MAX * 1.6; i++) {
 /* 3. Détail des parties */
 const games = [];
 let newest = null;
+// On compte seulement les parties du patch le plus récent : on continue tant qu'on n'en a pas MAX (dans la limite de 1,6 × MAX lues).
+const onNewest = () => games.filter(g => g.ver === newest).length;
+let read = 0;
 for (const [id, pf] of ids) {
-  if (games.length >= MAX) break;
+  if (onNewest() >= MAX || read >= MAX * 1.6) break;
+  read++;
   const m = await relay(`/match?id=${id}&platform=${pf}`, 2);
   if (!m || m.queueId !== 420 || m.gameDuration < 900 || !m.events) continue;
   const ver = (m.gameVersion || '').split('.').slice(0, 2).join('.');
   if (!newest || ver > newest) newest = ver;
   games.push({ ...m, ver });
-  if (games.length % 100 === 0) log('parties', games.length);
+  if (games.length % 100 === 0) log('parties', games.length, '· patch récent', onNewest());
 }
 // garder le patch le plus récent, compléter avec le précédent si trop peu de parties
 const byVer = {}; games.forEach(g => (byVer[g.ver] = byVer[g.ver] || []).push(g));
