@@ -226,13 +226,24 @@ const shrink = (wr, n, k, prior = 50) => Math.round(((wr * n) + prior * k) / (n 
 // Classement par taux de victoire estimé : WR du champion chez les Challenger / GM, corrigé avec chaque allié et chaque adversaire.
 // Chaque écart est ramené vers le WR du champion quand il y a peu de parties (k), et plafonné.
 const ARMOR_TANKS = ['Malphite', 'Rammus', 'KSante', 'Ornn', 'Leona', 'Sion', 'Poppy', 'Shen', 'Braum', 'Nautilus', 'Alistar', 'Sejuani', 'Zac', 'Galio'];
+// Duel sans assez de parties : petite estimation d'après les profils (portée, tank, counters connus), plafonnée à ±2
+function duelHeuristic(me, opp) {
+  const rng = c => ((champ(c) || {}).range || 0) >= 300, tm = tags(me), to = tags(opp);
+  if ((S.meta.counters[me] || []).includes(opp)) return [2, `bon contre ${cname(opp)}`];
+  if ((S.meta.counters[opp] || []).includes(me)) return [-2, `${cname(opp)} le contre`];
+  if (rng(me) && !rng(opp)) return [1.5, `portée contre ${cname(opp)} (corps à corps)`];
+  if (!rng(me) && rng(opp)) return [-1.5, `${cname(opp)} a la portée sur toi`];
+  if (tm[0] === 'Tank' && to.includes('Assassin')) return [1, `tank solide contre ${cname(opp)} (assassin)`];
+  if (to[0] === 'Tank' && (tm.includes('Mage') || tm.includes('Marksman'))) return [1, `dégâts soutenus contre ${cname(opp)} (tank)`];
+  return null;
+}
 const BLIND_SAFE = { top: ['KSante', 'Gnar', 'Malphite', 'Ornn', 'Jax', 'Sion'], jungle: ['JarvanIV', 'Vi', 'Sejuani', 'Maokai'], mid: ['Orianna', 'Ahri', 'Galio', 'Taliyah', 'Syndra'], adc: ['Ezreal', 'Jhin', 'Caitlyn', 'Varus'], support: ['Nautilus', 'Rakan', 'Karma', 'Braum', 'Bard'] };
 const COUNTERABLE = { top: ['Olaf', 'Renekton', 'Darius', 'Garen', 'Teemo', 'Vayne', 'Nasus'], jungle: ['Nidalee', 'Evelynn', 'Shaco'], mid: ['Kassadin', 'Veigar', 'Lux', 'Xerath', 'Zed'], adc: ['Draven', 'Samira', 'Twitch', 'Nilah'], support: ['Yuumi', 'Sona', 'Soraka', 'Pyke'] };
 function scoreRole(id) {
   const role = myRole(), m = S.match, R = [], b = BUILD(id);
   const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
   if (!b) return role === 'support' ? scoreSupport(id) : { id, score: 50, reasons: ['pas assez de parties Challenger sur ce champion à ce poste'], tier: null, label: t, n: 0, est: false };
-  const base = shrink(b.wr, b.n, 300);
+  const base = shrink(b.wr, b.n, 100);
   let s = base; const parts = [];
   const add = (v, txt) => { v = Math.max(-4, Math.min(4, v)); if (Math.abs(v) < 0.5) return; s += v; parts.push([v, txt]); };
   const find = (list, c) => (list || []).find(x => x[0] === c && x[1] >= 20);
@@ -249,6 +260,7 @@ function scoreRole(id) {
     const e = m.enemy[r]; if (!e) return;
     const direct = r === role, x = (direct && find(b.opp, e)) || find(b.vsAll, e);
     if (x) add(pairDelta(x, b.wr) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties)`);
+    else if (direct && !(BUILD(e, r) && find(direct ? BUILD(e, r).opp : null, id))) { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, pas assez de parties sur ce duel)'); }
     else { const eb = BUILD(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], 100, eb.wr)) * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties)`); }
   });
   // besoins de compo : ce qui manque à ton équipe et ce qui répond à la leur
@@ -263,6 +275,7 @@ function scoreRole(id) {
   }
   if (en.length >= 3) {
     const ead = en.filter(e => !isAP(e)).length, eap = en.length - ead;
+    if (eap === 3 && ['Galio', 'Chogath', 'Kassadin', 'Mordekaiser', 'Gragas', 'Maokai', 'Braum', 'Malphite', 'Sion', 'Ornn', 'KSante'].includes(id)) need(1.5, `tient bien face à leurs dégâts magiques (${eap} AP)`);
     if (ead >= 4 && ARMOR_TANKS.includes(id)) need(3, `résiste bien à leur équipe très AD (${ead} AD)`);
     if (eap >= 4 && ['Galio', 'Kassadin', 'Mordekaiser', 'Gragas', 'Maokai', 'Braum'].includes(id)) need(3, `résiste bien à leur équipe très AP (${eap} AP)`);
     if (en.filter(e => inList('assassins', e)).length >= 2 && (isEngager(id) || (S.meta.supports[id] || {}).peel >= 3)) need(2, 'plusieurs plongeurs en face : il faut du contrôle / du peel');
@@ -276,7 +289,7 @@ function scoreRole(id) {
   parts.sort((a, b2) => Math.abs(b2[0]) - Math.abs(a[0]));
   R.push(`${b.wr} % de victoires en Challenger (${b.n} parties)`);
   parts.forEach(([v, txt]) => R.push(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt · ${txt}`));
-  return { id, score: Math.round(50 + 8 * Math.tanh((s - 50) / 8)), reasons: R, tier: null, label: t, n: b.n, est: true, blind: !!R.blind };
+  return { id, score: Math.round(50 + 10 * Math.tanh((s - 50) / 10)), raw: s, reasons: R, tier: null, label: t, n: b.n, est: true, blind: !!R.blind };
 }
 
 function renderRanking() {
@@ -290,7 +303,7 @@ function renderRanking() {
     return;
   }
   const T = takenChamps('me');
-  const res = pool.filter(id => !T[id]).map(scoreRole).sort((a, b) => b.score - a.score);
+  const res = pool.filter(id => !T[id]).map(scoreRole).sort((a, b) => (b.raw ?? b.score) - (a.raw ?? a.score));
   const gone = pool.filter(id => T[id]);
   const hasInfo = allies().length || enemies().length;
   const noData = role !== 'support' && !(S.builds && S.builds.builds);

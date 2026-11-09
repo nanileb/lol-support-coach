@@ -402,5 +402,26 @@
 "expect": [
 "Nautilus"
 ]
+},
+{
+"id": "T4-anthony",
+"role": "top",
+"pool": [
+"Olaf",
+"Chogath",
+"Malphite",
+"Camille",
+"Gnar",
+"Jayce",
+"KSante"
+],
+"ally": {},
+"enemy": {
+"top": "Darius",
+"jungle": "LeeSin",
+"mid": "Kennen",
+"adc": "Karthus",
+"support": "Neeko"
+}
 }
 ]

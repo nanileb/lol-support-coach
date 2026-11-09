@@ -12,6 +12,7 @@ for (const s of SC) {
   run(`S.settings.role=${JSON.stringify(s.role)}; S.settings.pools[${JSON.stringify(s.role)}]=${JSON.stringify(s.pool)}; S.match=defMatch(); Object.assign(S.match.ally, ${JSON.stringify(s.ally)}); Object.assign(S.match.enemy, ${JSON.stringify(s.enemy)}); S.match.me=null;`);
   const rank = run(`myPool().filter(id=>!takenChamps('me')[id]).map(scoreRole).sort((a,b)=>b.score-a.score)`);
   rank.forEach(r => { if (r.score > 62 || r.score < 38) fail(s.id, `score affiché irréaliste : ${r.id} ${r.score} %`); });
+  if (Object.values(s.enemy).filter(Boolean).length >= 4 && rank.length >= 4) { const sp = rank[0].score - rank[rank.length - 1].score; if (sp < 3) fail(s.id, `classement plat : écart de ${sp} point(s) entre ${rank[0].id} et ${rank[rank.length - 1].id}`); }
   if (s.expect && !s.expect.includes(rank[0].id)) warns.push(`${s.id} : 1er choix ${rank[0].id} (${rank[0].score} %), l'audit attendait ${s.expect.join('/')}`);
   const me = rank[0].id;
   run(`S.match.me=${JSON.stringify(me)}; renderBuild(); renderBot();`);
