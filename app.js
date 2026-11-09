@@ -549,10 +549,11 @@ function planBuys(order, opt) {
     if (basic) { add('1er retour', basic, 'buy', 'vitesse pour roam et esquiver'); inv.push(basic); }
     if (pink) add('1er retour', pink, 'buy', 'vision de la rivière');
   }
-  const expand = (grp, id, why) => {
+  // Un seul niveau de composants (ex. Lame de B.F. plutôt que ses morceaux) pour tenir sur une ligne de téléphone
+  const expand = (grp, id, why, depth = 0) => {
     const comps = from(id);
-    if (!comps.length || !S.items) { add(grp, id, 'buy', why); return; }
-    comps.forEach(c => { const k = inv.indexOf(c); if (k >= 0) inv.splice(k, 1); else expand(grp, c); });
+    if (!comps.length || !S.items || depth >= 1) { add(grp, id, 'buy', why); return; }
+    comps.forEach(c => { const k = inv.indexOf(c); if (k >= 0) inv.splice(k, 1); else expand(grp, c, undefined, depth + 1); });
     add(grp, id, 'finish', why);
   };
   const whyOf = id => ((window._why || []).find(x => String(x.id) === String(id)) || {}).why;
@@ -860,7 +861,7 @@ function beep() {
 }
 function fireAlert(e) {
   const box = $('#alertBox');
-  box.innerHTML = `<div class="alert ${e.kind === 'ward' ? 'ward' : e.kind === 'obj' ? 'obj' : ''}" role="alert"><div><b>${fmt(e.t)} · ${esc(e.title)}</b><p>${esc(e.text)}</p></div><button aria-label="Fermer">OK</button></div>`;
+  box.innerHTML = `<div class="alert ${e.kind === 'ward' ? 'ward' : e.kind === 'obj' ? 'obj' : ''}" role="alert"${S.view !== 'time' ? ' style="top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 84px)"' : ''}><div><b>${fmt(e.t)} · ${esc(e.title)}</b><p>${esc(e.text)}</p></div><button aria-label="Fermer">OK</button></div>`;
   $('button', box).onclick = () => box.innerHTML = '';
   setTimeout(() => { if (box.firstChild) box.innerHTML = ''; }, 9000);
   beep();
