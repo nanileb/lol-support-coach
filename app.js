@@ -16,9 +16,12 @@ const LS = {
   set(k, v) { try { localStorage.setItem('cs_' + k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } }
 };
 
-const ROLES_ALLY = ['top', 'jungle', 'mid', 'adc'];
-const ROLES_ENEMY = ['top', 'jungle', 'mid', 'adc', 'support'];
+const ROLES = ['top', 'jungle', 'mid', 'adc', 'support'];
+const ROLES_ENEMY = ROLES;
 const ROLE_FR = { top: 'Top', jungle: 'Jungle', mid: 'Mid', adc: 'ADC', support: 'Support' };
+const ROLE_LONG = { top: 'toplaner', jungle: 'jungler', mid: 'midlaner', adc: 'ADC', support: 'support' };
+const POS = { top: 'TOP', jungle: 'JUNGLE', mid: 'MIDDLE', adc: 'BOTTOM', support: 'UTILITY' };
+const LANE_TAB = { top: 'Lane', jungle: 'Jungle', mid: 'Lane', adc: 'Botlane', support: 'Botlane' };
 const ARCH_FR = { engage: 'Engage', warden: 'Protecteur', enchanter: 'Enchanteur', mage: 'Mage / poke' };
 const TIER_PTS = { 'S+': 6, S: 4, A: 2, B: 0, C: -3, D: -6 };
 const STYLE = {
@@ -30,15 +33,20 @@ const STYLE = {
 const STYLE_FR = { allin: 'all-in', bully: 'lane agressive', hyper: 'hypercarry', poke: 'poke', utility: 'utilitaire' };
 const NON_CRIT = ['Ezreal', 'Varus', 'Kaisa', 'Corki', 'Ziggs', 'Seraphine', 'Hwei', 'Karthus', 'Mel', 'Swain', 'KogMaw', 'Vayne', 'Kalista', 'Twitch', 'Zeri', 'Smolder'];
 
-const defMatch = () => ({ ally: { top: null, jungle: null, mid: null, adc: null }, enemy: { top: null, jungle: null, mid: null, adc: null, support: null }, me: null, side: 'blue' });
+const defMatch = () => ({ ally: { top: null, jungle: null, mid: null, adc: null, support: null }, enemy: { top: null, jungle: null, mid: null, adc: null, support: null }, me: null, side: 'blue' });
 const S = {
-  settings: Object.assign({ pool: [], riotId: 'Nanileb#1996', platform: 'euw1', proxy: '', sound: true, vibrate: true, notif: false, lead: 15 }, LS.get('settings', {})),
+  settings: Object.assign({ role: null, pools: {}, pool: [], riotId: 'Nanileb#1996', platform: 'euw1', proxy: '', sound: true, vibrate: true, notif: false, lead: 15 }, LS.get('settings', {})),
   match: (() => { const m = Object.assign(defMatch(), LS.get('match', {})); const d = defMatch(); m.ally = Object.assign(d.ally, m.ally); m.enemy = Object.assign(d.enemy, m.enemy); return m; })(),
   timer: LS.get('timer', { start: null }),
   bought: LS.get('bought', { ids: [] }),
   kills: LS.get('kills', { drakes: [], soul: null }),
   meta: null, champs: {}, byKey: {}, version: null, items: null, fired: {}, view: 'draft'
 };
+if (S.settings.pool && S.settings.pool.length && !(S.settings.pools || {}).support) S.settings.pools = Object.assign({}, S.settings.pools, { support: S.settings.pool });
+S.settings.pools = S.settings.pools || {};
+const myRole = () => S.settings.role || 'support';
+const allyRoles = () => ROLES.filter(r => r !== myRole());
+const myPool = () => S.settings.pools[myRole()] || [];
 const save = () => { LS.set('settings', S.settings); LS.set('match', S.match); LS.set('timer', S.timer); LS.set('kills', S.kills); };
 
 /* ---------------- Chargement des données ---------------- */
@@ -56,27 +64,36 @@ async function loadDD(force) {
   try {
     const versions = await getJSON(DD + '/api/versions.json', { cache: 'no-cache' });
     S.version = versions[0];
-    const cached = LS.get('dd3', null);
-    if (!force && cached && cached.v === S.version) { S.champs = cached.champs; S.items = cached.items; }
+    const cached = LS.get('dd4', null);
+    if (!force && cached && cached.v === S.version) { S.champs = cached.champs; S.items = cached.items; S.runes = cached.runes || {}; S.sums = cached.sums || {}; }
     else {
-      const [c, it] = await Promise.all([
+      const [c, it, ru, su] = await Promise.all([
         getJSON(`${DD}/cdn/${S.version}/data/fr_FR/champion.json`),
-        getJSON(`${DD}/cdn/${S.version}/data/fr_FR/item.json`).catch(() => null)
+        getJSON(`${DD}/cdn/${S.version}/data/fr_FR/item.json`).catch(() => null),
+        getJSON(`${DD}/cdn/${S.version}/data/fr_FR/runesReforged.json`).catch(() => []),
+        getJSON(`${DD}/cdn/${S.version}/data/fr_FR/summoner.json`).catch(() => ({ data: {} }))
       ]);
+      S.runes = {}; (ru || []).forEach(st => { S.runes[st.id] = { name: st.name, icon: st.icon }; st.slots.forEach(sl => sl.runes.forEach(r => S.runes[r.id] = { name: r.name, icon: r.icon })); });
+      S.sums = {}; Object.values(su.data || {}).forEach(x => S.sums[x.key] = { name: x.name, img: x.image.full });
       S.champs = {};
       for (const [id, ch] of Object.entries(c.data)) S.champs[id] = { id, key: ch.key, name: ch.name, tags: ch.tags, info: ch.info, img: ch.image.full };
       S.items = null;
-      if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) S.items[iid] = { name: x.name, gold: x.gold && x.gold.total, base: x.gold && x.gold.base, from: x.from || [] }; }
-      LS.set('dd3', { v: S.version, champs: S.champs, items: S.items });
+      if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) S.items[iid] = { name: x.name, gold: x.gold && x.gold.total, base: x.gold && x.gold.base, from: x.from || [], tags: x.tags || [] }; }
+      LS.set('dd4', { v: S.version, champs: S.champs, items: S.items, runes: S.runes, sums: S.sums });
     }
   } catch (e) {
-    const cached = LS.get('dd3', null);
-    if (cached) { S.version = cached.v; S.champs = cached.champs; S.items = cached.items; }
+    const cached = LS.get('dd4', null);
+    if (cached) { S.version = cached.v; S.champs = cached.champs; S.items = cached.items; S.runes = cached.runes || {}; S.sums = cached.sums || {}; }
   }
   S.byKey = {};
   for (const ch of Object.values(S.champs)) S.byKey[ch.key] = ch.id;
 }
 
+async function loadBuilds() {
+  try { S.builds = await getJSON('builds.json', { cache: 'no-cache' }); LS.set('builds', S.builds); }
+  catch (e) { S.builds = LS.get('builds', null); }
+}
+const BUILD = (id, role) => (S.builds && S.builds.builds && S.builds.builds[id + '|' + POS[role || myRole()]]) || null;
 const gamePatch = v => { if (!v) return null; const [a, b] = v.split('.').map(Number); return (a >= 10 && a < 20 ? a + 10 : a) + '.' + b; };
 const champ = id => S.champs[id];
 const cname = id => (champ(id) ? champ(id).name : id) || '';
@@ -106,7 +123,7 @@ function isAP(id) {
 const inList = (list, id) => (S.meta[list] || []).includes(id);
 const isEngager = id => inList('engagers', id) || (S.meta.supports[id] && S.meta.supports[id].engage >= 3);
 const isFront = id => inList('frontline', id) || tags(id).includes('Tank');
-const allies = () => ROLES_ALLY.map(r => S.match.ally[r]).filter(Boolean);
+const allies = () => allyRoles().map(r => S.match.ally[r]).filter(Boolean);
 const enemies = () => ROLES_ENEMY.map(r => S.match.enemy[r]).filter(Boolean);
 
 /* ---------------- Synergie ---------------- */
@@ -178,29 +195,62 @@ function slotHTML(id, label, data, extra = '') {
     <span class="lbl">${esc(label)}</span><span class="nm">${id ? esc(cname(id)) : '&nbsp;'}</span></button>`;
 }
 function renderSlots() {
-  const m = S.match;
-  $('#allySlots').innerHTML = ROLES_ALLY.map(r => slotHTML(m.ally[r], ROLE_FR[r], 'ally.' + r)).join('') + slotHTML(m.me, 'Toi', 'me', 'me');
+  const m = S.match, role = myRole();
+  $('#allySlots').innerHTML = allyRoles().map(r => slotHTML(m.ally[r], ROLE_FR[r], 'ally.' + r)).join('') + slotHTML(m.me, 'Toi · ' + ROLE_FR[role], 'me', 'me');
   const en = ROLES_ENEMY.map(r => slotHTML(m.enemy[r], ROLE_FR[r], 'enemy.' + r)).join('');
   $('#enemySlotsDraft').innerHTML = en; $('#enemySlotsGame').innerHTML = en;
-  $('#botAlly').innerHTML = slotHTML(m.ally.adc, 'ADC', 'ally.adc') + slotHTML(m.me, 'Toi', 'me', 'me');
-  $('#botEnemy').innerHTML = slotHTML(m.enemy.adc, 'ADC', 'enemy.adc') + slotHTML(m.enemy.support, 'Support', 'enemy.support');
+  const me = slotHTML(m.me, 'Toi', 'me', 'me');
+  if (role === 'support') { $('#botAlly').innerHTML = slotHTML(m.ally.adc, 'ADC', 'ally.adc') + me; $('#botEnemy').innerHTML = slotHTML(m.enemy.adc, 'ADC', 'enemy.adc') + slotHTML(m.enemy.support, 'Support', 'enemy.support'); }
+  else if (role === 'adc') { $('#botAlly').innerHTML = me + slotHTML(m.ally.support, 'Support', 'ally.support'); $('#botEnemy').innerHTML = slotHTML(m.enemy.adc, 'ADC', 'enemy.adc') + slotHTML(m.enemy.support, 'Support', 'enemy.support'); }
+  else { $('#botAlly').innerHTML = me; $('#botEnemy').innerHTML = slotHTML(m.enemy[role], ROLE_FR[role], 'enemy.' + role); }
+}
+
+// Classement d'un champion pour un poste autre que support : données haut niveau + compo.
+function scoreRole(id) {
+  const role = myRole(), m = S.match, R = [], b = BUILD(id);
+  let s = 50;
+  const add = (v, txt) => { if (!v) return; s += v; R.push((v > 0 ? '+' : '−') + Math.abs(Math.round(v)) + ' ' + txt); };
+  if (b && b.n >= 12) add((b.wr - 50) * 1.2, `${b.wr} % de victoires en Challenger (${b.n} parties)`);
+  const opp = m.enemy[role];
+  if (opp) {
+    const o = b && (b.opp || []).find(x => x[0] === opp), ob = BUILD(opp), r2 = ob && (ob.opp || []).find(x => x[0] === id);
+    if (o) add((o[2] - 50) * 0.8, `${o[2]} % contre ${cname(opp)} (${o[1]} parties)`);
+    else if (r2) add((50 - r2[2]) * 0.8, `${100 - r2[2]} % contre ${cname(opp)} (${r2[1]} parties)`);
+  }
+  if (role === 'adc' && m.ally.support) {
+    const sup = m.ally.support, d = b && (b.duo || []).find(x => x[0] === sup), pb = ((S.meta.pairs[sup] || {})[id]) || 0;
+    if (d) add((d[2] - 50) * 0.6, `${d[2]} % avec ${cname(sup)} (${d[1]} parties)`);
+    else if (pb) add(pb * 1.2, `duo reconnu avec ${cname(sup)}`);
+    const st = (STYLE[supProfile(sup).arch] || {})[adcProfile(id).style] || 0;
+    if (st) add(st * 0.6, `style adapté à ${cname(sup)}`);
+  }
+  const al = allies();
+  if (al.length >= 2) {
+    const ap = al.filter(isAP).length, fr = al.filter(isFront).length;
+    if (ap === 0 && isAP(id)) add(6, 'apporte des dégâts magiques (équipe full AD)');
+    if (ap >= 3 && !isAP(id)) add(5, 'apporte des dégâts physiques (équipe très AP)');
+    if (fr === 0 && (role === 'top' || role === 'jungle') && tags(id).includes('Tank')) add(6, "ton équipe n'a pas de frontline");
+  }
+  const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
+  return { id, score: Math.max(5, Math.min(97, Math.round(s))), reasons: R, tier: null, label: t, n: b ? b.n : 0 };
 }
 
 function renderRanking() {
-  const pool = S.settings.pool.filter(id => champ(id) || !Object.keys(S.champs).length);
+  const role = myRole(), pool = myPool().filter(id => champ(id) || !Object.keys(S.champs).length);
   const box = $('#ranking');
+  $('#draftTitle').textContent = `Quel ${ROLE_LONG[role]} jouer ?`;
   if (!pool.length) {
-    box.innerHTML = `<div class="empty">Ton pool est vide. Choisis tes supports une fois, ils restent enregistrés.<br><br>
+    box.innerHTML = `<div class="empty">Ton pool ${ROLE_FR[role]} est vide. Choisis tes champions une fois, ils restent enregistrés.<br><br>
       <button class="btn primary" data-act="pool">Choisir mon pool</button></div>`;
     return;
   }
-  const res = pool.map(scoreSupport).sort((a, b) => b.score - a.score);
+  const res = pool.map(role === 'support' ? scoreSupport : scoreRole).sort((a, b) => b.score - a.score);
   const hasInfo = allies().length || enemies().length;
-  box.innerHTML = (hasInfo ? '' : `<p class="note">Ajoute au moins ton ADC pour un vrai classement. En attendant : tier du patch seul.</p>`) +
+  box.innerHTML = (hasInfo ? '' : `<p class="note">Ajoute tes alliés et ton adversaire direct pour un vrai classement. En attendant : résultats des meilleurs joueurs seuls.</p>`) +
     res.map((r, i) => `<div class="ritem ${i === 0 && hasInfo ? 'top1' : ''}">
       ${cimg(r.id) ? `<img src="${cimg(r.id)}" alt="">` : '<span class="ph"></span>'}
       <div style="min-width:0"><div class="nm">${esc(cname(r.id))}${r.tier ? `<span class="tier">${r.tier}</span>` : ''}</div>
-        <div class="why">${esc(ARCH_FR[r.arch])}${r.reasons[0] ? ' · ' + esc(r.reasons[0]) : ''}</div>
+        <div class="why">${esc(r.arch ? ARCH_FR[r.arch] : r.label)}${r.reasons[0] ? ' · ' + esc(r.reasons[0]) : ''}</div>
         <div class="bar"><i style="width:${r.score}%"></i></div>
         ${r.reasons.length > 1 ? `<details class="why-more"><summary>Détail du score</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
       </div>
@@ -224,26 +274,12 @@ function itemHTML(id, why) {
   if (!itemExists(id)) return '';
   return `<div class="item"><img src="${iimg(id)}" alt="" loading="lazy"><div>${esc(iname(id))}${why ? `<small>${esc(why)}</small>` : ''}</div></div>`;
 }
-function renderBuild() {
+function renderBuildSupportLegacy() {
   const out = $('#buildOut'), me = S.match.me;
   const opgg = { euw1: 'euw', eun1: 'eune', na1: 'na', kr: 'kr', tr1: 'tr', br1: 'br', la1: 'lan', la2: 'las', jp1: 'jp', oc1: 'oce', me1: 'me' }[S.settings.platform] || 'euw';
   const rid = (S.settings.riotId || '').replace('#', '-');
   $('#opggLink').href = `https://op.gg/lol/summoners/${opgg}/${encodeURIComponent(rid)}/ingame`;
-  $('#meRow').innerHTML = me
-    ? `${slotHTML(me, 'Toi', 'me', 'me')}<div class="grow"><b>${esc(cname(me))}</b><div class="note">${esc(ARCH_FR[supProfile(me).arch])}</div></div>`
-    : `<div class="empty grow">Choisis ton support (onglet Draft ou ici).</div>${slotHTML(null, 'Toi', 'me', 'me')}`;
   const A = analyzeEnemies();
-  const chips = [];
-  if (A.n) {
-    chips.push(`<span class="chip ${A.ap >= 3 ? 'warn' : ''}">${A.ap} AP / ${A.ad} AD</span>`);
-    if (A.heal.length >= 2) chips.push(`<span class="chip bad">Soins : ${A.heal.map(cname).join(', ')}</span>`);
-    if (A.ass.length >= 2) chips.push(`<span class="chip bad">Plongeurs : ${A.ass.map(cname).join(', ')}</span>`);
-    if (A.eng.length >= 3) chips.push(`<span class="chip warn">Beaucoup de CC / engage</span>`);
-    if (A.front.length >= 3) chips.push(`<span class="chip warn">${A.front.length} tanks / frontline</span>`);
-    if (A.crit) chips.push(`<span class="chip warn">ADC à crit</span>`);
-  }
-  $('#threats').innerHTML = chips.join('');
-  if (!me) { out.innerHTML = '<p class="note">Le build apparaît dès que ton champion est choisi.</p>'; return; }
   const p = supProfile(me), arch = p.arch, I = S.meta.items;
   const B = I.boots || {};
   let boots = arch === 'mage' && p.dmg === 'ap' ? B.mage : B.default, bootsWhy = 'standard';
@@ -275,7 +311,7 @@ function renderBuild() {
   core.slice(1).forEach(id => addSeq(id, 'objet de base'));
   const order = seq.filter(x => x.id !== boots).slice(0, 4).map(x => x.id);
   order.splice(1, 0, boots); // 1er objet, puis finir les bottes, puis la suite
-  window._why = seq; const steps = planBuys(order.filter(Boolean));
+  window._why = seq; const steps = planBuys(order.filter(Boolean), { start: [3865, 2003, 2003], boots: boots, support: true });
   const groups = [];
   steps.forEach(st => { let g = groups.find(x => x.name === st.grp); if (!g) groups.push(g = { name: st.grp, items: [] }); g.items.push(st); });
   const tile = st => `<div class="tl-i ${st.kind === 'finish' ? 'fin' : ''}"><img src="${iimg(st.id)}" alt="${esc(iname(st.id))}" loading="lazy">${st.qty > 1 ? `<i class="qty">×${st.qty}</i>` : ''}<span class="num">${st.cost || ''}</span></div>`;
@@ -293,14 +329,114 @@ function renderBuild() {
       ${restG.map(g => `<div class="bp-row"><div class="bp-l">${label(g)}</div><div class="bp-r">${g.items.map(tile).join('<span class="sep">›</span>')}</div></div>`).join('')}
     </div>
     <div class="bp-foot">
+      <div class="note">Pas encore assez de parties Challenger sur ${esc(cname(me))} support : build par profil de champion.</div>
       <div><b>Chaque retour :</b> 1 pink${upId && itemExists(upId) ? ` · <b>Ward finale :</b> ${esc(iname(upId))}` : ''}</div>
       ${vs ? `<div class="bp-vs"><b>Contre eux :</b> ${vs}</div>` : ''}
       <div><b>Runes :</b> ${esc((S.meta.keystones || {})[arch] || '')} · ${esc(sums)}</div>
       ${A.n ? '' : '<div class="note">Ajoute l\'équipe adverse (plus bas) pour adapter les objets.</div>'}
     </div>`;
 }
+const FLAG_FR = { ap: 'équipe AP', ad: 'équipe très AD', heal: 'beaucoup de soins', tank: 'beaucoup de tanks', cc: 'beaucoup de contrôles', assassin: 'assassins / plongeurs' };
+// Objets « contre eux » de secours, retenus seulement s'ils se jouent sur le champion
+const FALLBACK = { ap: [3102, 3156, 4401, 8020, 2504, 6665, 3157], ad: [3157, 3026, 6333, 3143, 3075, 3110, 3047], heal: [3123, 3033, 6609, 3916, 3165, 3076, 3011], tank: [3036, 3135, 8010, 6653, 3153, 3071, 6694], cc: [3111, 3139, 3222, 2504, 3102], assassin: [3157, 3026, 6333, 3156, 3102, 3190] };
+function enemyFlags(A) { return A.n ? { ap: A.ap >= 3, ad: A.ad >= 4, heal: A.heal.length >= 2, tank: A.front.length >= 3, cc: A.eng.length >= 3, assassin: A.ass.length >= 2 } : {}; }
+function renderBuild() {
+  const out = $('#buildOut'), me = S.match.me, role = myRole();
+  const opgg = { euw1: 'euw', eun1: 'eune', na1: 'na', kr: 'kr', tr1: 'tr', br1: 'br', la1: 'lan', la2: 'las', jp1: 'jp', oc1: 'oce', me1: 'me' }[S.settings.platform] || 'euw';
+  const rid = (S.settings.riotId || '').replace('#', '-');
+  $('#opggLink').href = `https://op.gg/lol/summoners/${opgg}/${encodeURIComponent(rid)}/ingame`;
+  const b = me && BUILD(me);
+  $('#meRow').innerHTML = me
+    ? `${slotHTML(me, 'Toi', 'me', 'me')}<div class="grow"><b>${esc(cname(me))}</b><div class="note">${esc(ROLE_FR[role])}${b ? ` · ${b.wr} % de victoires en Challenger` : ''}</div></div>`
+    : `<div class="empty grow">Choisis ton champion (onglet Draft ou ici).</div>${slotHTML(null, 'Toi', 'me', 'me')}`;
+  const A = analyzeEnemies(), F = enemyFlags(A);
+  const chips = [];
+  if (A.n) {
+    chips.push(`<span class="chip ${A.ap >= 3 ? 'warn' : ''}">${A.ap} AP / ${A.ad} AD</span>`);
+    if (F.heal) chips.push(`<span class="chip bad">Soins : ${A.heal.map(cname).join(', ')}</span>`);
+    if (F.assassin) chips.push(`<span class="chip bad">Plongeurs : ${A.ass.map(cname).join(', ')}</span>`);
+    if (F.cc) chips.push(`<span class="chip warn">Beaucoup de CC / engage</span>`);
+    if (F.tank) chips.push(`<span class="chip warn">${A.front.length} tanks / frontline</span>`);
+    if (A.crit) chips.push(`<span class="chip warn">ADC à crit</span>`);
+  }
+  $('#threats').innerHTML = chips.join('');
+  if (!me) { out.innerHTML = '<p class="note">Le build apparaît dès que ton champion est choisi.</p>'; return; }
+  if (!b) {
+    if (role === 'support') return renderBuildSupportLegacy();
+    out.innerHTML = `<p class="note">${S.builds ? `Pas assez de parties Challenger sur ${esc(cname(me))} en ${ROLE_FR[role]} cette semaine pour un build fiable.` : 'Les builds des meilleurs joueurs sont en cours de calcul, reviens dans un moment.'}</p>`;
+    return;
+  }
+  const isB = id => S.items && S.items[id] && (S.items[id].tags || []).includes('Boots') && id !== '1001';
+  const inPool = id => (b.pool || []).some(x => x[0] === String(id));
+  // bottes : celles des meilleurs joueurs, adaptées à la compo si ils les achètent aussi sur ce champion
+  const bl = (b.boots || []).filter(x => itemExists(x[0]));
+  let boots = bl[0] && bl[0][1] >= 15 ? bl[0][0] : null, bootsWhy = boots ? `${bl[0][1]} % des meilleurs joueurs` : '';
+  const has = id => bl.some(x => x[0] === String(id)) || inPool(id);
+  if (boots && F.ad && has(3047) && boots !== '3047') { boots = '3047'; bootsWhy = 'équipe très AD'; }
+  else if (boots && (F.cc || F.ap) && has(3111) && boots !== '3111') { boots = '3111'; bootsWhy = F.cc ? 'beaucoup de contrôles' : 'équipe AP'; }
+  // objets de base : l'enchaînement le plus joué
+  const core = [];
+  const addC = id => { id = String(id); if (id && itemExists(id) && !isB(id) && !core.includes(id)) core.push(id); };
+  ((b.core[0] || [])[0] || []).forEach(addC); (b.first || []).slice(0, 1).forEach(x => addC(x[0])); (b.pool || []).forEach(x => addC(x[0]));
+  // contre eux : objets que les meilleurs joueurs ajoutent face à cette compo
+  const sit = [];
+  for (const fl of ['heal', 'assassin', 'ap', 'ad', 'tank', 'cc']) {
+    if (!F[fl] || sit.length >= 3) continue;
+    const data = ((b.vs || {})[fl] || []).filter(x => itemExists(x[0]) && !isB(x[0]) && !sit.find(y => y.id === x[0]));
+    if (data.length) { sit.push({ id: data[0][0], fl, why: `${FLAG_FR[fl]} : ${data[0][1]} % des meilleurs joueurs le prennent dans ce cas` }); continue; }
+    const fb = FALLBACK[fl].map(String).find(id => itemExists(id) && inPool(id) && !core.slice(0, 1).includes(id) && !sit.find(y => y.id === id));
+    if (fb) sit.push({ id: fb, fl, why: FLAG_FR[fl] });
+  }
+  const seq = [];
+  const addS = (id, why) => { id = String(id); if (id && !seq.find(x => x.id === id)) seq.push({ id, why }); };
+  addS(core[0], `1er objet de ${b.first && b.first[0] && b.first[0][0] === core[0] ? b.first[0][1] + ' % des' : 'nombreux'} meilleurs joueurs`);
+  sit.filter(x => x.fl === 'heal' || x.fl === 'assassin').forEach(x => addS(x.id, x.why));
+  core.slice(1, 2).forEach(id => addS(id, 'objet de base'));
+  sit.filter(x => x.fl !== 'heal' && x.fl !== 'assassin').forEach(x => addS(x.id, x.why));
+  core.slice(2).forEach(id => addS(id, 'objet de base'));
+  const order = seq.slice(0, 4).map(x => x.id);
+  if (boots) order.splice(1, 0, boots);
+  window._why = seq.concat(boots ? [{ id: boots, why: 'bottes : ' + bootsWhy }] : []);
+  const start = ((b.start || [])[0] || [[]])[0].filter(itemExists);
+  const steps = planBuys(order, { start, boots, support: role === 'support' });
+  const groups = [];
+  steps.forEach(st => { let g = groups.find(x => x.name === st.grp); if (!g) groups.push(g = { name: st.grp, items: [] }); g.items.push(st); });
+  const tile = st => `<div class="tl-i ${st.kind === 'finish' ? 'fin' : ''}"><img src="${iimg(st.id)}" alt="${esc(iname(st.id))}" loading="lazy">${st.qty > 1 ? `<i class="qty">×${st.qty}</i>` : ''}<span class="num">${st.cost || ''}</span></div>`;
+  const label = g => {
+    const mm = g.name.match(/^Objet (\d+) : (.*)$/);
+    if (mm) { const w = (seq.find(x => iname(x.id) === mm[2]) || {}).why; return `<b>Objet ${mm[1]}</b><small>${esc(mm[2])}</small>${w && sit.find(x => x.why === w) ? '<em class="vs-tag">contre eux</em>' : ''}`; }
+    if (g.name === 'Finir les bottes') { const f = g.items[g.items.length - 1]; return `<b>Bottes</b><small>${esc(iname(f.id))}</small>`; }
+    return `<b>${esc(g.name)}</b>`;
+  };
+  const g0 = groups.find(g => g.name === 'Départ'), g1 = groups.find(g => g.name === '1er retour');
+  const firstRow = g0 && g1 ? `<div class="bp-row"><div class="bp-l"><b>Départ</b><small>puis 1er retour</small></div><div class="bp-r">${g0.items.map(tile).join('')}<span class="vbar"></span>${g1.items.map(tile).join('')}</div></div>` : '';
+  const restG = firstRow ? groups.filter(g => g !== g0 && g !== g1) : groups;
+  const rn = id => S.runes && S.runes[id];
+  const rimg = id => rn(id) ? `<img class="rune" src="${DD}/cdn/img/${rn(id).icon}" alt="${esc(rn(id).name)}" title="${esc(rn(id).name)}">` : '';
+  let runes = '';
+  if (b.runes) {
+    const [pri, sec] = b.runes.split('|'), [ps, psel] = pri.split(':'), [ss, ssel] = sec.split(':');
+    const ks = psel.split(',')[0];
+    runes = `<div class="runes">${rimg(ks)}<span class="grow"><b>${esc((rn(ks) || {}).name || '')}</b><small>${psel.split(',').slice(1).map(rimg).join('')}<span class="vbar"></span>${ssel.split(',').map(rimg).join('')}</small></span></div>`;
+    void ps; void ss;
+  }
+  const sums = (b.spells || []).map(k => S.sums && S.sums[k] ? `<img class="sum" src="${DD}/cdn/${S.version}/img/spell/${S.sums[k].img}" alt="" title="${esc(S.sums[k].name)}">` : '').join('');
+  const sk = b.skills ? b.skills.split('').join(' › ') : '';
+  const vs = sit.length ? sit.map(x => `${esc(iname(x.id))} <span>(${esc(x.why)})</span>`).join(' · ') : '';
+  const upId = role === 'support' ? (['Senna', 'Ashe'].includes(me) ? S.meta.items.upgrades.attack : S.meta.items.upgrades[supProfile(me).arch]) : null;
+  out.innerHTML = `<div class="buildpath">${firstRow}
+      ${restG.map(g => `<div class="bp-row"><div class="bp-l">${label(g)}</div><div class="bp-r">${g.items.map(tile).join('<span class="sep">›</span>')}</div></div>`).join('')}
+    </div>
+    <div class="bp-foot">
+      ${role === 'support' ? `<div><b>Chaque retour :</b> 1 pink${upId && itemExists(upId) ? ` · <b>Ward finale :</b> ${esc(iname(upId))}` : ''}</div>` : ''}
+      ${vs ? `<div class="bp-vs"><b>Contre eux :</b> ${vs}</div>` : ''}
+      <div class="bp-rs">${runes}<div class="bp-sk">${sums}${sk ? `<span><b>Sorts :</b> ${esc(sk)}${b.early ? ` <small>(début ${esc(b.early.split('').join(' '))})</small>` : ''}</span>` : ''}</div></div>
+      <div class="note">${b.n} parties Challenger / Grandmaster (EUW + Corée), patch ${esc(gamePatch(S.builds.dd) || S.builds.patch)}.${A.n ? '' : ' Ajoute l\'équipe adverse (plus bas) pour adapter les objets.'}</div>
+    </div>`;
+}
 // Découpe le build en achats réels (composants puis assemblage), en réutilisant ce qui est déjà dans l'inventaire.
-function planBuys(order) {
+function planBuys(order, opt) {
+  opt = opt || {};
   const it = id => (S.items && S.items[String(id)]) || null;
   const from = id => ((it(id) && it(id).from) || []).map(String);
   const total = id => (it(id) && it(id).gold) || 0;
@@ -311,13 +447,14 @@ function planBuys(order) {
     if (last && last.grp === grp && last.id === String(id) && kind === 'buy' && last.kind === 'buy') { last.qty++; last.cost += total(id); return; }
     steps.push({ grp, id: String(id), kind, qty: 1, why, cost: kind === 'finish' ? base(id) : total(id) });
   };
-  add('Départ', 3865, 'buy', 'objet de quête support');
-  if (itemExists(2003)) { add('Départ', 2003, 'buy', 'potions'); add('Départ', 2003, 'buy'); }
-  const pink = itemExists(2055) ? 2055 : null;
-  const bootsId = order[1];
-  const basic = from(bootsId).find(c => !from(c).length) || (itemExists(1001) ? '1001' : null);
-  if (basic) { add('1er retour', basic, 'buy', 'vitesse pour roam et esquiver'); inv.push(basic); }
-  if (pink) add('1er retour', pink, 'buy', 'vision de la rivière');
+  (opt.start || []).map(String).sort((a, b) => total(b) - total(a)).forEach(id => { add('Départ', id, 'buy'); inv.push(id); });
+  const bootsId = opt.boots ? String(opt.boots) : null;
+  if (opt.support) {
+    const pink = itemExists(2055) ? 2055 : null;
+    const basic = bootsId ? (from(bootsId).find(c => !from(c).length) || (itemExists(1001) ? '1001' : null)) : null;
+    if (basic) { add('1er retour', basic, 'buy', 'vitesse pour roam et esquiver'); inv.push(basic); }
+    if (pink) add('1er retour', pink, 'buy', 'vision de la rivière');
+  }
   const expand = (grp, id, why) => {
     const comps = from(id);
     if (!comps.length || !S.items) { add(grp, id, 'buy', why); return; }
@@ -325,8 +462,9 @@ function planBuys(order) {
     add(grp, id, 'finish', why);
   };
   const whyOf = id => ((window._why || []).find(x => String(x.id) === String(id)) || {}).why;
-  order.forEach((id, n) => {
-    const grp = id === bootsId ? 'Finir les bottes' : `Objet ${n === 0 ? 1 : n} : ${iname(id)}`;
+  let n = 0;
+  order.map(String).forEach(id => {
+    const grp = id === bootsId ? 'Finir les bottes' : `Objet ${++n} : ${iname(id)}`;
     expand(grp, id, whyOf(id));
   });
   steps.forEach((st, i) => st.k = 's' + i + '_' + st.id);
@@ -378,11 +516,21 @@ const ARCH_DONT = {
   warden: 'Partir en avant : ton rôle est de protéger',
   mage: 'Te placer devant tes sbires (tu es la cible facile)'
 };
+const ADC_DO = {
+  engage: sup => `Suis les engages de ${cname(sup)} : sois à portée d'attaque quand il part.`,
+  enchanter: sup => `Trade quand ${cname(sup)} peut te protéger, puis recule.`,
+  warden: sup => `Joue derrière ${cname(sup)} et punis leur engage.`,
+  mage: sup => `Profite du poke de ${cname(sup)} pour gagner la vague et les plaques.`
+};
 function renderBot() {
-  const m = S.match, me = m.me, a = m.ally.adc, ea = m.enemy.adc, es = m.enemy.support, out = $('#botOut');
+  const role = myRole();
+  $('#laneTitle').textContent = LANE_TAB[role];
+  $('#laneTab').textContent = LANE_TAB[role];
+  if (role !== 'support' && role !== 'adc') return renderDuel();
+  const m = S.match, isAdc = role === 'adc', me = isAdc ? m.ally.support : m.me, a = isAdc ? m.me : m.ally.adc, ea = m.enemy.adc, es = m.enemy.support, out = $('#botOut');
   if (!me || !ea || !es || !a) {
     out.innerHTML = `<div class="card"><p>Complète les 4 champions de la botlane (touche les cases au-dessus).</p>
-      <p class="note">Manque : ${[!a && 'ton ADC', !me && 'ton support', !ea && 'leur ADC', !es && 'leur support'].filter(Boolean).join(', ')}</p></div>`;
+      <p class="note">Manque : ${[!a && (isAdc ? 'toi (ADC)' : 'ton ADC'), !me && (isAdc ? 'ton support' : 'toi (support)'), !ea && 'leur ADC', !es && 'leur support'].filter(Boolean).join(', ')}</p></div>`;
     return;
   }
   [es, ea].forEach(loadSpells);
@@ -405,7 +553,8 @@ function renderBot() {
   if (P[0].c === 'adv') DO.push('Course au niveau 2 (1re vague + 3 sbires mêlée) puis engage tout de suite');
   else DO.push('Niveau 2 = 1re vague + 3 sbires mêlée : recule d\'un cran s\'ils l\'ont avant vous');
   (Les.do || []).forEach(x => DO.push(x)); (Lea.do || []).forEach(x => DO.push(x));
-  DO.push(ARCH_DO[sp.arch](m));
+  DO.push(isAdc ? ADC_DO[sp.arch](me) : ARCH_DO[sp.arch](m));
+  if (isAdc) DO.push('Last-hit d\'abord : chaque vague perdue coûte plus qu\'un trade gagné');
   if (P[2].c === 'adv' && P[0].c !== 'adv') DO.push('Jouer safe jusqu\'au 6 et aux premiers objets : vous scalez mieux');
   if (P[2].c === 'dis' && P[0].c !== 'dis') DO.push('Convertir votre avance avant 11:00 (plaques à 120 po, drake) : ils scalent mieux');
   DO.push(total > 1.5 ? 'Pousser et prendre les plaques, roam mid dès le niveau 5' : total < -1.5 ? 'Laisser la vague venir à votre tour, ward le tri-bush, demander un gank niveau 3-4' : 'Slow push avant chaque retour et avant le drake');
@@ -415,7 +564,7 @@ function renderBot() {
   (Les.dont || []).forEach(x => DONT.push(x)); (Lea.dont || []).forEach(x => DONT.push(x));
   if (!Les.dont) DONT.push(esp.arch === 'engage' ? 'Te coller à ton ADC (double contrôle)' : esp.arch === 'enchanter' ? 'Trade quand son bouclier/soin est prêt' : 'Prendre du poke gratuit en avançant');
   if (!Lea.dont && ({ bully: 1, allin: 1 })[eap.style]) DONT.push(`Les échanges longs contre ${cname(ea)} au niveau 1-3`);
-  DONT.push(ARCH_DONT[sp.arch]);
+  DONT.push(isAdc ? `Avancer sans ${cname(me)} ou sans ward dans la rivière` : ARCH_DONT[sp.arch]);
   if (cThem.includes(me)) DONT.push(`Jouer devant : ${cname(es)} contre ${cname(me)}`);
   const jg = m.enemy.jungle && S.meta.junglers[m.enemy.jungle];
   if (jg) DONT.push(`Avancer sans ward : ${cname(m.enemy.jungle)} ${jg.note}`);
@@ -425,6 +574,44 @@ function renderBot() {
       <p class="note">Recharges du patch en cours, du niveau 1 au rang max.</p></div>
     <div class="card dolist"><h3>Pour gagner la lane</h3><ul class="checks do">${uniq(DO).slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
     <div class="card dolist"><h3>À éviter</h3><ul class="checks dont">${uniq(DONT).slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+}
+// Top, mid, jungle : ton champion contre ton adversaire direct
+function renderDuel() {
+  const role = myRole(), m = S.match, me = m.me, opp = m.enemy[role], out = $('#botOut');
+  if (!me || !opp) { out.innerHTML = `<div class="card"><p>Ajoute ${!me ? 'ton champion' : ''}${!me && !opp ? ' et ' : ''}${!opp ? (role === 'jungle' ? 'le jungler adverse' : 'ton adversaire direct') : ''} (cases au-dessus).</p></div>`; return; }
+  loadSpells(opp);
+  const b = BUILD(me), ob = BUILD(opp), o = b && (b.opp || []).find(x => x[0] === opp), r2 = ob && (ob.opp || []).find(x => x[0] === me);
+  const wr = o ? o[2] : r2 ? 100 - r2[2] : null, n = o ? o[1] : r2 ? r2[1] : 0;
+  const verdict = wr == null ? ['warn', 'Pas assez de parties sur ce duel'] : wr >= 53 ? ['good', `Duel favorable : ${wr} % (${n} parties)`] : wr <= 47 ? ['bad', `Duel difficile : ${wr} % (${n} parties)`] : ['warn', `Duel équilibré : ${wr} % (${n} parties)`];
+  const L = S.meta.lane[opp] || {};
+  const rows = L.s ? L.s.map(x => spellRow(opp, x[0], x[1])) : ['Q', 'W', 'E', 'R'].map(k => spellRow(opp, k, k === 'R' ? 'Ultime : joue prudemment quand il est disponible.' : 'Punis-le quand ce sort est en recharge.'));
+  const ejg = m.enemy.jungle, jp = ejg && S.meta.junglers[ejg];
+  const engAllies = allies().filter(isEngager);
+  const DO = [], DONT = [];
+  if (role === 'top') {
+    DO.push(wr != null && wr <= 47 ? 'Laisse la vague venir à ta tour et farm en sécurité jusqu\'à ton premier objet' : 'Prends l\'avantage aux niveaux 1-3 et pousse pour les plaques avant 11:00');
+    DO.push('Ward la rivière top ou le tri-bush avant 3:00 (premier gank possible)');
+    DO.push('Pousse ta vague avant 8:00 pour aider ton jungler sur les larves');
+    DONT.push('Pousser sans vision quand le jungler adverse n\'est pas visible');
+    DONT.push('Utiliser ta Téléportation sans raison : garde-la pour un drake ou un gank');
+  } else if (role === 'mid') {
+    DO.push('Pousse ta vague puis roam (rivière, bot ou top) aux niveaux 3 et 6');
+    DO.push(`Ping « disparu » dès que ${cname(opp)} quitte la lane`);
+    DO.push('Bouge vers le drake ou les larves avec ton jungler quand ta vague est poussée');
+    DONT.push('Roam quand ta vague arrive à ta tour : tu perds trop d\'or');
+  } else {
+    DO.push(engAllies.length ? `Ganke en priorité les lanes avec du contrôle : ${engAllies.map(cname).join(', ')}` : 'Ganke la lane où l\'adversaire est poussé et sans Flash');
+    DO.push('Commence du côté où tes lanes ont la priorité, prends le crabe à 2:55 si ta bot ou ta mid peut suivre');
+    DO.push('Larves à 8:00, drake à 5:00 : prépare la vision 1 minute avant');
+    DONT.push('Faire un gank sans que ta lane soit prête (vague mal placée, sans sorts)');
+    if (jp) DONT.push(`Ignorer ${cname(opp)} : ${jp.note}`);
+  }
+  if (L.do) L.do.forEach(x => DO.push(x)); if (L.dont) L.dont.forEach(x => DONT.push(x));
+  if (role !== 'jungle' && jp) DONT.push(`Avancer sans ward : ${cname(ejg)} ${jp.note}`);
+  out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><p class="note" style="margin-top:6px">Résultat des parties Challenger / Grandmaster où ${esc(cname(me))} affronte ${esc(cname(opp))}.</p></div>
+    <div class="card"><h3>Sorts de ${esc(cname(opp))}</h3><div class="spells">${rows.join('')}</div><p class="note">Recharges du patch en cours, du niveau 1 au rang max.</p></div>
+    <div class="card dolist"><h3>Pour gagner</h3><ul class="checks do">${[...new Set(DO)].slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <div class="card dolist"><h3>À éviter</h3><ul class="checks dont">${[...new Set(DONT)].slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
 }
 
 /* ---------------- Chronologie ---------------- */
@@ -446,7 +633,7 @@ function mapSVG(keys) {
   const pts = keys.map(k => SPOTS[k]).filter(Boolean), me = S.match.side === 'red' ? [88, 12] : [12, 88];
   const st = x => { const c = x[0] === 'b' ? '#3a8fe0' : '#e0463a'; return x[1] === 't' ? `<rect x="${x[2] - 1.4}" y="${x[3] - 1.4}" width="2.8" height="2.8" rx=".4" fill="${c}" stroke="#010a13" stroke-width=".5"/>` : `<circle cx="${x[2]}" cy="${x[3]}" r="1.5" fill="none" stroke="${c}" stroke-width=".8"/>`; };
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Carte de la Faille avec tours, buissons et emplacements de ward">
-    <image href="map-sr.jpg?v=14" x="0" y="0" width="100" height="100"/>
+    <image href="map-sr.jpg?v=15" x="0" y="0" width="100" height="100"/>
     ${STRUCTS.map(st).join('')}
     <text x="66.2" y="77" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">DRAKE</text>
     <text x="42" y="30.5" font-size="3" fill="#f0e6d2" text-anchor="middle" font-family="sans-serif" font-weight="700">BARON</text>
@@ -460,7 +647,8 @@ function buildEvents() {
   const T = S.meta.timers, side = S.match.side, m = S.match, ev = [];
   const E = (t, kind, title, text, spots, id) => ev.push({ t, kind, title, text, spots, id: id || kind + t });
   const jg = m.enemy.jungle, jp = jg ? (S.meta.junglers[jg] || { type: 'mid', note: 'profil inconnu' }) : null;
-  const myJg = m.ally.jungle;
+  const myJg = m.ally.jungle, role = myRole();
+  if (role !== 'support') return buildEventsRole(role, E, ev, T, side, jg, jp);
   E(0, 'lane', 'Début de partie', "Atlas du monde + 2 potions. Aide ton jungler au leash seulement s'il le demande.");
   E(65, 'lane', 'Première vague', "Course au niveau 2 : 1re vague + 3 sbires mêlée de la 2e (~1:50). Prends les buissons de lane.");
   E(75, 'ward', 'Ward niveau 1', "Ward le buisson de rivière bot pour voir le jungler adverse arriver (et un éventuel crabe).", wardSpots('lvl1', side));
@@ -492,14 +680,54 @@ function buildEvents() {
   E(T.herald, 'obj', 'Héraut (15:00)', 'Une seule apparition dans le pit top.', null, 'herald');
   E(T.baron - 30, 'ward', 'Prépare le Baron', 'Oracle + pink : nettoie les entrées du Baron, ward la rivière mid.', wardSpots('baron', side), 'wbaron');
   E(T.baron, 'obj', 'Baron (20:00)', 'Ne le commence jamais sans vision de leur jungler.', null, 'baron');
-  // drakes suivants
-  const kills = S.kills.drakes || [];
-  kills.forEach((k, i) => {
+  laterDrakes(E, T, side);
+  return ev.sort((a, b) => a.t - b.t);
+}
+function laterDrakes(E, T, side) {
+  (S.kills.drakes || []).forEach((k, i) => {
     const t = k + T.dragonRespawn;
-    E(t - 30, 'ward', `Prépare le drake n°${i + 2}`, 'Pink dans la rivière bot, poussez bot et mid avant.', wardSpots('drake', side), 'wdrake' + (i + 2));
+    E(t - 30, 'ward', `Prépare le drake n°${i + 2}`, 'Vision dans la rivière bot, poussez bot et mid avant.', wardSpots('drake', side), 'wdrake' + (i + 2));
     E(t, 'obj', `Drake n°${i + 2}`, '5:00 après le précédent.', null, 'drake' + (i + 2));
   });
   if (S.kills.soul != null) { const t = S.kills.soul + T.elderAfterSoul; E(t - 45, 'ward', 'Prépare l\'Ancien', 'Vision complète autour du pit.', wardSpots('drake', side), 'welder'); E(t, 'obj', 'Dragon Ancien', '6:00 après l\'âme.', null, 'elder'); }
+}
+// Chronologie pour top, jungle, mid, ADC
+function buildEventsRole(role, E, ev, T, side, jg, jp) {
+  const m = S.match, myJg = m.ally.jungle;
+  const g = jp ? (jp.type === 'early' ? 165 : jp.type === 'mid' ? 200 : jp.type === 'farm' ? 285 : 390) : 195;
+  const lane = { top: 'top', mid: 'mid', adc: 'bot' }[role];
+  E(0, 'lane', 'Début de partie', role === 'jungle' ? 'Commence du côté où tes lanes ont la priorité. Ta 1re lane à ganker : celle avec le plus de contrôle.' : role === 'adc' ? 'Objet de départ + potion. Laisse ton support prendre les buissons, toi la vague.' : 'Objet de départ + potion. Les 3 premiers niveaux décident souvent du duel.');
+  if (role === 'adc') {
+    E(65, 'lane', 'Course au niveau 2', '1re vague + 3 sbires mêlée de la 2e (~1:50). Last-hit en priorité.');
+    E(108, 'lane', 'Niveau 2 imminent', 'Prêt à suivre l\'engage de ton support, ou à reculer s\'ils l\'ont avant vous.');
+  }
+  if (role === 'top') E(150, 'ward', 'Ward avant le 1er gank', 'Trinket dans la rivière top ou le tri-bush : premier gank possible vers 3:00.', ['riverTop'], 'wgank');
+  if (role === 'mid') E(150, 'ward', 'Ward avant le 1er gank', 'Trinket dans un buisson de rivière mid, du côté de leur jungler.', side === 'blue' ? ['midRed'] : ['midBlue'], 'wgank');
+  if (role !== 'jungle') {
+    E(g, 'danger', jg ? `Gank possible : ${cname(jg)}` : 'Premier gank possible', jp ? `${jp.note}. Ne pousse pas sans vision.` : 'Ajoute le jungler adverse pour un timing précis.', null, 'gank');
+  } else {
+    E(150, 'lane', 'Fin du premier tour de jungle', 'Gank si une lane est prête (adversaire poussé, sans Flash), sinon enchaîne sur le crabe.');
+    if (jg) E(g, 'danger', `${cname(jg)} peut ganker`, `${jp ? jp.note + '. ' : ''}Sois proche de la lane qu'il va viser pour contre-ganker.`, null, 'gank');
+  }
+  E(T.scuttle, 'obj', 'Crabes (2:55)', role === 'jungle' ? 'Prends le crabe du côté où tes lanes peuvent bouger.' : `Si ta lane a la priorité, aide ${myJg ? cname(myJg) : 'ton jungler'} sur le crabe.`);
+  if (role === 'mid') E(200, 'lane', 'Niveau 3 : fenêtre de roam', 'Si ta vague est poussée, va vers la rivière ou une lane adjacente.');
+  E(T.dragon - 45, role === 'jungle' ? 'ward' : 'lane', 'Prépare le drake', role === 'adc' ? 'Pousse ta vague avant le drake avec ton support.' : role === 'jungle' ? 'Vision dans la rivière bot, demande la priorité bot et mid.' : role === 'mid' ? 'Pousse ta vague pour pouvoir bouger au drake.' : 'Pousse ta vague ou garde ta Téléportation pour le drake.', role === 'jungle' ? wardSpots('drake', side) : null, 'wdrake1');
+  E(T.dragon, 'obj', 'Drake (5:00)', 'Premier drake : seulement avec la priorité bot et mid.', null, 'drake1');
+  if (role === 'mid') E(390, 'lane', 'Niveau 6', 'Ultime disponible : roam vers une lane poussée ou un objectif.');
+  if (role === 'adc') E(390, 'lane', 'Niveau 6', 'Le support et le jungler adverses ont leur ultime : attention aux all-ins.');
+  E(T.grubs - 45, role === 'jungle' || role === 'top' ? 'ward' : 'lane', 'Prépare les larves', role === 'top' ? 'Pousse ta vague et aide ton jungler sur les larves.' : role === 'jungle' ? 'Vision autour du pit top, demande la priorité top et mid.' : 'Pousse ta vague si tu peux aider sur les larves.', role === 'jungle' || role === 'top' ? wardSpots('grubs', side) : null, 'wgrubs');
+  E(T.grubs, 'obj', 'Larves du Néant (8:00)', 'Un seul groupe, pas de réapparition.', null, 'grubs');
+  E(600, 'lane', 'Reset', role === 'jungle' ? 'Retour en base avec assez d\'or pour un composant, puis prépare le drake suivant.' : 'Pousse et rentre avec assez d\'or pour avancer ton 1er objet.');
+  E((T.platesDecay || 660) - 60, 'lane', 'Plaques à prendre avant 11:00', 'Les plaques valent 120 po jusqu\'à 11:00 : pousse si tu as l\'avantage.', null, 'wplates');
+  E(T.platesDecay || 660, 'obj', 'Plaques : valeur en baisse (11:00)', 'Les plaques perdent 10 po par minute jusqu\'à 15:00 et la tour externe s\'affaiblit.', null, 'plates');
+  E(T.laneEnd || 840, 'lane', 'Fin de la phase de lane (14:00)', role === 'adc' ? 'Vagues toutes les 25 s : rejoins mid avec ton support, reste avec le groupe.' : 'Vagues toutes les 25 s, retour en base plus rapide. Regroupe-toi pour les objectifs.', null, 'laneend');
+  E(T.grubsDespawn, 'obj', 'Les larves disparaissent', 'Dernière chance si elles sont encore là.', null, 'grubsend');
+  E(T.herald - 30, role === 'jungle' ? 'ward' : 'lane', 'Prépare le Héraut', 'Vision autour du pit top, priorité top et mid.', role === 'jungle' ? wardSpots('grubs', side) : null, 'wherald');
+  E(T.herald, 'obj', 'Héraut (15:00)', 'Une seule apparition dans le pit top.', null, 'herald');
+  E(T.baron - 30, 'ward', 'Prépare le Baron', 'Vision et balayage autour du Baron avant de le commencer.', wardSpots('baron', side), 'wbaron');
+  E(T.baron, 'obj', 'Baron (20:00)', 'Jamais sans savoir où est leur jungler.', null, 'baron');
+  laterDrakes(E, T, side);
+  void lane;
   return ev.sort((a, b) => a.t - b.t);
 }
 const now = () => S.timer.start ? (Date.now() - S.timer.start) / 1000 : null;
@@ -507,7 +735,7 @@ const now = () => S.timer.start ? (Date.now() - S.timer.start) / 1000 : null;
 function renderTimeline() {
   const t = now(), ev = buildEvents();
   const nextIdx = t == null ? -1 : ev.findIndex(e => e.t >= t - 5);
-  const nextWard = ev.find(e => e.kind === 'ward' && (t == null || e.t >= t - 20));
+  const nextWard = ev.find(e => e.kind === 'ward' && e.spots && e.spots.length && (t == null || e.t >= t - 20));
   $('#timeline').innerHTML = (nextWard ? `<div class="card" style="margin-bottom:14px"><h3>${t == null ? 'Première ward' : 'Prochaine ward'} · ${fmt(nextWard.t)}</h3>
       <div class="mapwrap">${mapSVG(nextWard.spots || [])}<div><b>${esc(nextWard.title)}</b><p class="note" style="margin-top:4px">${esc(nextWard.text)}</p>
       <ol class="tips" style="margin-top:6px;font-size:13px">${(nextWard.spots || []).map(k => `<li>${esc(SPOTS[k][2])}</li>`).join('')}</ol>
@@ -516,7 +744,7 @@ function renderTimeline() {
     ev.map((e, i) => ({ e, i })).filter(({ e, i }) => t == null || S.showPast || e.t >= t - 5 || i === nextIdx).map(({ e, i }) => `<div class="ev ${e.kind} ${t != null && e.t < t - 5 && i !== nextIdx ? 'past' : ''} ${i === nextIdx ? 'now' : ''}">
       <div class="tm">${fmt(e.t)}</div><div class="dot"><i></i></div>
       <div class="body"><span class="kind">${{ ward: 'Ward', obj: 'Objectif', danger: 'Danger', lane: 'Lane' }[e.kind]}</span><b>${esc(e.title)}</b><p>${esc(e.text)}</p></div></div>`).join('');
-  $('#rules').innerHTML = `<ul class="tips">${(S.meta.supportRules || []).map(r => `<li><b>${esc(r.title)}.</b> ${esc(r.text)}</li>`).join('')}</ul>`;
+  $('#rules').innerHTML = `<ul class="tips">${(S.meta.supportRules || []).filter(r => myRole() === 'support' || !/quête|roam/i.test(r.title)).map(r => `<li><b>${esc(r.title)}.</b> ${esc(r.text)}</li>`).join('')}</ul>`;
   $$('.seg [data-side]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.side === S.match.side)));
   const tp = $('#togglePast'); if (tp) tp.onclick = () => { S.showPast = !S.showPast; renderTimeline(); };
   tick(true);
@@ -583,10 +811,9 @@ async function loadLive() {
     const meP = P.find(p => p.puuid === puuid) || P[0];
     const mine = P.filter(p => p.team === meP.team && p !== meP), theirs = P.filter(p => p.team !== meP.team);
     S.match.me = meP.id; S.match.side = meP.team === 100 ? 'blue' : 'red';
-    const aR = assignRoles(mine.filter(p => p.id), ROLES_ALLY), eR = assignRoles(theirs.filter(p => p.id), ROLES_ENEMY);
-    S.match.ally = Object.assign({ top: null, jungle: null, mid: null, adc: null }, aR);
+    const aR = assignRoles(mine.filter(p => p.id), allyRoles()), eR = assignRoles(theirs.filter(p => p.id), ROLES_ENEMY);
+    S.match.ally = Object.assign(defMatch().ally, aR);
     S.match.enemy = Object.assign({ top: null, jungle: null, mid: null, adc: null, support: null }, eR);
-    if (!S.settings.pool.includes(meP.id) && S.meta.supports[meP.id] == null) { /* champion hors pool, ok */ }
     S.bought = { ids: [] }; LS.set('bought', S.bought);
     const len = Number(g.gameLength) || 0;
     if (len > 0) { await startClock(len); }
@@ -608,7 +835,8 @@ function renderPicker() {
   let list = Object.values(S.champs);
   if (!list.length) { $('#pickGrid').innerHTML = '<p class="empty">Liste des champions indisponible (pas de connexion ?).</p>'; return; }
   const pref = PK.prefer;
-  const rank = c => pref === 'support' ? (S.meta.supports[c.id] ? 0 : c.tags.includes('Support') ? 1 : 2) : pref === 'adc' ? (S.meta.adcs[c.id] ? 0 : 1) : pref === 'jungle' ? (S.meta.junglers[c.id] ? 0 : 1) : 0;
+  const played = c => !!(S.builds && S.builds.builds && S.builds.builds[c.id + '|' + POS[pref]]);
+  const rank = c => pref === 'support' ? (S.meta.supports[c.id] ? 0 : c.tags.includes('Support') ? 1 : 2) : pref === 'adc' ? (S.meta.adcs[c.id] || played(c) ? 0 : 1) : POS[pref] ? (played(c) ? 0 : 1) : 0;
   list = list.filter(c => !q || norm(c.name).includes(q) || norm(c.id).includes(q)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'fr'));
   $('#pickGrid').innerHTML = list.map(c => `<button class="pick ${PK.selected.includes(c.id) ? 'on' : ''}" data-id="${c.id}"><img src="${cimg(c.id)}" alt="" loading="lazy"><span>${esc(c.name)}</span></button>`).join('');
 }
@@ -629,7 +857,7 @@ function closePicker() { $('#picker').hidden = true; PK = null; save(); renderAl
 
 function editSlot(path) {
   if (path === 'me') {
-    return openPicker({ title: 'Ton support', prefer: 'support', selected: [S.match.me].filter(Boolean), onPick: id => { S.match.me = id; } });
+    return openPicker({ title: 'Ton champion · ' + ROLE_FR[myRole()], prefer: myRole(), selected: [S.match.me].filter(Boolean), onPick: id => { S.match.me = id; } });
   }
   const [side, role] = path.split('.');
   openPicker({ title: `${side === 'ally' ? 'Allié' : 'Adversaire'} · ${ROLE_FR[role]}`, prefer: role, selected: [S.match[side][role]].filter(Boolean), onPick: id => { S.match[side][role] = id; } });
@@ -639,15 +867,24 @@ document.addEventListener('click', e => {
   const pm = e.target.closest('[data-pickme]'); if (pm) { S.match.me = pm.dataset.pickme; save(); renderAll(); toast(`${cname(S.match.me)} choisi`); return; }
   const a = e.target.closest('[data-act="pool"]'); if (a) return editPool();
 });
-function editPool() { openPicker({ title: 'Mon pool (touche pour ajouter / retirer)', multi: true, prefer: 'support', selected: S.settings.pool.slice(), onPick: sel => { S.settings.pool = sel; save(); } }); }
+function editPool() { const r = myRole(); openPicker({ title: `Mon pool ${ROLE_FR[r]} (touche pour ajouter / retirer)`, multi: true, prefer: r, selected: myPool().slice(), onPick: sel => { S.settings.pools[r] = sel; save(); } }); }
+function setRole(r, stay) {
+  if (!ROLES.includes(r)) return;
+  if (S.settings.role !== r) { const keep = S.match.side; S.match = defMatch(); S.match.side = keep; }
+  S.settings.role = r; save(); renderAll(); if (!stay) show('home'); toast('Poste : ' + ROLE_FR[r]);
+}
+document.addEventListener('click', e => { const r = e.target.closest('[data-role]'); if (r) setRole(r.dataset.role, !!r.closest('#roleSeg')); });
 
 /* ---------------- Réglages ---------------- */
 function renderSettings() {
-  $('#poolView').innerHTML = S.settings.pool.length ? S.settings.pool.map(id => `<div class="pick on" style="cursor:default">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : ''}<span>${esc(cname(id))}</span></div>`).join('') : '<p class="note">Aucun champion pour l\'instant.</p>';
+  $$('#roleSeg [data-role]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.role === myRole())));
+  $('#poolTitle').textContent = 'Mon pool ' + ROLE_FR[myRole()];
+  $('#poolView').innerHTML = myPool().length ? myPool().map(id => `<div class="pick on" style="cursor:default">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : ''}<span>${esc(cname(id))}</span></div>`).join('') : '<p class="note">Aucun champion pour l\'instant.</p>';
   $('#riotId').value = S.settings.riotId || ''; $('#platform').value = S.settings.platform;
   $('#optSound').checked = S.settings.sound; $('#optVibrate').checked = S.settings.vibrate; $('#optNotif').checked = S.settings.notif; $('#optLead').value = String(S.settings.lead);
   const live = gamePatch(S.version);
   $('#metaInfo').innerHTML = `Patch en jeu : <b>${esc(live || 'inconnu')}</b> (Data Dragon ${esc(S.version || '?')}). Données méta : patch <b>${esc(S.meta.patch)}</b>, mises à jour le ${esc(S.meta.updated || '?')}.` + (live && live !== S.meta.patch ? `<br><span style="color:var(--warn)">Nouveau patch détecté : les champions et objets sont déjà à jour, les tiers et timings le seront à la prochaine mise à jour des données.</span>` : '');
+  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / Grandmaster (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.` : 'Builds des meilleurs joueurs : en cours de calcul.';
   $('#metaSources').innerHTML = 'Sources : ' + (S.meta.sources || []).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join(' · ');
 }
 $('#editPool').onclick = editPool;
@@ -666,10 +903,11 @@ function show(v) {
   $$('section.view[id^="v-"]').forEach(s => s.hidden = s.id !== 'v-' + v);
   $$('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.v === v)));
   $('nav.tabs').hidden = !GAME_TABS.includes(v);
-  $('#btnHome').hidden = v === 'home';
+  $('#btnHome').hidden = v === 'home' || v === 'role';
   document.body.classList.toggle('in-game', GAME_TABS.includes(v));
   if (v === 'time') renderTimeline();
-  if (v === 'home') { const a = $('#homeAcc'); if (a) a.textContent = S.settings.riotId ? 'Compte : ' + S.settings.riotId : 'Ajoute ton Riot ID dans les Réglages.'; }
+  { const h = $('#hdrRole'); if (h) h.textContent = S.settings.role ? ROLE_FR[myRole()] : 'LoL'; }
+  if (v === 'home') { const a = $('#homeAcc'); if (a) a.textContent = S.settings.riotId ? 'Compte : ' + S.settings.riotId : 'Ajoute ton Riot ID dans les Réglages.'; $('#homeRole').textContent = ROLE_FR[myRole()]; $('#homeGameSub').textContent = `Draft · Build · ${LANE_TAB[myRole()]} · Timings`; }
   if (v === 'analyse' && typeof renderAnalyse === 'function') { renderAnalyse(); if (Date.now() - AN.updated > 10 * 60000) loadAnalyse(false); }
   window.scrollTo(0, 0);
 }
@@ -694,14 +932,16 @@ function renderAll() {
   b.textContent = 'Patch ' + (live || S.meta.patch); b.classList.toggle('stale', !!(live && live !== S.meta.patch));
   b.title = live && live !== S.meta.patch ? `Données méta du patch ${S.meta.patch}` : 'Données à jour';
   renderSlots(); renderRanking(); renderBuild(); renderBot(); renderSettings();
+  if (S.view === 'home') show('home');
   if (S.view === 'time') renderTimeline();
 }
 
 (async function init() {
   await loadMeta(false);
+  S.builds = LS.get('builds', null);
   renderAll();
-  show('home');
-  await loadDD(false);
+  show(S.settings.role ? 'home' : 'role');
+  await Promise.all([loadDD(false), loadBuilds()]);
   renderAll();
   if (S.timer.start) markPastFired();
   setInterval(() => tick(false), 500);
