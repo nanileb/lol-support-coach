@@ -127,7 +127,8 @@ for (const g of used) {
       key: me.championName + '|' + pos, win: me.win, f, start: start.join(','), legs, items: [...new Set([...legs, ...fin.filter(isLegendary)])], boots,
       spells: [me.summoner1Id, me.summoner2Id].sort((a, b) => a - b).join(','), runes: rp, ks: me.perks && me.perks.s ? me.perks.s[0].sel[0] : null,
       skills: maxed.slice(0, 3).map(s => 'QWE'[s - 1]).join(''), early: first3.map(s => 'QWE'[s - 1]).join(''),
-      opp: opp && opp.championName, duo: duo && duo.championName
+      opp: opp && opp.championName, duo: duo && duo.championName,
+      mates: mates.map(p => p.championName), foes: foes.map(p => p.championName)
     });
   }
 }
@@ -172,6 +173,9 @@ for (const [key, S] of Object.entries(groups)) {
     }
     if (res.length) lane[o] = res.sort((a, b) => b[2] - a[2]).slice(0, 2);
   }
+  // taux de victoire avec chaque allié et contre chaque adversaire (toute l'équipe)
+  const tally = f => { const m = {}; S.forEach(s => f(s).forEach(c => { const o = m[c] = m[c] || [0, 0]; o[0]++; if (s.win) o[1]++; })); return Object.entries(m).filter(x => x[1][0] >= 4).map(([c, [k, w]]) => [c, k, pct(w, k)]).sort((a, b) => b[1] - a[1]).slice(0, 60); };
+  const withA = tally(s => s.mates || []), vsA = tally(s => s.foes || []);
   const ks = mode(S.map(s => s.ks))[0];
   out[key] = {
     n, wr: pct(wins, n),
@@ -180,7 +184,7 @@ for (const [key, S] of Object.entries(groups)) {
     boots: mode(S.map(s => s.boots)).slice(0, 3).map(([k, c]) => [k, pct(c, n)]),
     core: core3.slice(0, 2).map(([k, c]) => [k.split(','), pct(c, n)]),
     pool: pool.slice(0, 14).map(([id, r]) => [id, Math.round(r * 100)]),
-    vs, lane,
+    vs, lane, with: withA, vsAll: vsA,
     spells: (mode(S.map(s => s.spells))[0] || [''])[0].split(',').filter(Boolean).map(Number),
     runes: ks ? (mode(S.filter(s => String(s.ks) === ks[0]).map(s => s.runes))[0] || [null])[0] : null,
     skills: (mode(S.map(s => s.skills))[0] || [''])[0], early: (mode(S.map(s => s.early))[0] || [''])[0],

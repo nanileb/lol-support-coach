@@ -218,48 +218,58 @@ function renderSlots() {
 
 // Classement d'un champion pour un poste autre que support : données haut niveau + compo.
 // Taux de victoire ramené vers 50 % quand il y a peu de parties (évite qu'un 39 % sur 50 parties pèse trop)
-const shrink = (wr, n, k) => Math.round(((wr * n) + 50 * k) / (n + k) * 10) / 10;
+const shrink = (wr, n, k, prior = 50) => Math.round(((wr * n) + prior * k) / (n + k) * 10) / 10;
+// Classement par taux de victoire estimé : WR du champion chez les Challenger / GM, corrigé avec chaque allié et chaque adversaire.
+// Chaque écart est ramené vers le WR du champion quand il y a peu de parties (k), et plafonné.
 function scoreRole(id) {
   const role = myRole(), m = S.match, R = [], b = BUILD(id);
-  let s = 50;
-  const add = (v, txt) => { if (!v) return; s += v; R.push((v > 0 ? '+' : '−') + Math.abs(Math.round(v)) + ' ' + txt); };
-  if (b && b.n >= 12) add((shrink(b.wr, b.n, 150) - 50) * 1.2, `${b.wr} % de victoires en Challenger (${b.n} parties)`);
-  const opp = m.enemy[role];
-  if (opp) {
-    const o = b && (b.opp || []).find(x => x[0] === opp), ob = BUILD(opp), r2 = ob && (ob.opp || []).find(x => x[0] === id);
-    if (o) add((shrink(o[2], o[1], 25) - 50) * 0.8, `${o[2]} % contre ${cname(opp)} (${o[1]} parties)`);
-    else if (r2) add((50 - shrink(r2[2], r2[1], 25)) * 0.8, `${100 - r2[2]} % contre ${cname(opp)} (${r2[1]} parties)`);
-  }
-  if (role === 'adc' && m.ally.support) {
-    const sup = m.ally.support, d = b && (b.duo || []).find(x => x[0] === sup), pb = ((S.meta.pairs[sup] || {})[id]) || 0;
-    if (d) add((shrink(d[2], d[1], 25) - 50) * 0.6, `${d[2]} % avec ${cname(sup)} (${d[1]} parties)`);
-    else if (pb) add(pb * 1.2, `duo reconnu avec ${cname(sup)}`);
-    const st = (STYLE[supProfile(sup).arch] || {})[adcProfile(id).style] || 0;
-    if (st) add(st * 0.6, `style adapté à ${cname(sup)}`);
-  }
+  const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
+  if (!b) return role === 'support' ? scoreSupport(id) : { id, score: 50, reasons: ['pas assez de parties Challenger sur ce champion à ce poste'], tier: null, label: t, n: 0, est: false };
+  const base = shrink(b.wr, b.n, 150);
+  let s = base; const parts = [];
+  const add = (v, txt) => { v = Math.max(-6, Math.min(6, v)); if (Math.abs(v) < 0.5) return; s += v; parts.push([v, txt]); };
+  const find = (list, c) => (list || []).find(x => x[0] === c && x[1] >= 8);
+  const pairDelta = (e, prior) => shrink(e[2], e[1], 30, prior) - prior; // écart par rapport au WR habituel
+  // alliés
+  ROLES.filter(r => r !== role).forEach(r => {
+    const a = m.ally[r]; if (!a) return;
+    const e = ((role === 'adc' && r === 'support') || (role === 'support' && r === 'adc')) ? (find(b.duo, a) || find(b.with, a)) : find(b.with, a);
+    if (e) add(pairDelta(e, b.wr), `${e[2]} % avec ${cname(a)} au lieu de ${b.wr} % (${e[1]} parties)`);
+    else { const ab = BUILD(a, r), e2 = ab && find(ab.with, id); if (e2) add(pairDelta(e2, ab.wr), `${e2[2]} % quand ${cname(a)} joue avec lui (${e2[1]} parties)`); }
+  });
+  // adversaires : duel direct d'abord, puis le reste de l'équipe
+  ROLES.forEach(r => {
+    const e = m.enemy[r]; if (!e) return;
+    const direct = r === role, x = (direct && find(b.opp, e)) || find(b.vsAll, e);
+    if (x) add(pairDelta(x, b.wr) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties)`);
+    else { const eb = BUILD(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], 30, eb.wr)) * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties)`); }
+  });
+  // besoins de compo (petit bonus, pas un taux de victoire)
   const al = allies();
   if (al.length >= 2) {
     const ap = al.filter(isAP).length, fr = al.filter(isFront).length;
-    if (ap === 0 && isAP(id)) add(6, 'apporte des dégâts magiques (équipe full AD)');
-    if (ap >= 3 && !isAP(id)) add(5, 'apporte des dégâts physiques (équipe très AP)');
-    if (fr === 0 && (role === 'top' || role === 'jungle') && tags(id).includes('Tank')) add(6, "ton équipe n'a pas de frontline");
+    if (ap === 0 && isAP(id)) { s += 1.5; parts.push([1.5, 'apporte des dégâts magiques (équipe full AD)']); }
+    if (ap >= 3 && !isAP(id)) { s += 1.5; parts.push([1.5, 'apporte des dégâts physiques (équipe très AP)']); }
+    if (fr === 0 && tags(id).includes('Tank')) { s += 1.5; parts.push([1.5, "ton équipe n'a pas de frontline"]); }
   }
-  const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
-  return { id, score: Math.max(5, Math.min(97, Math.round(s))), reasons: R, tier: null, label: t, n: b ? b.n : 0 };
+  parts.sort((a, b2) => Math.abs(b2[0]) - Math.abs(a[0]));
+  R.push(`${b.wr} % de victoires en Challenger (${b.n} parties)`);
+  parts.forEach(([v, txt]) => R.push(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} ${txt}`));
+  return { id, score: Math.max(25, Math.min(75, Math.round(s))), reasons: R, tier: null, label: t, n: b.n, est: true };
 }
 
 function renderRanking() {
   const role = myRole(), pool = myPool().filter(id => champ(id) || !Object.keys(S.champs).length);
   const box = $('#ranking');
   $('#draftTitle').textContent = `Quel ${ROLE_LONG[role]} jouer ?`;
-  { const n = $('#scoreNote'); if (n) n.textContent = role === 'support' ? 'Score calculé : duo avec ton ADC, besoins de l\'équipe (engage, dégâts AP, frontline), counters adverses et tier du patch. Les champions déjà pris sont grisés.' : `Score calculé : victoires des Challenger / GM sur le champion, résultat contre ton adversaire direct${role === 'adc' ? ', duo avec ton support' : ''} et besoins de ta compo (AP/AD, frontline). Les champions déjà pris sont grisés.`; }
+  { const n = $('#scoreNote'); if (n) n.textContent = '% = taux de victoire estimé : celui du champion chez les Challenger / GM de ce patch, corrigé avec chacun de tes alliés et contre chaque adversaire (le duel direct compte plus). Peu de parties = correction plus faible. Les champions déjà pris sont grisés.'; }
   if (!pool.length) {
     box.innerHTML = `<div class="empty">Ton pool ${ROLE_FR[role]} est vide. Choisis tes champions une fois, ils restent enregistrés.<br><br>
       <button class="btn primary" data-act="pool">Choisir mon pool</button></div>`;
     return;
   }
   const T = takenChamps('me');
-  const res = pool.filter(id => !T[id]).map(role === 'support' ? scoreSupport : scoreRole).sort((a, b) => b.score - a.score);
+  const res = pool.filter(id => !T[id]).map(scoreRole).sort((a, b) => b.score - a.score);
   const gone = pool.filter(id => T[id]);
   const hasInfo = allies().length || enemies().length;
   const noData = role !== 'support' && !(S.builds && S.builds.builds);
@@ -267,11 +277,11 @@ function renderRanking() {
     res.map((r, i) => `<div class="ritem ${i === 0 && hasInfo ? 'top1' : ''}">
       ${cimg(r.id) ? `<img src="${cimg(r.id)}" alt="">` : '<span class="ph"></span>'}
       <div style="min-width:0"><div class="nm">${esc(cname(r.id))}${r.tier ? `<span class="tier">${r.tier}</span>` : ''}</div>
-        <div class="why">${esc(r.arch ? ARCH_FR[r.arch] : r.label)}${r.reasons[0] ? ' · ' + esc(r.reasons[0]) : ''}</div>
-        <div class="bar"><i style="width:${r.score}%"></i></div>
+        <div class="why">${esc(r.arch ? ARCH_FR[r.arch] : r.label)}${(r.est ? r.reasons[1] || r.reasons[0] : r.reasons[0]) ? ' · ' + esc(r.est ? r.reasons[1] || r.reasons[0] : r.reasons[0]) : ''}</div>
+        <div class="bar"><i style="width:${r.est ? Math.max(4, (r.score - 25) * 2) : r.score}%"></i></div>
         ${r.reasons.length > 1 ? `<details class="why-more"><summary>Détail du score</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
       </div>
-      <div><div class="pct num">${r.score}%</div><button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
+      <div><div class="pct num">${r.score}%</div>${r.est ? '<div class="note" style="font-size:10px;text-align:center">victoire estimée</div>' : ''}<button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
     </div>`).join('') +
     gone.map(id => `<div class="ritem taken">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : '<span class="ph"></span>'}<div style="min-width:0"><div class="nm">${esc(cname(id))}</div><div class="why">Déjà pris par ${T[id] === 'adversaire' ? 'l\'adversaire' : 'un allié'}</div></div><div></div></div>`).join('');
 }
