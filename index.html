@@ -373,6 +373,34 @@ ol.prio b{color:var(--gold2)}
 .pick.taken{opacity:.35;filter:grayscale(1);position:relative;cursor:not-allowed}
 .pick.taken em{position:absolute;top:2px;left:2px;right:2px;font-style:normal;font-size:9px;font-weight:700;text-transform:uppercase;background:#010a13cc;color:var(--fg);border-radius:2px;padding:1px 2px}
 .ritem.taken{opacity:.45;filter:grayscale(1)}
+
+/* Recette mobile : petits écrans (320-380 px) et cibles tactiles */
+header.top h1{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.patch{flex:none}
+@media (max-width:380px){
+  header.top{gap:8px}
+  header.top h1{font-size:16px!important;letter-spacing:.03em}
+  .patch{font-size:10px;padding:5px 7px;letter-spacing:.04em}
+}
+.phase{min-width:0;padding:10px 4px}
+.phase b{font-size:clamp(11px,3.6vw,15px);letter-spacing:0;overflow-wrap:anywhere}
+.seg button{min-height:40px}
+.tctl{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:6px}
+.tctl .btn{padding:6px 4px;min-width:0}
+.tctl2{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+.tctl2 .seg button{padding:7px 10px}
+.tctl2 .btn{padding:6px 4px;min-width:0;font-size:12px}
+label.row input[type=checkbox]{width:22px;height:22px;accent-color:var(--ward);margin:0}
+label.row{min-height:40px}
+#metaSources a{display:inline-block;padding:6px 0}
+.vs-tag{font-size:10px}
+.ev .kind{font-size:11px}
+.slot .lbl{overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px;white-space:nowrap}
+.slot .lbl{letter-spacing:.03em}
+@media (max-width:380px){.slot .lbl{font-size:10px;letter-spacing:0}}
+.vs .side{min-width:0}
+.pool-grid > p{grid-column:1/-1}
+.vs .side .slot{width:auto;flex:1 1 0;max-width:68px;min-width:0}
 </style>
 </head>
 <body>
@@ -475,14 +503,13 @@ ol.prio b{color:var(--gold2)}
       <div class="t" id="clockT">0:00</div>
       <div class="next grow" id="clockNext">Lance le chrono au début de la partie (ou charge ta partie en direct pour le caler tout seul).</div>
     </div>
-    <div class="row">
+    <div class="tctl">
       <button class="btn primary small" id="btnStart">Démarrer</button>
       <button class="btn small" id="btnMinus">−10 s</button>
       <button class="btn small" id="btnPlus">+10 s</button>
       <button class="btn small ghost" id="btnStop">Stop</button>
     </div>
-    <div class="row">
-      <span class="note">Côté :</span>
+    <div class="tctl2">
       <div class="seg" role="group" aria-label="Côté de la carte">
         <button class="side-blue" data-side="blue" aria-pressed="true">Bleu</button>
         <button class="side-red" data-side="red" aria-pressed="false">Rouge</button>
@@ -557,7 +584,7 @@ ol.prio b{color:var(--gold2)}
 <div id="alertBox"></div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="app.js?v=22"></script>
-<script src="analyse.js?v=22"></script>
+<script src="app.js?v=23"></script>
+<script src="analyse.js?v=23"></script>
 </body>
 </html>
