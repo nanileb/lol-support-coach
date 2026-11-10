@@ -35,7 +35,7 @@ const NON_CRIT = ['Ezreal', 'Varus', 'Kaisa', 'Corki', 'Ziggs', 'Seraphine', 'Hw
 
 const defMatch = () => ({ ally: { top: null, jungle: null, mid: null, adc: null, support: null }, enemy: { top: null, jungle: null, mid: null, adc: null, support: null }, me: null, side: 'blue' });
 const S = {
-  settings: Object.assign({ role: null, pools: {}, pool: [], riotId: 'Nanileb#1996', platform: 'euw1', proxy: '', sound: true, vibrate: true, notif: false, lead: 15 }, LS.get('settings', {})),
+  settings: Object.assign({ role: null, pools: {}, pool: [], riotId: '', platform: 'euw1', proxy: '', sound: true, vibrate: true, notif: false, lead: 15 }, LS.get('settings', {})),
   match: (() => { const m = Object.assign(defMatch(), LS.get('match', {})); const d = defMatch(); m.ally = Object.assign(d.ally, m.ally); m.enemy = Object.assign(d.enemy, m.enemy); return m; })(),
   timer: LS.get('timer', { start: null }),
   bought: LS.get('bought', { ids: [] }),
@@ -1249,7 +1249,10 @@ function editPool() { const r = myRole(); openPicker({ title: `Mon pool ${ROLE_F
 function setRole(r, stay) {
   if (!ROLES.includes(r)) return;
   if (S.settings.role !== r) { const keep = S.match.side; S.match = defMatch(); S.match.side = keep; }
-  S.settings.role = r; save(); renderAll(); if (!stay) show('home'); toast('Poste : ' + ROLE_FR[r]);
+  S.settings.role = r; save(); renderAll();
+  // 1re utilisation (ami qui installe l'app) : on l'envoie directement remplir son compte et son pool
+  if (!stay && !S.settings.riotId) { show('set'); toast('Ajoute ton Riot ID et ton pool de champions'); return; }
+  if (!stay) show('home'); toast('Poste : ' + ROLE_FR[r]);
 }
 document.addEventListener('click', e => { const r = e.target.closest('[data-role]'); if (r) setRole(r.dataset.role, !!r.closest('#roleSeg')); });
 
