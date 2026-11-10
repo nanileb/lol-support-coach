@@ -2,6 +2,7 @@
 // Usage : node checks.mjs [chemin du repo]   (Data Dragon fr_FR téléchargé dans ./dd/ : champion, item, runesReforged, summoner)
 import { run, els } from './harness.mjs';
 import fs from 'fs';
+import path from 'path';
 const SC = JSON.parse(fs.readFileSync(new URL('./scen.json', import.meta.url), 'utf8'));
 const fails = [], warns = []; const fail = (id, msg) => fails.push(`${id} : ${msg}`);
 const it = id => run(`S.items[${JSON.stringify(String(id))}]`);
@@ -63,6 +64,53 @@ for (const s of SC) {
     return { out: out.slice(0, 8), has: !!S.cnt }; })()`);
   if (!r.has) warns.push('counters.json absent : duels estimés par profils');
   r.out.forEach(x => fail('counters', x)); }
+// 6. Méga recette (C1 à C11) : chaque couple champion / poste de builds.json, contre une équipe 100 % AD puis 100 % AP
+{ const DDC = JSON.parse(fs.readFileSync(path.join(process.env.DD_DIR || new URL('./dd', import.meta.url).pathname, 'champion.json'), 'utf8')).data;
+  const RAW = JSON.parse(fs.readFileSync(path.join(process.env.REPO || new URL('../..', import.meta.url).pathname, 'builds.json'), 'utf8')).builds;
+  // C2. Chaque clé de builds.json et de counters.json est un id Data Dragon
+  Object.keys(RAW).forEach(k => { if (!DDC[k.split('|')[0]]) fail('C2', `builds.json : ${k} n'est pas un id Data Dragon`); });
+  const POSR = { TOP: 'top', JUNGLE: 'jungle', MIDDLE: 'mid', BOTTOM: 'adc', UTILITY: 'support' };
+  const keys = Object.keys(RAW);
+  const r = run(`(() => { const out = [], B = S.builds.builds, keys = ${JSON.stringify(keys)}, POSR = ${JSON.stringify(POSR)};
+    const top = (role, ap) => keys.filter(k => POSR[k.split('|')[1]] === role).map(k => k.split('|')[0]).filter(c => isAP(c, role) === ap && !MAGIC_TANKS.includes(c) && !PHYS_TANKS.includes(c)).sort((a, b) => B[b + '|' + POS[role]].n - B[a + '|' + POS[role]].n);
+    const pickTeam = (ap, me) => { const t = {}; ROLES.forEach(rl => { t[rl] = top(rl, ap).find(c => c !== me) || null; }); return t; };
+    let noCnt = 0, big = 0;
+    for (const k of keys) { const [me, P] = k.split('|'), role = POSR[P], b = B[k];
+      // C1. Type de dégâts : un pool à plus de 60 % d'un type n'est jamais classé dans l'autre
+      const d = dmgShare(me, role);
+      if (d && !MAGIC_TANKS.includes(me) && !PHYS_TANKS.includes(me)) { if (d.ap > 0.6 && !isAP(me, role)) out.push(['C1', k + ' : achats ' + Math.round(d.ap * 100) + ' % AP mais compté AD']); if (d.ad > 0.6 && isAP(me, role)) out.push(['C1', k + ' : achats ' + Math.round(d.ad * 100) + ' % AD mais compté AP']); }
+      // C11. Couverture des counters
+      if (b.n >= 50) { big++; if (!(S.cnt.lanes[CLANE[role]] || {})[me]) noCnt++; }
+      // C5. 1er pick : un champion contrable affiche toujours le risque de contre-pick
+      S.settings.role = role; S.settings.pools[role] = [me]; S.match = defMatch(); S.match.me = null;
+      if (blindKind(me, role) === 'counter' && !scoreRole(me).reasons.some(x => /contre-pick/.test(x))) out.push(['C5', k + ' : contrable mais pas de risque de contre-pick en 1er pick']);
+      for (const ap of [false, true]) {
+        S.match = defMatch(); Object.assign(S.match.enemy, pickTeam(ap, me)); S.match.me = me;
+        renderBuild(); renderBot(); const ev = buildEvents(), A = analyzeEnemies();
+        const seq = (window._why || []).map(x => String(x.id)), sp = (b.spells || []);
+        const txt = document.querySelector('#botOut').innerHTML + ' ' + ev.map(e => e.title + ' ' + e.text).join(' ');
+        // C3. Aucun texte de Téléportation sans TP dans les sorts du build
+        if (/Téléportation/.test(txt) && !sp.includes(12)) out.push(['C3', k + ' : conseil Téléportation sans TP (sorts ' + sp + ')']);
+        // C4. Un seul objet par passif unique
+        const g = {}; seq.forEach(id => { const x = itemGroup(id); if (x) (g[x] = g[x] || []).push(iname(id)); }); Object.entries(g).forEach(([x, l]) => { if (l.length > 1) out.push(['C4', k + ' : ' + x + ' en double (' + l.join(' + ') + ')']); });
+        // C6. Pas de « pression dès le niveau 1 » quand l'adversaire gagne les premiers niveaux
+        const opp = S.match.enemy[role], eo = opp && earlyOf(opp), em = earlyOf(me);
+        if (/pression dès le niveau 1/.test(txt) && eo != null && em != null && eo > em) out.push(['C6', k + ' : pression niveau 1 contre ' + opp]);
+        // C7. Bottes : jamais la résistance inutile contre ≥ 3 adversaires du même type
+        if (A.n >= 3 && A.ap === 0 && seq.includes('3111')) out.push(['C7', k + ' : Sandales de Mercure contre ' + A.ad + ' AD / 0 AP']);
+        if (A.n >= 3 && A.ad === 0 && seq.includes('3047')) out.push(['C7', k + ' : Coques en acier contre ' + A.ap + ' AP / 0 AD']);
+        // C8. Jamais un objet offensif AP et un objet offensif AD dans les 4 premiers objets (hors hybrides assumés)
+        if (!HYBRID_OK.includes(me)) { const off = seq.filter(id => !(S.items[id].tags || []).includes('Boots')).slice(0, 4).map(id => { const t = S.items[id].tags || [], sp2 = t.includes('SpellDamage'), ph = t.includes('Damage') || t.includes('CriticalStrike'); return t.includes('Armor') || t.includes('SpellBlock') ? null : sp2 && !ph ? 'ap' : ph && !sp2 ? 'ad' : null; }).filter(Boolean);
+          if (off.includes('ap') && off.includes('ad') && !(me === 'Varus' && role === 'top')) out.push(['C8', k + ' : objets offensifs AP et AD mélangés (' + seq.slice(0, 4).map(iname).join(', ') + ')']); }
+        // C10. Pas de Héraut à préparer pour l'ADC
+        if (role === 'adc' && ev.some(e => /^Prépare le Héraut/.test(e.title))) out.push(['C10', k + ' : « Prépare le Héraut » dans la chronologie ADC']);
+      }
+    }
+    if (noCnt > big * 0.1) out.push(['C11', noCnt + ' couples sur ' + big + ' (≥ 50 parties) sans counters']);
+    return { out, noCnt, big }; })()`);
+  r.out.forEach(([c, m]) => fail(c, m));
+  if (r.noCnt) warns.push(`${r.noCnt} couples champion / poste (≥ 50 parties) sur ${r.big} sans counters Lolalytics`);
+}
 if (warns.length) console.log('À regarder (avis, pas une erreur) :\n- ' + warns.join('\n- '));
 console.log(fails.length ? `${fails.length} problème(s) :\n- ` + fails.join('\n- ') : 'Tous les garde-fous passent.');
 process.exitCode = fails.length ? 1 : 0;

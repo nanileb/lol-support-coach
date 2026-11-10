@@ -1,2 +1,6 @@
 tools/checks/dd/
 node_modules/
+tools/checks/mega-out.json
+tools/checks/mega-flags.json
+mega-out.json
+mega-flags.json

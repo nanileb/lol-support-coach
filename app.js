@@ -60,11 +60,21 @@ async function loadMeta(force) {
   if (!S.meta) S.meta = { patch: '?', tiers: {}, winrates: {}, supports: {}, adcs: {}, pairs: {}, counters: {}, engagers: [], frontline: [], healers: [], assassins: [], hookers: [], junglers: {}, timers: { dragon: 300, dragonRespawn: 300, platesDecay: 660, laneEnd: 840, grubs: 480, grubsDespawn: 885, herald: 900, baron: 1200, elderAfterSoul: 360, scuttle: 175 }, supportRules: [], items: { start: [], boots: {}, core: {}, situational: {}, upgrades: {}, names: {} }, keystones: {}, sources: [] };
 }
 
+// Passifs uniques : deux objets du même groupe ne se cumulent pas (le jeu en refuse un second). Lu dans la description officielle.
+const UNIQUE_PASSIVES = { 'Lien vital': 'lifeline', 'Lame enchantée': 'spellblade', 'Immolation': 'immolate', 'Effroi': 'mana', 'Fendoir': 'hydra' };
+function uniqueGroup(desc) {
+  const p = (String(desc).match(/<passive>[^<]*<\/passive>/g) || []).map(x => x.replace(/<[^>]+>/g, '').trim()).find(x => UNIQUE_PASSIVES[x]);
+  if (p) return UNIQUE_PASSIVES[p];
+  return /\d+\s*%\s*(<[^>]+>\s*)*de pénétration d'armure/i.test(String(desc)) ? 'lastwhisper' : null;
+}
+// Secours si l'objet n'a pas encore son groupe (vieux cache)
+const UNIQUE_GROUPS = { lifeline: ['3156', '3053', '6673'], spellblade: ['3078', '3100', '3508', '6662', '3057', '3025'], lastwhisper: ['3036', '3033', '3035', '6694'], immolate: ['3068', '6664'], mana: ['3004', '3003', '3119', '3040', '3042', '3121'], hydra: ['3074', '3748', '6698', '3077'] };
+const itemGroup = id => { id = String(id); const x = S.items && S.items[id]; if (x && x.grp !== undefined) return x.grp; return Object.keys(UNIQUE_GROUPS).find(g => UNIQUE_GROUPS[g].includes(id)) || null; };
 async function loadDD(force) {
   try {
     const versions = await getJSON(DD + '/api/versions.json', { cache: 'no-cache' });
     S.version = versions[0];
-    const cached = LS.get('dd6', null);
+    const cached = LS.get('dd7', null);
     if (!force && cached && cached.v === S.version) { S.champs = cached.champs; S.items = cached.items; S.runes = cached.runes || {}; S.sums = cached.sums || {}; }
     else {
       const [c, it, ru, su] = await Promise.all([
@@ -80,11 +90,11 @@ async function loadDD(force) {
       S.items = null;
       if (it) { S.items = {}; for (const [iid, x] of Object.entries(it.data)) { const st = x.stats || {}, d = x.description || '';
         S.items[iid] = { name: x.name, gold: x.gold && x.gold.total, base: x.gold && x.gold.base, from: x.from || [], tags: x.tags || [],
-          arm: st.FlatArmorMod > 0 ? 1 : 0, mr: st.FlatSpellBlockMod > 0 ? 1 : 0, gw: /Hémorragie/.test(d) ? 1 : 0, pen: /pénétration (d'armure|magique)|PV max/i.test(d) ? 1 : 0, ten: /ténacité/i.test(d) ? 1 : 0 }; } }
-      LS.set('dd6', { v: S.version, champs: S.champs, items: S.items, runes: S.runes, sums: S.sums });
+          arm: st.FlatArmorMod > 0 ? 1 : 0, mr: st.FlatSpellBlockMod > 0 ? 1 : 0, gw: /Hémorragie/.test(d) ? 1 : 0, pen: /pénétration (d'armure|magique)|PV max/i.test(d) ? 1 : 0, ten: /ténacité/i.test(d) ? 1 : 0, grp: uniqueGroup(d) }; } }
+      LS.set('dd7', { v: S.version, champs: S.champs, items: S.items, runes: S.runes, sums: S.sums });
     }
   } catch (e) {
-    const cached = LS.get('dd6', null);
+    const cached = LS.get('dd7', null);
     if (cached) { S.version = cached.v; S.champs = cached.champs; S.items = cached.items; S.runes = cached.runes || {}; S.sums = cached.sums || {}; }
   }
   S.byKey = {};
@@ -95,9 +105,18 @@ async function loadBuilds() {
   try { S.builds = await getJSON('builds.json', { cache: 'no-cache' }); LS.set('builds', S.builds); }
   catch (e) { S.builds = LS.get('builds', null); }
 }
+// Les noms Riot ne suivent pas toujours la casse des ids Data Dragon (FiddleSticks / Fiddlesticks) : on les ramène à l'id Data Dragon.
+function fixIds(o) {
+  if (!o || !S.champs || !Object.keys(S.champs).length) return o;
+  const low = {}; Object.keys(S.champs).forEach(id => low[id.toLowerCase()] = id);
+  let n = 0; const txt = JSON.stringify(o).replace(/"([A-Za-z]+)(\|[A-Z]+)?"/g, (m, c, p) => { if (S.champs[c] || !low[c.toLowerCase()]) return m; n++; return '"' + low[c.toLowerCase()] + (p || '') + '"'; });
+  return n ? JSON.parse(txt) : o;
+}
 const BUILD = (id, role) => (S.builds && S.builds.builds && S.builds.builds[id + '|' + POS[role || myRole()]]) || null;
 // Synergies et résultats d'équipe : parties des meilleurs joueurs (builds.json)
 const STAT = (id, role) => BUILD(id, role);
+// Sorts d'invocateur du build le plus joué (4 Flash, 6 Fantôme, 12 Téléportation, 14 Embrasement)
+const mySpells = (id, role) => ((id && BUILD(id, role)) || {}).spells || [];
 // Counters de lane : base fixe tirée d'un site spécialisé (counters.json, Lolalytics Émeraude+), mise à jour à la main
 // lors d'une refonte ou d'un nouveau champion. Utilisée seulement pour le % du pool et le verdict de lane.
 const CLANE = { top: 'top', jungle: 'jungle', mid: 'middle', adc: 'bottom', support: 'support' };
@@ -131,12 +150,24 @@ function supProfile(id) {
   if (t.includes('Fighter') || t.includes('Assassin')) return { arch: 'engage', early: 2, engage: 2, poke: 0, sustain: 0, peel: 1, scale: 1, dmg: 'ad' };
   return { arch: 'mage', early: 2, engage: 1, poke: 2, sustain: 0, peel: 1, scale: 2, dmg: ap ? 'ap' : 'ad' };
 }
+// Force des niveaux 1-3 d'après les profils écrits (ADC, supports) ; inconnue pour les autres champions
+const earlyOf = id => { const p = S.meta.adcs[id] || S.meta.supports[id]; return p && p.early != null ? p.early : null; };
 function adcProfile(id) { return S.meta.adcs[id] || { style: 'utility', early: 2, allin: 2, scale: 2, range: 'mid' }; }
 // Type de dégâts réel (pour l'AP/AD de la compo). Les tanks qui frappent en magique comptent AP.
 const MAGIC_TANKS = ['Galio', 'Maokai', 'Amumu', 'Zac', 'Malphite', 'Sejuani', 'Rell', 'Nautilus', 'Leona', 'Alistar', 'Rammus', 'Nunu', 'Gragas', 'Chogath', 'Braum', 'Taric', 'Poppy', 'Ornn', 'TahmKench', 'Skarner', 'Zyra'];
 const PHYS_TANKS = ['Sion', 'KSante', 'Thresh', 'Blitzcrank', 'Pyke'];
-function isAP(id) {
+// Part d'objets AP / AD réellement achetés (pool de builds.json) : au poste joué dans la partie, sinon tous postes cumulés.
+const roleIn = id => { const m = S.match || {}; if (m.me === id) return myRole(); for (const r of ROLES) { if ((m.ally || {})[r] === id || (m.enemy || {})[r] === id) return r; } return null; };
+function dmgShare(id, role) {
+  const all = (S.builds && S.builds.builds) || {}, keys = role && all[id + '|' + POS[role]] ? [id + '|' + POS[role]] : Object.keys(all).filter(k => k.split('|')[0] === id);
+  let ap = 0, ad = 0; keys.forEach(k => (all[k].pool || []).forEach(([iid, p]) => { const t = (S.items && S.items[iid] && S.items[iid].tags) || [], w = p * (all[k].n || 1);
+    const sp = t.includes('SpellDamage'), ph = t.includes('Damage') || t.includes('CriticalStrike') || t.includes('AttackSpeed');
+    if (sp && ph) { ap += w / 2; ad += w / 2; } else if (sp) ap += w; else if (ph) ad += w; }));
+  return ap + ad ? { ap: ap / (ap + ad), ad: ad / (ap + ad) } : null;
+}
+function isAP(id, role) {
   if (MAGIC_TANKS.includes(id)) return true; if (PHYS_TANKS.includes(id)) return false;
+  const d = dmgShare(id, typeof role === 'string' ? role : roleIn(id)); if (d && d.ap > 0.6) return true; if (d && d.ad > 0.6) return false;
   const p = S.meta.supports[id]; if (p && p.dmg === 'ap') return true; if (p && p.dmg === 'ad') return false;
   const i = (champ(id) && champ(id).info) || {}; return (i.magic || 0) > (i.attack || 0);
 }
@@ -254,6 +285,18 @@ function duelHeuristic(me, opp) {
 }
 const BLIND_SAFE = { top: ['KSante', 'Gnar', 'Malphite', 'Ornn', 'Jax', 'Sion'], jungle: ['JarvanIV', 'Vi', 'Sejuani', 'Maokai'], mid: ['Orianna', 'Ahri', 'Galio', 'Taliyah', 'Syndra'], adc: ['Ezreal', 'Jhin', 'Caitlyn', 'Varus'], support: ['Nautilus', 'Rakan', 'Karma', 'Braum', 'Bard'] };
 const COUNTERABLE = { top: ['Olaf', 'Renekton', 'Darius', 'Garen', 'Teemo', 'Vayne', 'Nasus'], jungle: ['Nidalee', 'Evelynn', 'Shaco'], mid: ['Kassadin', 'Veigar', 'Lux', 'Xerath', 'Zed'], adc: ['Draven', 'Samira', 'Twitch', 'Nilah'], support: ['Yuumi', 'Sona', 'Soraka', 'Pyke'] };
+// Listes à la main d'abord, sinon la base de counters : au moins 3 duels perdus nettement (≤ 46 %, ≥ 200 parties, et au moins 12 % de ses duels) = contrable,
+// aucun duel sous 48 % (sur au moins 8 duels mesurés) = sûr.
+function blindKind(id, role) {
+  if ((BLIND_SAFE[role] || []).includes(id)) return 'safe';
+  if ((COUNTERABLE[role] || []).includes(id)) return 'counter';
+  const L = S.cnt && S.cnt.lanes && S.cnt.lanes[CLANE[role]], c = L && L[id]; if (!c) return null;
+  const v = Object.values(c.vs).filter(x => x[1] >= 200);
+  const bad = v.filter(x => x[0] <= 46).length;
+  if (bad >= 3 && bad >= v.length * 0.12) return 'counter';
+  if (v.length >= 8 && !v.some(x => x[0] < 48)) return 'safe';
+  return null;
+}
 function scoreRole(id) {
   const role = myRole(), m = S.match, R = [], b = STAT(id);
   const t = tags(id).map(x => ({ Fighter: 'Combattant', Tank: 'Tank', Mage: 'Mage', Assassin: 'Assassin', Marksman: 'Tireur', Support: 'Support' })[x] || x).slice(0, 2).join(' / ');
@@ -304,9 +347,9 @@ function scoreRole(id) {
   const fa = Math.min(1, al.length / 4), fe = Math.min(1, en.length / 5);
   if (al.length) {
     const ap = al.filter(isAP).length, ad = al.length - ap;
-    if (ap === 0 && al.length >= 2 && isAP(id)) need(4 * fa, `apporte des dégâts magiques (${ad} allié${ad > 1 ? 's' : ''} AD, aucun AP)`);
-    if (ad === 0 && al.length >= 2 && !isAP(id)) need(4 * fa, `apporte des dégâts physiques (${ap} alliés AP, aucun AD)`);
-    if (al.length >= 3 && ap >= al.length - 1 && ad <= 1 && isAP(id) && ad + ap >= 3) need(-2 * fa, 'ton équipe a déjà beaucoup de dégâts magiques');
+    if (ap === 0 && al.length >= 2 && isAP(id, role)) need(4 * fa, `apporte des dégâts magiques (${ad} allié${ad > 1 ? 's' : ''} AD, aucun AP)`);
+    if (ad === 0 && al.length >= 2 && !isAP(id, role)) need(4 * fa, `apporte des dégâts physiques (${ap} alliés AP, aucun AD)`);
+    if (al.length >= 3 && ap >= al.length - 1 && ad <= 1 && isAP(id, role) && ad + ap >= 3) need(-2 * fa, 'ton équipe a déjà beaucoup de dégâts magiques');
     if (!al.some(isFront) && tanky) need((T[0] === 'Tank' ? 4 : 2) * fa, `ton équipe n'a pas de frontline${al.length < 4 ? ' pour l\'instant' : ''}`);
     if (!al.some(isEngager) && isEngager(id)) need(3 * fa, `ton équipe n'a pas d'engage${al.length < 4 ? ' pour l\'instant' : ''}`);
     if (al.filter(isFront).length >= 2 && T[0] === 'Tank' && role !== 'support') need(-1.5 * fa, 'ton équipe a déjà deux frontlines');
@@ -322,9 +365,10 @@ function scoreRole(id) {
   }
   // pick à l'aveugle : ton adversaire direct n'est pas encore choisi
   const directOpen = role === 'adc' || role === 'support' ? !m.enemy.adc && !m.enemy.support : !m.enemy[role];
-  if (directOpen && (en.length || al.length)) {
-    if ((BLIND_SAFE[role] || []).includes(id)) need(2, 'pick sûr à l\'aveugle (ton adversaire n\'est pas encore choisi)');
-    if ((COUNTERABLE[role] || []).includes(id)) { need(-3, 'risque de contre-pick : ton adversaire choisit après toi'); R.blind = true; }
+  if (directOpen) {
+    const bk = blindKind(id, role);
+    if (bk === 'safe') need(2, 'pick sûr à l\'aveugle (ton adversaire n\'est pas encore choisi)');
+    if (bk === 'counter') { need(-3, 'risque de contre-pick : ton adversaire choisit après toi'); R.blind = true; }
   }
   parts.sort((a, b2) => Math.abs(b2[0]) - Math.abs(a[0]));
   R.push(`${b.wr} % de victoires chez les meilleurs joueurs (${b.n} parties)`);
@@ -462,6 +506,8 @@ function fitsFlag(id, fl) {
   return false;
 }
 const ROLE_START = { support: ['3865'] };
+// Champions joués volontairement hybrides (objets AP et AD dans le même build)
+const HYBRID_OK = ['Kaisa', 'Kayle', 'Shyvana'];
 function enemyFlags(A) { return A.n ? { ap: A.ap >= 3, ad: A.ad >= 4, heal: A.heal.length >= 2, tank: A.front.length >= 3, cc: A.eng.length >= 3, assassin: A.ass.length >= 2 } : {}; }
 // Objets qui contrent ton adversaire direct : d'abord ce que les meilleurs joueurs achètent contre lui sur ton champion,
 // sinon l'objet de contre classique de sa catégorie, seulement s'il se joue sur ton champion.
@@ -550,6 +596,14 @@ function renderBuild() {
   const has = id => bl.some(x => x[0] === String(id) && x[1] >= 5);
   if (boots && F.ad && has(3047) && boots !== '3047') { boots = '3047'; bootsWhy = 'équipe très AD'; }
   else if (boots && (F.cc || F.ap) && has(3111) && boots !== '3111') { boots = '3111'; bootsWhy = F.cc ? 'beaucoup de contrôles' : 'équipe AP'; }
+  // ≥ 3 adversaires connus tous du même type : jamais les bottes de l'autre résistance
+  const allAD = A.n >= 3 && A.ap === 0, allAP = A.n >= 3 && A.ad === 0;
+  if (boots && (allAD || allAP)) {
+    const good = allAD ? '3047' : '3111', bad = allAD ? '3111' : '3047';
+    if (boots !== good && role !== 'adc' && (has(good) || boots === bad) && itemExists(good)) { boots = good; bootsWhy = allAD ? 'équipe adverse 100 % AD' : 'équipe adverse 100 % AP'; }
+    else if (boots === bad) { const alt = bl.find(x => x[0] !== bad && x[1] >= 5); boots = alt ? alt[0] : null; bootsWhy = alt ? `${alt[1]} % des meilleurs joueurs` : ''; }
+  }
+  if (me === 'Cassiopeia') boots = null; // son passif lui interdit les bottes
   if (boots && role === 'mid') bootsWhy += ' · passent au niveau 3 gratuitement à la fin de ta quête de mid';
   // objets de base : l'enchaînement le plus joué. Un objet « de situation » (présent dans b.vs) n'entre pas dans la base,
   // et un objet qui contredit la compo (RM sans AP en face, armure sans AD, anti-soins sans soins…) est écarté.
@@ -581,7 +635,17 @@ function renderBuild() {
     if (fb) sit.push({ id: fb, fl, why: FLAG_FR[fl] });
   }
   const seq = [];
-  const addS = (id, why) => { id = String(id); if (id && !seq.find(x => x.id === id)) seq.push({ id, why }); };
+  // Une seule variante : le type de dégâts du core le plus joué ; les objets offensifs de l'autre type sont écartés (défensifs autorisés)
+  const offType = id => { const t = it(String(id)).tags || [], sp = t.includes('SpellDamage'), ph = t.includes('Damage') || t.includes('CriticalStrike');
+    if (t.includes('Armor') || t.includes('SpellBlock')) return null; // objet défensif (Zhonya, Sablier…) : autorisé dans toutes les variantes
+    return sp && !ph ? 'ap' : ph && !sp ? 'ad' : null; };
+  const vt = ((b.core[0] || [])[0] || []).map(offType).filter(Boolean);
+  let vAP = vt.filter(x => x === 'ap').length, vAD = vt.length - vAP;
+  if (vAP === vAD) { vAP = 0; vAD = 0; (b.pool || []).forEach(([iid, p]) => { const o = offType(iid); if (o === 'ap') vAP += p; else if (o === 'ad') vAD += p; }); } // égalité : on départage avec tous les achats
+  const variant = HYBRID_OK.includes(me) ? null : vAP > vAD ? 'ap' : vAD > vAP ? 'ad' : null;
+  const offOk = id => !variant || !offType(id) || offType(id) === variant;
+  const clash = (id, list) => { const g = itemGroup(id); return !!g && list.some(x => String(x.id || x) !== String(id) && itemGroup(x.id || x) === g); };
+  const addS = (id, why) => { id = String(id); if (id && !seq.find(x => x.id === id) && !clash(id, seq) && offOk(id)) seq.push({ id, why }); };
   const early = x => x.fl === 'lane' || x.fl === 'heal' || x.fl === 'assassin';
   addS(core[0], `1er objet de ${b.first && b.first[0] && b.first[0][0] === core[0] ? b.first[0][1] + ' % des' : 'nombreux'} meilleurs joueurs`);
   if (role === 'adc') core.slice(1, 2).forEach(id => addS(id, 'objet de base')); // en ADC, le pic de dégâts passe avant la défense
@@ -599,8 +663,9 @@ function renderBuild() {
   [['ad', 'arm', 'équipe très AD : il te faut de l\'armure', bootsArm], ['ap', 'mr', 'équipe très AP : il te faut de la résistance magique', bootsMr]].forEach(([k, stat, why, viaBoots]) => {
     if ((k === 'ad' ? A.ad : A.ap) < 4 || viaBoots || seq.slice(0, 4).some(x => it(x.id)[stat])) return;
     const cand = DEF[k][cls].map(String).filter(itemExists);
-    const pick = cand.find(inPool) || cand[0];
+    const pick = cand.filter(id => !clash(id, seq)).find(inPool) || cand.find(id => !clash(id, seq));
     if (!pick) return;
+    const was = seq.findIndex(x => x.id === pick); if (was >= 0) seq.splice(was, 1); // déjà prévu plus tard : on l'avance
     const at = role === 'adc' ? 2 : 1; seq.splice(Math.min(at, seq.length), 0, { id: pick, why });
     sit.push({ id: pick, fl: k, why, tag: 'contre eux' });
   });
@@ -634,7 +699,8 @@ function renderBuild() {
   }
   const sums = (b.spells || []).map(k => S.sums && S.sums[k] ? `<img class="sum" src="${DD}/cdn/${S.version}/img/spell/${S.sums[k].img}" alt="" title="${esc(S.sums[k].name)}">` : '').join('');
   const sk = b.skills ? b.skills.split('').join(' › ') : '';
-  const vs = sit.length ? sit.map(x => `${esc(iname(x.id))} <span>(${esc(x.why)})</span>`).join(' · ') : '';
+  const sitOk = sit.filter(x => seq.some(y => y.id === String(x.id)) || (!clash(x.id, seq) && offOk(x.id)));
+  const vs = sitOk.length ? sitOk.map(x => `${esc(iname(x.id))} <span>(${esc(x.why)})</span>`).join(' · ') : '';
   const upId = role === 'support' ? (['Senna', 'Ashe'].includes(me) ? S.meta.items.upgrades.attack : S.meta.items.upgrades[supProfile(me).arch]) : null;
   out.innerHTML = `<div class="buildpath">${firstRow}
       ${restG.map(g => `<div class="bp-row"><div class="bp-l">${label(g)}</div><div class="bp-r">${g.items.map(tile).join('<span class="sep">›</span>')}</div></div>`).join('')}
@@ -849,11 +915,14 @@ function renderDuel() {
   const engAllies = allies().filter(isEngager);
   const DO = [], DONT = [];
   if (role === 'top') {
-    DO.push(tone === 'safe' ? 'Laisse la vague venir à ta tour et farm en sécurité jusqu\'à ton premier objet' : tone === 'aggro' ? 'Prends l\'avantage aux niveaux 1-3 et pousse pour les plaques avant 11:00' : 'Échange quand ses sorts clés sont en recharge, avance seulement avec de la vision');
+    DO.push(tone === 'safe' ? 'Laisse la vague venir à ta tour et farm en sécurité jusqu\'à ton premier objet' : tone === 'aggro' ? 'Garde la priorité sur ta vague et pousse pour les plaques avant 11:00' : 'Échange quand ses sorts clés sont en recharge, avance seulement avec de la vision');
     DO.push('Ward la rivière top ou le tri-bush avant 3:00 (premier gank possible)');
     DO.push('Pousse ta vague avant 8:00 pour aider ton jungler sur les larves');
     DONT.push('Pousser sans vision quand le jungler adverse n\'est pas visible');
-    DONT.push('Utiliser ta Téléportation sans raison : garde-la pour un drake ou un gank');
+    const sp = mySpells(me);
+    if (sp.includes(12)) DONT.push('Utiliser ta Téléportation sans raison : garde-la pour un drake ou un gank');
+    else if (sp.includes(6)) DONT.push('Gaspiller ton Fantôme : garde-le pour un all-in ou une poursuite');
+    else if (sp.includes(14)) DONT.push('Lancer l\'Embrasement trop tôt : garde-le pour le kill niveaux 2-3 (il réduit aussi ses soins)');
   } else if (role === 'mid') {
     DO.push('Pousse ta vague puis roam (rivière, bot ou top) aux niveaux 3 et 6');
     DO.push(`Ping « disparu » dès que ${cname(opp)} quitte la lane`);
@@ -877,7 +946,12 @@ function renderDuel() {
     if (to[0] === 'Tank') DO.push(`${on} est un tank : prends l'avantage tôt et ses plaques avant 11:00, il devient fort en fin de partie`);
     if (tm[0] === 'Tank' && (to.includes('Fighter') || to.includes('Assassin'))) DO.push('Tu es solide : survis à la lane et sois prêt pour le premier combat d\'équipe');
     if (tone === 'safe') DO.unshift('Duel difficile chez les meilleurs joueurs : farm près de ta tour et appelle ton jungler');
-    if (tone === 'aggro') DO.unshift('Duel favorable chez les meilleurs joueurs : mets la pression dès le niveau 1');
+    if (tone === 'aggro') { // le % vaut pour toute la partie : l'agressivité des niveaux 1-3 ne vient que des profils des deux champions
+      const em = earlyOf(me), eo = earlyOf(opp);
+      DO.unshift(em != null && eo != null && eo > em ? 'Duel favorable sur la durée, mais il gagne les premiers niveaux : farm calmement jusqu\'au niveau 3, puis prends la main'
+        : em != null && eo != null && em > eo ? 'Duel favorable sur la partie, et tu gagnes aussi les premiers niveaux : mets la pression dès le niveau 1'
+        : 'Duel favorable sur la partie : garde la priorité sur ta vague et prends les plaques avant 11:00');
+    }
   }
   if (L.do) L.do.forEach(x => DO.push(x)); if (L.dont) L.dont.forEach(x => DONT.push(x));
   if (role !== 'jungle' && jp) DONT.push(`Avancer sans ward : ${cname(ejg)} ${jp.note}`);
@@ -946,7 +1020,7 @@ function buildEvents() {
   E(600, 'ward', 'Renouvelle ta vision', "Pink rivière bot, ward la rivière mid si tu roam. Utilise tes charges de trinket.", wardSpots('mid', side), 'w10');
   E(720, 'lane', 'Reset et pinks', 'Pousse, rentre, achète 2 pinks (40 po avec la quête finie).');
   E((T.platesDecay || 660) - 60, 'ward', 'Plaques à prendre avant 11:00', 'Ward profond la jungle adverse côté bot et pousse : les plaques valent 120 po jusqu\'à 11:00.', wardSpots('deep', side), 'wplates');
-  E(T.platesDecay || 660, 'obj', 'Plaques : valeur en baisse (11:00)', 'Les plaques ne tombent plus, mais perdent 10 po par minute jusqu\'à 15:00 (80 po ensuite) et la tour externe s\'affaiblit. Bonne fenêtre pour la tour elle-même.', null, 'plates');
+  E(T.platesDecay || 660, 'obj', 'Plaques : valeur en baisse (11:00)', 'Chaque plaque vaut 10 po de moins par minute jusqu\'à 15:00 (80 po ensuite) et la tour externe s\'affaiblit : bonne fenêtre pour la tour elle-même.', null, 'plates');
   E(T.laneEnd || 840, 'lane', 'Fin de la phase de lane (14:00)', "Vagues toutes les 25 s, retour en base plus rapide. Passe à l'Oracle si ta quête est finie et regroupe mid.", null, 'laneend');
   E(T.herald - 30, 'ward', 'Prépare le Héraut', 'Balaye et ward autour du pit top.', wardSpots('grubs', side), 'wherald');
   E(T.grubsDespawn, 'obj', 'Les larves disparaissent', 'Si elles sont encore là, c\'est la dernière chance.', null, 'grubsend');
@@ -974,10 +1048,20 @@ function buildEventsRole(role, E, ev, T, side, jg, jp) {
   if (role === 'jungle') {
     const L3 = [['top', [m.ally.top]], ['mid', [m.ally.mid]], ['bot', [m.ally.adc, m.ally.support]]];
     const cc = l => l[1].filter(Boolean).filter(isEngager).length * 2 + l[1].filter(Boolean).filter(isFront).length;
-    const tgt = L3.slice().sort((a, b) => cc(b) - cc(a))[0];
+    let tgt = L3.slice().sort((a, b) => cc(b) - cc(a))[0], why = cc(tgt) ? `${tgt[1].filter(Boolean).map(cname).join(' + ')}, le plus de contrôle` : '';
+    const known = L3.filter(l => l[1].some(Boolean));
+    if (!why && known.length) { // alliés sans contrôle : la lane adverse la plus facile à punir (sans fuite, duel perdu par ton allié)
+      const foes = { top: [m.enemy.top], mid: [m.enemy.mid], bot: [m.enemy.adc, m.enemy.support] }, lr = { top: 'top', mid: 'mid', bot: 'adc' };
+      const stuck = e => !tags(e).includes('Assassin') && !tags(e).includes('Fighter') && (tags(e).includes('Marksman') || tags(e).includes('Mage'));
+      const pun = l => { const es = foes[l[0]].filter(Boolean), d = l[1][0] && es[0] && counterDuel(l[1][0], es[0], lr[l[0]]);
+        return es.filter(stuck).length * 2 + (d && d.wr < 48 ? 1 : 0) + (l[0] === 'bot' ? 0.5 : 0); };
+      tgt = known.slice().sort((a, b) => pun(b) - pun(a))[0];
+      const es = foes[tgt[0]].filter(Boolean);
+      why = es.filter(stuck).length ? `${es.filter(stuck).map(cname).join(' + ')} sans fuite, facile à punir` : `aucun allié avec du contrôle : aide ${tgt[1].filter(Boolean).map(cname).join(' + ')}`;
+    }
     const tgtName = tgt[0], topside = tgtName === 'bot'; // pour finir près de la bot, on commence côté top
     const buff = (side === 'blue') === topside ? 'buff bleu' : 'buff rouge';
-    jgStart = cc(tgt) ? `Lane à ganker en premier : ${tgtName} (${tgt[1].filter(Boolean).map(cname).join(' + ')}, le plus de contrôle). Commence côté ${topside ? 'top' : 'bot'} (${buff}) pour finir ton tour près de la ${tgtName} vers 3:00-3:15.` : 'Ajoute tes alliés pour savoir quelle lane ganker en premier. Commence du côté opposé à cette lane pour finir ton tour à côté d\'elle.';
+    jgStart = why ? `Lane à ganker en premier : ${tgtName} (${why}). Commence côté ${topside ? 'top' : 'bot'} (${buff}) pour finir ton tour près de la ${tgtName} vers 3:00-3:15.` : 'Ajoute tes alliés pour savoir quelle lane ganker en premier. Commence du côté opposé à cette lane pour finir ton tour à côté d\'elle.';
     if (jp && (jp.type === 'early' || /invad/i.test(jp.note || ''))) E(45, 'danger', `Invasion possible : ${cname(jg)}`, `${cname(jg)} aime envahir tôt : ward l'entrée de ton premier buff et reste près de tes laners avant l'apparition des camps.`, null, 'invade');
   }
   E(0, 'lane', 'Début de partie', role === 'jungle' ? jgStart : role === 'adc' ? 'Objet de départ + potion. Laisse ton support prendre les buissons, toi la vague.' : 'Objet de départ + potion. Les 3 premiers niveaux décident souvent du duel.');
@@ -996,7 +1080,7 @@ function buildEventsRole(role, E, ev, T, side, jg, jp) {
   }
   E(T.scuttle, 'obj', 'Crabes (2:55)', role === 'jungle' ? 'Prends le crabe du côté où tes lanes peuvent bouger.' : `Si ta lane a la priorité, aide ${myJg ? cname(myJg) : 'ton jungler'} sur le crabe.`);
   if (role === 'mid') E(200, 'lane', 'Niveau 3 : fenêtre de roam', 'Si ta vague est poussée, va vers la rivière ou une lane adjacente.');
-  E(T.dragon - 45, role === 'jungle' ? 'ward' : 'lane', 'Prépare le drake', role === 'adc' ? 'Pousse ta vague avant le drake avec ton support.' : role === 'jungle' ? 'Vision dans la rivière bot, demande la priorité bot et mid.' : role === 'mid' ? 'Pousse ta vague pour pouvoir bouger au drake.' : 'Pousse ta vague ou garde ta Téléportation pour le drake.', role === 'jungle' ? wardSpots('drake', side) : null, 'wdrake1');
+  E(T.dragon - 45, role === 'jungle' ? 'ward' : 'lane', 'Prépare le drake', role === 'adc' ? 'Pousse ta vague avant le drake avec ton support.' : role === 'jungle' ? 'Vision dans la rivière bot, demande la priorité bot et mid.' : role === 'mid' ? 'Pousse ta vague pour pouvoir bouger au drake.' : (mySpells(S.match.me).includes(12) ? 'Pousse ta vague ou garde ta Téléportation pour le drake.' : 'Pousse ta vague pour ne pas perdre d\'or pendant le drake.'), role === 'jungle' ? wardSpots('drake', side) : null, 'wdrake1');
   E(T.dragon, 'obj', 'Drake (5:00)', 'Premier drake : seulement avec la priorité bot et mid.', null, 'drake1');
   if (role === 'mid') E(390, 'lane', 'Niveau 6', 'Ultime disponible : roam vers une lane poussée ou un objectif.');
   if (role === 'adc') E(390, 'lane', 'Niveau 6', 'Le support et le jungler adverses ont leur ultime : attention aux all-ins.');
@@ -1007,7 +1091,8 @@ function buildEventsRole(role, E, ev, T, side, jg, jp) {
   E(T.platesDecay || 660, 'obj', 'Plaques : valeur en baisse (11:00)', 'Les plaques perdent 10 po par minute jusqu\'à 15:00 et la tour externe s\'affaiblit.', null, 'plates');
   E(T.laneEnd || 840, 'lane', 'Fin de la phase de lane (14:00)', role === 'adc' ? 'Vagues toutes les 25 s : rejoins mid avec ton support, reste avec le groupe.' : 'Vagues toutes les 25 s, retour en base plus rapide. Regroupe-toi pour les objectifs.', null, 'laneend');
   E(T.grubsDespawn, 'obj', 'Les larves disparaissent', 'Dernière chance si elles sont encore là.', null, 'grubsend');
-  E(T.herald - 30, role === 'jungle' ? 'ward' : 'lane', 'Prépare le Héraut', 'Vision autour du pit top, priorité top et mid.', role === 'jungle' ? wardSpots('grubs', side) : null, 'wherald');
+  if (role === 'adc') E(T.herald - 30, 'lane', 'Avant le Héraut', 'Pousse ta vague bot puis reste avec ton groupe : ne farm pas seul sur le côté pendant que ton équipe joue le pit top.', null, 'wherald');
+  else E(T.herald - 30, role === 'jungle' ? 'ward' : 'lane', 'Prépare le Héraut', 'Vision autour du pit top, priorité top et mid.', role === 'jungle' ? wardSpots('grubs', side) : null, 'wherald');
   E(T.herald, 'obj', 'Héraut (15:00)', 'Une seule apparition dans le pit top.', null, 'herald');
   E(T.baron - 30, 'ward', 'Prépare le Baron', 'Vision et balayage autour du Baron avant de le commencer.', wardSpots('baron', side), 'wbaron');
   E(T.baron, 'obj', 'Baron (20:00)', 'Jamais sans savoir où est leur jungler.', null, 'baron');
@@ -1232,6 +1317,7 @@ function renderAll() {
   renderAll();
   show(S.settings.role ? 'home' : 'role');
   await Promise.all([loadDD(false), loadBuilds(), loadCounters()]);
+  S.builds = fixIds(S.builds); S.cnt = fixIds(S.cnt);
   renderAll();
   if (S.timer.start) markPastFired();
   setInterval(() => tick(false), 500);

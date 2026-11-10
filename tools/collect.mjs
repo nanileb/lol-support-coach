@@ -39,6 +39,9 @@ const isLegendary = id => {
   if ((d.into || []).length || (d.tags || []).includes('Consumable') || isBoots(id)) return false;
   return d.gold.total >= 2000;
 };
+// Riot renvoie parfois un championName différent de l'id Data Dragon (FiddleSticks) : on le ramène à l'id Data Dragon.
+const DDID = {}; Object.values(champs).forEach(c => { DDID[c.key] = c.id; DDID[c.id.toLowerCase()] = c.id; });
+const ddId = p => DDID[String(p.championId)] || DDID[String(p.championName || '').toLowerCase()] || p.championName;
 const ASSASSIN = new Set(Object.values(champs).filter(c => c.tags.includes('Assassin')).map(c => c.id));
 
 /* 1. Joueurs */
@@ -95,6 +98,7 @@ log('patchs', vers.slice(0, 3).map(v => v + ':' + byVer[v].length).join(' '), '�
 /* 4. Échantillons : un par joueur et par partie */
 const samples = [];
 for (const g of used) {
+  g.participants.forEach(p => { p.championName = ddId(p); });
   const P = g.participants, dur = g.gameDuration / 60;
   for (const me of P) {
     const pos = me.teamPosition; if (!pos) continue;
