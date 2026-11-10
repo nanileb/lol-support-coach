@@ -50,12 +50,12 @@ for (const pf of REGIONS) {
 }
 if (!queue.length) { console.error('Aucun joueur : relais pas à jour ou clé refusée.'); process.exit(1); }
 
-/* 2. Parties récentes pas encore en stock (7 derniers jours) */
-const since = Math.floor(Date.now() / 1000) - 7 * 86400;
+/* 2. Parties récentes pas encore en stock (DAYS derniers jours) */
+const DAYS = Number(process.env.DAYS || 7), since = Math.floor(Date.now() / 1000) - DAYS * 86400;
 const ids = new Map();
 for (let i = 0; i < queue.length && ids.size < MAX * 1.3 && !late(); i++) {
   const { pf, p } = queue[(i * 7919) % queue.length];
-  const r = await relay(`/ids?platform=${pf}&puuid=${p}&count=40&start=${since}`);
+  const r = await relay(`/ids?platform=${pf}&puuid=${p}&count=${DAYS > 7 ? 100 : 40}&start=${since}`);
   (r && r.ids || []).forEach(id => store.games[id] || ids.has(id) || ids.set(id, pf));
   if (i % 100 === 0) log('ids', i, '/', queue.length, '→', ids.size, 'nouvelles parties');
 }

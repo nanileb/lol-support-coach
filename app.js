@@ -245,6 +245,7 @@ function duelHeuristic(me, opp) {
   const rng = c => ((champ(c) || {}).range || 0) >= 300, tm = tags(me), to = tags(opp);
   if ((S.meta.counters[me] || []).includes(opp)) return [2, `bon contre ${cname(opp)}`];
   if ((S.meta.counters[opp] || []).includes(me)) return [-2, `${cname(opp)} le contre`];
+  if (myRole() === 'jungle') return null; // en jungle, pas de duel de lane : la portée ne compte pas
   if (rng(me) && !rng(opp)) return [1.5, `portée contre ${cname(opp)} (corps à corps)`];
   if (!rng(me) && rng(opp)) return [-1.5, `${cname(opp)} a la portée sur toi`];
   if (tm[0] === 'Tank' && to.includes('Assassin')) return [1, `tank solide contre ${cname(opp)} (assassin)`];
@@ -269,7 +270,7 @@ function scoreRole(id) {
   const CFG = { 1: { min: 20, k: 100, cap: 4 }, 0.5: { min: 30, k: 150, cap: 2 }, 0.25: { min: 50, k: 200, cap: 1.5 } };
   const off = []; // paires hors lane, plafonnées ensemble à ±4
   const add = (v, txt, w = 1) => { v = Math.max(-CFG[w].cap, Math.min(CFG[w].cap, v)); if (Math.abs(v) < 0.5) return; if (w < 1) return off.push([v, txt, w]); s += v; parts.push([v, txt, w]); };
-  const finder = w => (list, c) => (list || []).find(x => x[0] === c && x[1] >= CFG[w].min);
+  const finder = (w, direct) => (list, c) => (list || []).find(x => x[0] === c && x[1] >= (direct ? 8 : CFG[w].min)); // duel direct : dès 8 parties, fortement ramené vers la moyenne (k = 100)
   const pairDelta = (e, prior, w) => (shrink(e[2], e[1], CFG[w].k, prior) - prior) * w; // écart par rapport au WR habituel, pondéré
   const wtag = w => w === 1 ? '' : w === 0.5 ? ', poids ½' : ', poids ¼';
   // alliés
@@ -283,7 +284,7 @@ function scoreRole(id) {
   // adversaires : duel direct d'abord, puis le reste de l'équipe
   ROLES.forEach(r => {
     const e = m.enemy[r]; if (!e) return;
-    const direct = r === role, w = W(r, true), find = finder(w), x = (direct && find(b.opp, e)) || find(b.vsAll, e);
+    const direct = r === role, w = W(r, true), find = finder(w, direct), x = (direct && find(b.opp, e)) || find(b.vsAll, e);
     if (x) add(pairDelta(x, b.wr, w) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties${wtag(w)})`, w);
     else if (direct && !(STAT(e, r) && find(STAT(e, r).opp, id))) { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, pas assez de parties sur ce duel)'); }
     else { const eb = STAT(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], CFG[w].k, eb.wr)) * w * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties${wtag(w)})`, w); }
@@ -305,7 +306,7 @@ function scoreRole(id) {
     if (al.filter(isFront).length >= 2 && T[0] === 'Tank' && role !== 'support') need(-1.5 * fa, 'ton équipe a déjà deux frontlines');
   }
   if (en.length) {
-    const ead = en.filter(e => !isAP(e)).length, eap = en.length - ead, ass = en.filter(e => inList('assassins', e)).length, fr = en.filter(isFront).length;
+    const ead = en.filter(e => !isAP(e)).length, eap = en.length - ead, ass = en.filter(e => inList('assassins', e)).length, fr = en.filter(e => tags(e)[0] === 'Tank').length;
     const MR_TANKS = ['Galio', 'Chogath', 'Kassadin', 'Mordekaiser', 'Gragas', 'Maokai', 'Braum', 'Malphite', 'Sion', 'Ornn', 'KSante'];
     if (ARMOR_TANKS.includes(id) && ead - eap >= 2) need(Math.min(3, (ead - eap) * 0.75), `résiste bien à leurs dégâts physiques (${ead} AD, ${eap} AP)`);
     if (MR_TANKS.includes(id) && eap - ead >= 1) need(Math.min(3, (eap - ead) * 0.75), `tient bien face à leurs dégâts magiques (${eap} AP, ${ead} AD)`);
@@ -511,9 +512,9 @@ function renderBuild() {
   const opgg = { euw1: 'euw', eun1: 'eune', na1: 'na', kr: 'kr', tr1: 'tr', br1: 'br', la1: 'lan', la2: 'las', jp1: 'jp', oc1: 'oce', me1: 'me' }[S.settings.platform] || 'euw';
   const rid = (S.settings.riotId || '').replace('#', '-');
   $('#opggLink').href = `https://op.gg/lol/summoners/${opgg}/${encodeURIComponent(rid)}/ingame`;
-  const b = me && BUILD(me);
+  const b = me && STAT(me);
   $('#meRow').innerHTML = me
-    ? `${slotHTML(me, 'Toi', 'me', 'me')}<div class="grow"><b>${esc(cname(me))}</b><div class="note">${esc(ROLE_FR[role])}${b ? ` · ${b.wr} % de victoires en Challenger` : ''}</div></div>`
+    ? `${slotHTML(me, 'Toi', 'me', 'me')}<div class="grow"><b>${esc(cname(me))}</b><div class="note">${esc(ROLE_FR[role])}${b ? ` · ${b.wr} % de victoires chez les meilleurs joueurs (${b.n} parties)` : ''}</div></div>`
     : `<div class="empty grow">Choisis ton champion (onglet Draft ou ici).</div>${slotHTML(null, 'Toi', 'me', 'me')}`;
   const A = analyzeEnemies(), F = enemyFlags(A);
   const chips = [];
@@ -701,7 +702,7 @@ function loadSpells(id) {
     const c = j.data[id], d = { Passif: { name: c.passive.name, img: `${DD}/cdn/${S.version}/img/passive/${c.passive.image.full}` } };
     ['Q', 'W', 'E', 'R'].forEach((k, i) => { const s = c.spells[i]; if (s) d[k] = { name: s.name, desc: ((s.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().match(/^.*?[.!?](\s|$)/) || [''])[0].trim(), cd: s.cooldownBurn, img: `${DD}/cdn/${S.version}/img/spell/${s.image.full}` }; });
     SPELLS[id] = d; LS.set('sp2_' + id, { v: S.version, d });
-    if (S.view === 'bot' || S.view === 'game') renderBot();
+    renderBot(); // même si l'onglet Lane n'est pas ouvert : il sera à jour quand tu y vas
   }).catch(() => { }).finally(() => { spellLoading[id] = false; });
 }
 function spellRow(champId, k, tip) {
@@ -857,7 +858,7 @@ function renderDuel() {
   } else {
     DO.push(engAllies.length ? `Ganke en priorité les lanes avec du contrôle : ${engAllies.map(cname).join(', ')}` : 'Ganke la lane où l\'adversaire est poussé et sans Flash');
     DO.push('Commence du côté où tes lanes ont la priorité, prends le crabe à 2:55 si ta bot ou ta mid peut suivre');
-    DO.push('Larves à 8:00, drake à 5:00 : prépare la vision 1 minute avant');
+    DO.push('Drake à 5:00, larves à 8:00 : prépare la vision 1 minute avant');
     DONT.push('Faire un gank sans que ta lane soit prête (vague mal placée, sans sorts)');
     if (jp) DONT.push(`Ignorer ${cname(opp)} : ${jp.note}`);
   }
@@ -1190,6 +1191,7 @@ function show(v) {
   $('#btnHome').hidden = v === 'home' || v === 'role';
   document.body.classList.toggle('in-game', GAME_TABS.includes(v));
   if (v === 'time') renderTimeline();
+  if (v === 'bot') renderBot();
   { const h = $('#hdrRole'); if (h) h.textContent = S.settings.role ? ROLE_FR[myRole()] : 'LoL'; }
   if (v === 'home') { const a = $('#homeAcc'); if (a) a.textContent = S.settings.riotId ? 'Compte : ' + S.settings.riotId : 'Ajoute ton Riot ID dans les Réglages.'; $('#homeRole').textContent = ROLE_FR[myRole()]; $('#homeGameSub').textContent = `Draft · Build · ${LANE_TAB[myRole()]} · Timings`; }
   if (v === 'analyse' && typeof renderAnalyse === 'function') { renderAnalyse(); if (Date.now() - AN.updated > 10 * 60000 || AN.role !== myRole()) loadAnalyse(false); }

@@ -7,6 +7,9 @@ on:
       matches:
         description: Nouvelles parties maximum
         default: '8000'
+      days:
+        description: Jours d'historique à parcourir (35 pour un rattrapage)
+        default: '7'
 permissions:
   contents: write
 concurrency: riot   # même clé Riot que les builds : jamais en même temps
@@ -20,6 +23,8 @@ jobs:
         with:
           node-version: 20
       - run: node tools/matchups.mjs ${{ github.event.inputs.matches || '8000' }}
+        env:
+          DAYS: ${{ github.event.inputs.days || '7' }}
       - run: |
           git config user.name "builds-bot"
           git config user.email "builds-bot@users.noreply.github.com"
