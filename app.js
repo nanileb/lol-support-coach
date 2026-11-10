@@ -489,7 +489,7 @@ function renderBuildSupportLegacy() {
 }
 const FLAG_FR = { ap: 'équipe AP', ad: 'équipe très AD', heal: 'beaucoup de soins', tank: 'beaucoup de tanks', cc: 'beaucoup de contrôles', assassin: 'assassins / plongeurs' };
 // Objets « contre eux » de secours, retenus seulement s'ils se jouent sur le champion
-const FALLBACK = { ap: [3102, 3156, 4401, 8020, 2504, 6665, 3157], ad: [3157, 6333, 6673, 3143, 3075, 3110, 3047], heal: [3123, 3033, 6609, 3916, 3165, 3076, 3011], tank: [3036, 3135, 8010, 6653, 3153, 3071, 6694], cc: [3111, 3139, 3222, 2504, 3102], assassin: [3157, 6333, 6673, 3156, 3102, 3190] };
+const FALLBACK = { ap: [3102, 3156, 3139, 4401, 8020, 2504, 6665, 3157], ad: [3157, 6333, 6673, 3143, 3075, 3110, 3047], heal: [3123, 3033, 6609, 3916, 3165, 3076, 3011], tank: [3036, 3135, 8010, 6653, 3153, 3071, 6694], cc: [3111, 3139, 3222, 2504, 3102], assassin: [3157, 6333, 6673, 3026, 3156, 3102, 3190] };
 // Un objet n'est conseillé « contre » une menace que s'il la contre vraiment (stats / effets officiels de l'objet)
 const FIT_EXTRA = { tank: ['3071', '3153', '6653', '3302'], ad: ['6673', '3814'], ap: ['3157', '3814'], assassin: ['3157', '6673', '3814'], cc: ['3139', '3222', '3140'] };
 function fitsFlag(id, fl) {
@@ -608,6 +608,18 @@ function renderBuild() {
   // objets de base : l'enchaînement le plus joué. Un objet « de situation » (présent dans b.vs) n'entre pas dans la base,
   // et un objet qui contredit la compo (RM sans AP en face, armure sans AD, anti-soins sans soins…) est écarté.
   const it = id => (S.items && S.items[id]) || {};
+  // Une seule variante : le type de dégâts du core le plus joué ; les objets offensifs de l'autre type sont écartés (défensifs autorisés)
+  const offType = id => { const t = it(String(id)).tags || [], sp = t.includes('SpellDamage'), ph = t.includes('Damage') || t.includes('CriticalStrike');
+    if (t.includes('Armor') || t.includes('SpellBlock')) return null; // objet défensif (Zhonya, Sablier…) : autorisé dans toutes les variantes
+    return sp && !ph ? 'ap' : ph && !sp ? 'ad' : null; };
+  const vt = ((b.core[0] || [])[0] || []).map(offType).filter(Boolean);
+  let vAP = vt.filter(x => x === 'ap').length, vAD = vt.length - vAP;
+  if (vAP === vAD) { vAP = 0; vAD = 0; (b.pool || []).forEach(([iid, p]) => { const o = offType(iid); if (o === 'ap') vAP += p; else if (o === 'ad') vAD += p; }); } // égalité : on départage avec tous les achats
+  const variant = HYBRID_OK.includes(me) ? null : vAP > vAD ? 'ap' : vAD > vAP ? 'ad' : null;
+  // Sur une variante AD, un objet à puissance (Zhonya compris) seulement si le champion l'achète vraiment : ≥ 20 % de son pool, ≥ 30 parties
+  const share = id => ((b.pool || []).find(x => x[0] === String(id)) || [0, 0])[1];
+  const apOk = id => variant !== 'ad' || !(it(String(id)).tags || []).includes('SpellDamage') || (share(id) >= 20 && b.n >= 30);
+  const offOk = id => (!variant || !offType(id) || offType(id) === variant) && apOk(id);
   const fixed = new Set([...(((b.core[0] || [])[0]) || []), ...((b.first || []).slice(0, 1).map(x => x[0]))].map(String));
   const situational = id => !fixed.has(id) && Object.values(b.vs || {}).some(l => l.some(x => x[0] === id));
   const contradicts = id => {
@@ -625,7 +637,7 @@ function renderBuild() {
   const sit = [];
   const opp = S.match.enemy[role];
   const assKind = A.ass.length ? (A.ass.filter(isAP).length * 2 > A.ass.length ? 'apBurst' : A.ass.filter(isAP).length * 2 < A.ass.length ? 'adBurst' : 'assassin') : 'assassin';
-  const fitF = (id, fl) => fitsFlag(id, fl === 'assassin' ? assKind : fl) && !contradicts(String(id));
+  const fitF = (id, fl) => fitsFlag(id, fl === 'assassin' ? assKind : fl) && !contradicts(String(id)) && offOk(id);
   laneCounter(b, opp, core.slice(0, 1)).filter(x => !contradicts(x.id)).forEach(x => sit.push({ id: x.id, fl: 'lane', why: x.why, tag: 'contre ' + cname(opp) }));
   for (const fl of ['heal', 'assassin', 'ap', 'ad', 'tank', 'cc']) {
     if (!F[fl] || sit.length >= 3) continue;
@@ -635,15 +647,6 @@ function renderBuild() {
     if (fb) sit.push({ id: fb, fl, why: FLAG_FR[fl] });
   }
   const seq = [];
-  // Une seule variante : le type de dégâts du core le plus joué ; les objets offensifs de l'autre type sont écartés (défensifs autorisés)
-  const offType = id => { const t = it(String(id)).tags || [], sp = t.includes('SpellDamage'), ph = t.includes('Damage') || t.includes('CriticalStrike');
-    if (t.includes('Armor') || t.includes('SpellBlock')) return null; // objet défensif (Zhonya, Sablier…) : autorisé dans toutes les variantes
-    return sp && !ph ? 'ap' : ph && !sp ? 'ad' : null; };
-  const vt = ((b.core[0] || [])[0] || []).map(offType).filter(Boolean);
-  let vAP = vt.filter(x => x === 'ap').length, vAD = vt.length - vAP;
-  if (vAP === vAD) { vAP = 0; vAD = 0; (b.pool || []).forEach(([iid, p]) => { const o = offType(iid); if (o === 'ap') vAP += p; else if (o === 'ad') vAD += p; }); } // égalité : on départage avec tous les achats
-  const variant = HYBRID_OK.includes(me) ? null : vAP > vAD ? 'ap' : vAD > vAP ? 'ad' : null;
-  const offOk = id => !variant || !offType(id) || offType(id) === variant;
   const clash = (id, list) => { const g = itemGroup(id); return !!g && list.some(x => String(x.id || x) !== String(id) && itemGroup(x.id || x) === g); };
   const addS = (id, why) => { id = String(id); if (id && !seq.find(x => x.id === id) && !clash(id, seq) && offOk(id)) seq.push({ id, why }); };
   const early = x => x.fl === 'lane' || x.fl === 'heal' || x.fl === 'assassin';
@@ -662,7 +665,7 @@ function renderBuild() {
   const bootsArm = boots && it(boots).arm, bootsMr = boots && it(boots).mr;
   [['ad', 'arm', 'équipe très AD : il te faut de l\'armure', bootsArm], ['ap', 'mr', 'équipe très AP : il te faut de la résistance magique', bootsMr]].forEach(([k, stat, why, viaBoots]) => {
     if ((k === 'ad' ? A.ad : A.ap) < 4 || viaBoots || seq.slice(0, 4).some(x => it(x.id)[stat])) return;
-    const cand = DEF[k][cls].map(String).filter(itemExists);
+    const cand = DEF[k][cls].concat(variant === 'ad' ? (k === 'ap' ? [3156, 3139] : [6673, 6333, 3026]) : []).map(String).filter(id => itemExists(id) && apOk(id));
     const pick = cand.filter(id => !clash(id, seq)).find(inPool) || cand.find(id => !clash(id, seq));
     if (!pick) return;
     const was = seq.findIndex(x => x.id === pick); if (was >= 0) seq.splice(was, 1); // déjà prévu plus tard : on l'avance
@@ -671,6 +674,7 @@ function renderBuild() {
   });
   const order = seq.slice(0, 4).map(x => x.id);
   if (boots) order.splice(1, 0, boots);
+  window._variant = { type: variant, n: b.n, share: Object.fromEntries((b.pool || []).map(x => [x[0], x[1]])) };
   window._why = seq.concat(boots ? [{ id: boots, why: 'bottes : ' + bootsWhy }] : []);
   // objets de poste obligatoires mais absents de la timeline Riot (l'Atlas des supports)
   const start = ((b.start || [])[0] || [[]])[0].filter(itemExists);

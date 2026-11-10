@@ -102,6 +102,9 @@ for (const s of SC) {
         // C8. Jamais un objet offensif AP et un objet offensif AD dans les 4 premiers objets (hors hybrides assumés)
         if (!HYBRID_OK.includes(me)) { const off = seq.filter(id => !(S.items[id].tags || []).includes('Boots')).slice(0, 4).map(id => { const t = S.items[id].tags || [], sp2 = t.includes('SpellDamage'), ph = t.includes('Damage') || t.includes('CriticalStrike'); return t.includes('Armor') || t.includes('SpellBlock') ? null : sp2 && !ph ? 'ap' : ph && !sp2 ? 'ad' : null; }).filter(Boolean);
           if (off.includes('ap') && off.includes('ad') && !(me === 'Varus' && role === 'top')) out.push(['C8', k + ' : objets offensifs AP et AD mélangés (' + seq.slice(0, 4).map(iname).join(', ') + ')']); }
+        // C8b. Variante AD : Zhonya (et tout objet à puissance) seulement si le champion l'achète vraiment (≥ 20 % du pool, ≥ 30 parties)
+        const V = window._variant || {};
+        if (V.type === 'ad') seq.filter(id => (S.items[id].tags || []).includes('SpellDamage') && !((V.share[id] || 0) >= 20 && V.n >= 30)).forEach(id => out.push(['C8', k + ' : ' + iname(id) + ' sur une variante AD (' + (V.share[id] || 0) + ' % de ' + V.n + ' parties)']));
         // C10. Pas de Héraut à préparer pour l'ADC
         if (role === 'adc' && ev.some(e => /^Prépare le Héraut/.test(e.title))) out.push(['C10', k + ' : « Prépare le Héraut » dans la chronologie ADC']);
       }
