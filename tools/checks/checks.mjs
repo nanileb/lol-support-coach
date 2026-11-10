@@ -70,7 +70,7 @@ for (const s of SC) {
   // C2. Chaque clé de builds.json et de counters.json est un id Data Dragon
   Object.keys(RAW).forEach(k => { if (!DDC[k.split('|')[0]]) fail('C2', `builds.json : ${k} n'est pas un id Data Dragon`); });
   const POSR = { TOP: 'top', JUNGLE: 'jungle', MIDDLE: 'mid', BOTTOM: 'adc', UTILITY: 'support' };
-  const keys = Object.keys(RAW);
+  const keys = run('Object.keys(S.builds.builds)'); // noms déjà ramenés aux ids Data Dragon (le contrôle C2 ci-dessus porte sur le fichier brut)
   const r = run(`(() => { const out = [], B = S.builds.builds, keys = ${JSON.stringify(keys)}, POSR = ${JSON.stringify(POSR)};
     const top = (role, ap) => keys.filter(k => POSR[k.split('|')[1]] === role).map(k => k.split('|')[0]).filter(c => isAP(c, role) === ap && !MAGIC_TANKS.includes(c) && !PHYS_TANKS.includes(c)).sort((a, b) => B[b + '|' + POS[role]].n - B[a + '|' + POS[role]].n);
     const pickTeam = (ap, me) => { const t = {}; ROLES.forEach(rl => { t[rl] = top(rl, ap).find(c => c !== me) || null; }); return t; };

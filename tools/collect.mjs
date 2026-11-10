@@ -150,6 +150,9 @@ for (const g of used) {
 // Atlas : objet de départ des supports, absent de la timeline Riot (500 po de départ = Atlas 400 + 2 potions)
 samples.forEach(s => { if (s.key.endsWith('|UTILITY') && !s.start.split(',').includes('3865')) s.start = ['3865', ...s.start.split(',').filter(Boolean)].sort().join(','); });
 // Cumul avec les collectes précédentes du même patch
+// anciens échantillons stockés avant la correction des noms : on ramène aussi leurs noms aux ids Data Dragon
+const fixName = n => DDID[String(n || '').toLowerCase()] || n;
+prev.samples.forEach(s => { const [c, p] = s.key.split('|'); s.key = fixName(c) + '|' + p; s.opp = s.opp && fixName(s.opp); s.duo = s.duo && fixName(s.duo); s.mates = (s.mates || []).map(fixName); s.foes = (s.foes || []).map(fixName); });
 if (prev.patch === vers[0]) { const have = new Set(samples.map(s => s.mid)); prev.samples.forEach(s => { if (!have.has(s.mid)) samples.push(s); }); }
 const totalGames = new Set(samples.map(s => s.mid)).size;
 log('échantillons :', samples.length, '·', totalGames, 'parties au total');
