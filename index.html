@@ -83,9 +83,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mu
 
 /* ranking */
 .rank{display:flex;flex-direction:column;gap:8px}
-.cnt-h{margin:12px 0 6px;font-size:13px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
-.cnt-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
-.item.cnt{position:relative}.item.cnt>div{flex:1;min-width:0}.item.cnt.mine{border-color:var(--ward)}
+.dlt{display:block;font-size:11px;font-weight:700;line-height:1}.dlt.up{color:var(--good)}.dlt.down{color:var(--bad)}
 .ritem{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:4px;padding:8px}
 .ritem.top1{border-color:var(--ward)}
 .ritem img,.ritem .ph{width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--card2)}
@@ -458,11 +456,6 @@ label.row{min-height:40px}
       <div class="rank" id="ranking"></div>
       <p class="note" id="scoreNote">Score calculé : duo avec ton ADC, besoins de l'équipe (engage, dégâts AP, frontline), counters adverses et tier du patch.</p>
     </div>
-    <div class="card" id="counterCard">
-      <h3 id="counterTitle">Counters</h3>
-      <select id="counterSel" aria-label="Champion dont tu veux voir les counters"></select>
-      <div id="counterOut"></div>
-    </div>
   </section>
 
   <!-- EN GAME / BUILD -->
@@ -592,7 +585,7 @@ label.row{min-height:40px}
 <div id="alertBox"></div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="app.js?v=26"></script>
-<script src="analyse.js?v=26"></script>
+<script src="app.js?v=27"></script>
+<script src="analyse.js?v=27"></script>
 </body>
 </html>

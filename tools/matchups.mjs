@@ -73,19 +73,18 @@ for (const [id, pf] of ids) {
 }
 log('nouvelles parties :', added);
 
-/* 4. On garde les deux derniers patchs */
+/* 4. Les counters bougent peu d'un patch à l'autre (sauf refonte ou nouveau champion) : on garde les 6 derniers patchs (~3 mois) */
+const KEEP = Number(process.env.KEEP_PATCHES || 6);
 const vers = [...new Set(Object.values(store.games).filter(Boolean).map(g => g[0]))].sort(cmpVer).reverse();
-for (const [id, g] of Object.entries(store.games)) if (g && !vers.slice(0, 2).includes(g[0])) delete store.games[id];
+for (const [id, g] of Object.entries(store.games)) if (g && !vers.slice(0, KEEP).includes(g[0])) delete store.games[id];
 // les parties ignorées (0) sont oubliées quand elles sortent de la fenêtre des 7 jours : on les garde au plus 20 000
 const zeros = Object.keys(store.games).filter(id => store.games[id] === 0); zeros.slice(0, Math.max(0, zeros.length - 20000)).forEach(id => delete store.games[id]);
 mkdirSync('data', { recursive: true });
 writeFileSync(STORE, gzipSync(JSON.stringify(store)));
 
-/* 5. Agrégats : patch le plus récent, complété avec le précédent tant qu'il y a moins de 6000 parties */
-const all = Object.values(store.games).filter(Boolean);
-let used = all.filter(g => g[0] === vers[0]);
-if (used.length < 6000 && vers[1]) used = used.concat(all.filter(g => g[0] === vers[1]));
-log('patchs', vers.slice(0, 2).map(v => v + ':' + all.filter(g => g[0] === v).length).join(' '), '→ utilisées', used.length);
+/* 5. Agrégats sur tous les patchs gardés */
+const used = Object.values(store.games).filter(Boolean);
+log('patchs', vers.slice(0, KEEP).map(v => v + ':' + used.filter(g => g[0] === v).length).join(' '), '→ utilisées', used.length);
 const POSS = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY'];
 const M = {};
 const bump = (o, k, w) => { const x = o[k] = o[k] || [0, 0]; x[0]++; x[1] += w; };
@@ -105,7 +104,7 @@ for (const [, P] of used) {
 const keep = (o, min) => Object.fromEntries(Object.entries(o).filter(x => x[1][0] >= min));
 const out = {};
 for (const [k, e] of Object.entries(M)) if (e.n >= 15) out[k] = [e.n, e.w, keep(e.opp, 3), keep(e.vs, 5), keep(e.with, 5)];
-const res = { patch: vers[0], generated: new Date().toISOString(), games: used.length, regions: REGIONS, m: out };
+const res = { patch: vers[0], patches: vers.slice(0, KEEP), generated: new Date().toISOString(), games: used.length, regions: REGIONS, m: out };
 if (used.length < 500 && existsSync('matchups.json')) { console.error('Trop peu de parties, matchups.json conservé.'); process.exit(1); }
 writeFileSync('matchups.json', JSON.stringify(res));
 log('matchups.json :', Object.keys(out).length, 'champion/poste,', used.length, 'parties,', Math.round(JSON.stringify(res).length / 1024), 'Ko');

@@ -55,18 +55,14 @@ for (const s of SC) {
   if (A.ad >= 4 && !first4.some(id => it(id) && it(id).arm) && !(boots && it(boots).arm) && !/3047\.png/.test(html)) fail(s.id, `${me} : aucune armure contre ${A.ad} AD`);
   if (A.ap >= 4 && !first4.some(id => it(id) && it(id).mr) && !/3111\.png/.test(html)) fail(s.id, `${me} : aucune résistance magique contre ${A.ap} AP`);
 }
-// 5. Counters : chaque poste, chaque champion avec des données → liste lisible et cohérente des deux côtés du duel
+// 5. Duels : le même duel donne le même résultat vu des deux côtés (données des counters)
 for (const role of ['top', 'jungle', 'mid', 'adc', 'support']) {
   const bad = run(`(() => { S.settings.role=${JSON.stringify(role)}; const out = [], P = POS[myRole()];
-    const ids = new Set([...Object.keys((S.mu&&S.mu.m)||{}), ...Object.keys((S.builds&&S.builds.builds)||{})].filter(k => k.endsWith('|'+P)).map(k => k.split('|')[0]));
-    for (const c of ids) { if (!champ(c)) continue; const h = countersHTML(c, myRole());
-      if (/undefined|NaN|null/.test(h)) out.push(c + ' : texte cassé');
-      const C = countersOf(c, myRole());
-      C.beats.forEach(x => { if (x.wr <= 50) out.push(c + ' : ' + x.c + ' listé comme counter avec ' + x.wr + ' %'); const o = STAT(x.c, myRole()), y = o && (o.opp||[]).find(z => z[0] === c);
-        if (y && C.src === 'big' && Math.abs(y[2] - x.wr) > 1) out.push(c + ' / ' + x.c + ' : ' + x.wr + ' % pour l\u2019un, ' + y[2] + ' % pour l\u2019autre'); });
-      C.loses.forEach(x => { if (x.wr >= 50) out.push(c + ' : ' + x.c + ' listé comme battu avec ' + x.wr + ' %'); }); }
+    for (const k of Object.keys((S.mu&&S.mu.m)||{}).filter(k => k.endsWith('|'+P))) { const c = k.split('|')[0], st = STAT(c);
+      (st.opp||[]).filter(x => x[1] >= 20).forEach(x => { const d = duelResult(c, x[0], myRole()), e = duelResult(x[0], c, myRole());
+        if (d.wr == null || e.wr == null || Math.abs(d.wr + e.wr - 100) > 1) out.push(c + ' / ' + x[0] + ' : ' + d.wr + ' % et ' + e.wr + ' %'); }); }
     return out.slice(0, 5); })()`);
-  bad.forEach(b => fail('counters ' + role, b));
+  bad.forEach(b => fail('duels ' + role, b));
 }
 if (warns.length) console.log('À regarder (avis, pas une erreur) :\n- ' + warns.join('\n- '));
 console.log(fails.length ? `${fails.length} problème(s) :\n- ` + fails.join('\n- ') : 'Tous les garde-fous passent.');

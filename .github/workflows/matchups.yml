@@ -1,7 +1,7 @@
-name: Counters et synergies (meilleurs joueurs)
+name: Counters et synergies (meilleurs joueurs, hebdomadaire)
 on:
   schedule:
-    - cron: '0 8 * * *'   # chaque jour 8:00 UTC, cumulé sur le patch
+    - cron: '0 9 * * 3'   # chaque mercredi 9:00 UTC (après les builds du mardi), cumulé sur plusieurs patchs
   workflow_dispatch:
     inputs:
       matches:

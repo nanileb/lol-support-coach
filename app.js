@@ -96,7 +96,7 @@ async function loadBuilds() {
   catch (e) { S.builds = LS.get('builds', null); }
 }
 const BUILD = (id, role) => (S.builds && S.builds.builds && S.builds.builds[id + '|' + POS[role || myRole()]]) || null;
-// Counters et synergies : grand échantillon de parties (matchups.json, mis à jour chaque jour), sinon les parties des builds
+// Counters et synergies : grand échantillon de parties (matchups.json, plusieurs patchs, mis à jour chaque semaine), sinon les parties des builds
 async function loadMatchups() { try { S.mu = await getJSON('matchups.json', { cache: 'no-cache' }); S._st = {}; } catch (e) { S.mu = S.mu || null; } }
 function STAT(id, role) {
   role = role || myRole(); const key = id + '|' + POS[role], b = BUILD(id, role), mm = S.mu && S.mu.m && S.mu.m[key];
@@ -109,25 +109,6 @@ function STAT(id, role) {
   const merge = (a, c) => { const r = new Map(); [...(a || []), ...(c || [])].forEach(x => { const y = r.get(x[0]); if (!y || x[1] > y[1]) r.set(x[0], x); }); return [...r.values()].sort((x, y) => y[1] - x[1]); };
   const big = !b || mm[0] >= b.n;
   return (S._st[key] = { ...(b || {}), n: big ? mm[0] : b.n, wr: big ? pct(mm) : b.wr, opp: merge(b && b.opp, list(mm[2])), vsAll: merge(b && b.vsAll, list(byChamp(mm[3]))), with: merge(b && b.with, list(byChamp(mm[4]))), duo: duoPos ? merge(b && b.duo, list(byChamp(mm[4], duoPos))) : [], big: true });
-}
-// Ce qui contre un champion à un poste (et ce qu'il contre), d'après ses duels de lane
-function countersOf(opp, role) {
-  const st = STAT(opp, role), rows = ((st && st.opp) || []).filter(x => x[1] >= 12 && x[0] !== opp);
-  const sc = rows.map(([c, n, w]) => ({ c, n, wr: 100 - w, s: shrink(100 - w, n, 40) }));
-  return { n: rows.length, beats: sc.filter(x => x.s > 50.5).sort((a, c) => c.s - a.s), loses: sc.filter(x => x.s < 49.5).sort((a, c) => a.s - c.s), src: st && st.big ? 'big' : 'builds' };
-}
-function countersHTML(opp, role, opts = {}) {
-  const C = countersOf(opp, role), pool = new Set(myPool()), T = takenChamps('me'), on = esc(cname(opp));
-  const row = (x, good) => `<div class="item cnt ${pool.has(x.c) ? 'mine' : ''}">${cimg(x.c) ? `<img src="${cimg(x.c)}" alt="">` : ''}<div><b>${esc(cname(x.c))}${pool.has(x.c) ? ' ★' : ''}</b><small>${good ? `${x.wr} % de victoires contre ${on}` : `${on} gagne ${100 - x.wr} %`} · ${x.n} parties</small></div>${opts.pick && good && pool.has(x.c) && !T[x.c] ? `<button class="btn small" data-pickme="${x.c}">Jouer</button>` : ''}</div>`;
-  if (!C.beats.length && !C.loses.length) {
-    const ex = Object.keys(S.meta.counters).filter(c => (S.meta.counters[c] || []).includes(opp));
-    return `<p class="note">Pas encore assez de parties de ${on} en ${ROLE_FR[role]} chez les meilleurs joueurs.${ex.length ? ` Counters connus : ${ex.map(c => esc(cname(c))).join(', ')}.` : ''}</p>`;
-  }
-  const mineB = C.beats.filter(x => pool.has(x.c)), top = C.beats.slice(0, opts.max || 8);
-  mineB.forEach(x => { if (!top.includes(x)) top.push(x); });
-  return `<h4 class="cnt-h">Le contrent</h4><div class="cnt-list">${top.map(x => row(x, true)).join('') || '<p class="note">Aucun counter net : ce champion tient ses duels.</p>'}</div>
-    <h4 class="cnt-h">Il contre</h4><div class="cnt-list">${C.loses.slice(0, opts.maxL || 5).map(x => row(x, false)).join('') || '<p class="note">Aucun duel nettement gagné.</p>'}</div>
-    <p class="note">Duels de lane chez les Challenger / GM / Master (${C.src === 'big' ? `${S.mu.games} parties EUW + Corée, patch ${esc(gamePatch(S.mu.patch) || S.mu.patch)}, mis à jour chaque jour` : 'parties des builds'}). Taux corrigés quand il y a peu de parties. ★ = ton pool.</p>`;
 }
 const gamePatch = v => { if (!v) return null; const [a, b] = v.split('.').map(Number); return (a >= 10 && a < 20 ? a + 10 : a) + '.' + b; };
 const champ = id => S.champs[id];
@@ -310,21 +291,27 @@ function scoreRole(id) {
   { const tot = off.reduce((a2, x) => a2 + x[0], 0), k2 = Math.abs(tot) > 4 ? 4 / Math.abs(tot) : 1;
     off.forEach(([v, txt, w]) => { v *= k2; if (Math.abs(v) < 0.3) return; s += v; parts.push([v, txt, w]); }); }
   // besoins de compo : ce qui manque à ton équipe et ce qui répond à la leur
-  const need = (v, txt) => { s += v; parts.push([v, txt]); };
+  // Progressif : chaque allié / adversaire ajouté change la note (poids = part de l'équipe connue), pour qu'un choix se voie tout de suite.
+  const need = (v, txt) => { if (Math.abs(v) < 0.3) return; s += v; parts.push([v, txt]); };
   const al = allies(), en = enemies(), T = tags(id), tanky = T.includes('Tank') || isFront(id);
-  if (al.length >= 2) {
-    const ap = al.filter(isAP).length;
-    if (ap === 0 && isAP(id)) need(4, 'apporte des dégâts magiques (équipe full AD)');
-    if (ap >= 3 && !isAP(id)) need(4, 'apporte des dégâts physiques (équipe très AP)');
-    if (!al.some(isFront) && tanky) need(T[0] === 'Tank' ? 4 : 2, "ton équipe n'a pas de frontline");
-    if (!al.some(isEngager) && isEngager(id)) need(3, "ton équipe n'a pas d'engage");
+  const fa = Math.min(1, al.length / 4), fe = Math.min(1, en.length / 5);
+  if (al.length) {
+    const ap = al.filter(isAP).length, ad = al.length - ap;
+    if (ap === 0 && al.length >= 2 && isAP(id)) need(4 * fa, `apporte des dégâts magiques (${ad} allié${ad > 1 ? 's' : ''} AD, aucun AP)`);
+    if (ad === 0 && al.length >= 2 && !isAP(id)) need(4 * fa, `apporte des dégâts physiques (${ap} alliés AP, aucun AD)`);
+    if (al.length >= 3 && ap >= al.length - 1 && ad <= 1 && isAP(id) && ad + ap >= 3) need(-2 * fa, 'ton équipe a déjà beaucoup de dégâts magiques');
+    if (!al.some(isFront) && tanky) need((T[0] === 'Tank' ? 4 : 2) * fa, `ton équipe n'a pas de frontline${al.length < 4 ? ' pour l\'instant' : ''}`);
+    if (!al.some(isEngager) && isEngager(id)) need(3 * fa, `ton équipe n'a pas d'engage${al.length < 4 ? ' pour l\'instant' : ''}`);
+    if (al.filter(isFront).length >= 2 && T[0] === 'Tank' && role !== 'support') need(-1.5 * fa, 'ton équipe a déjà deux frontlines');
   }
-  if (en.length >= 3) {
-    const ead = en.filter(e => !isAP(e)).length, eap = en.length - ead;
-    if (eap === 3 && ['Galio', 'Chogath', 'Kassadin', 'Mordekaiser', 'Gragas', 'Maokai', 'Braum', 'Malphite', 'Sion', 'Ornn', 'KSante'].includes(id)) need(1.5, `tient bien face à leurs dégâts magiques (${eap} AP)`);
-    if (ead >= 4 && ARMOR_TANKS.includes(id)) need(3, `résiste bien à leur équipe très AD (${ead} AD)`);
-    if (eap >= 4 && ['Galio', 'Kassadin', 'Mordekaiser', 'Gragas', 'Maokai', 'Braum'].includes(id)) need(3, `résiste bien à leur équipe très AP (${eap} AP)`);
-    if (en.filter(e => inList('assassins', e)).length >= 2 && (isEngager(id) || (S.meta.supports[id] || {}).peel >= 3)) need(2, 'plusieurs plongeurs en face : il faut du contrôle / du peel');
+  if (en.length) {
+    const ead = en.filter(e => !isAP(e)).length, eap = en.length - ead, ass = en.filter(e => inList('assassins', e)).length, fr = en.filter(isFront).length;
+    const MR_TANKS = ['Galio', 'Chogath', 'Kassadin', 'Mordekaiser', 'Gragas', 'Maokai', 'Braum', 'Malphite', 'Sion', 'Ornn', 'KSante'];
+    if (ARMOR_TANKS.includes(id) && ead - eap >= 2) need(Math.min(3, (ead - eap) * 0.75), `résiste bien à leurs dégâts physiques (${ead} AD, ${eap} AP)`);
+    if (MR_TANKS.includes(id) && eap - ead >= 1) need(Math.min(3, (eap - ead) * 0.75), `tient bien face à leurs dégâts magiques (${eap} AP, ${ead} AD)`);
+    if (ass && (isEngager(id) || (S.meta.supports[id] || {}).peel >= 3)) need(Math.min(2.5, ass * 1.1), `${ass} plongeur${ass > 1 ? 's' : ''} en face : ton contrôle / peel compte`);
+    if (ass >= 2 && tags(id).includes('Marksman') && !(S.meta.adcs[id] || {}).self) need(-1, `${ass} plongeurs en face : tireur fragile`);
+    if (fr >= 2 && ['Vayne', 'Gwen', 'Fiora', 'KogMaw', 'Kaisa', 'Brand', 'Cassiopeia', 'Mordekaiser', 'Darius', 'Lillia', 'Azir', 'Varus', 'Kindred', 'Belveth', 'Viego'].includes(id)) need(Math.min(2, fr * 0.7) * fe + 0.5, `${fr} tanks en face : il fait fondre les gros PV`);
   }
   // pick à l'aveugle : ton adversaire direct n'est pas encore choisi
   const directOpen = role === 'adc' || role === 'support' ? !m.enemy.adc && !m.enemy.support : !m.enemy[role];
@@ -342,7 +329,7 @@ function renderRanking() {
   const role = myRole(), pool = myPool().filter(id => champ(id) || !Object.keys(S.champs).length);
   const box = $('#ranking');
   $('#draftTitle').textContent = `Quel ${ROLE_LONG[role]} jouer\u00a0?`;
-  { const n = $('#scoreNote'); if (n) n.textContent = '% = taux de victoire estimé : celui du champion chez les Challenger / GM de ce patch, corrigé avec chacun de tes alliés et contre chaque adversaire (le duel direct compte plus). Peu de parties = correction plus faible. Les champions déjà pris sont grisés.'; }
+  { const n = $('#scoreNote'); if (n) n.textContent = '% = taux de victoire estimé : celui du champion chez les Challenger / GM / Master, corrigé à chaque champion ajouté dans ton équipe ou en face. Le counter compte surtout contre ton vis-à-vis (même poste). ▲▼ = effet du dernier choix. Les champions déjà pris sont grisés.'; }
   if (!pool.length) {
     box.innerHTML = `<div class="empty">Ton pool ${ROLE_FR[role]} est vide. Choisis tes champions une fois, ils restent enregistrés.<br><br>
       <button class="btn primary" data-act="pool">Choisir mon pool</button></div>`;
@@ -350,6 +337,11 @@ function renderRanking() {
   }
   const T = takenChamps('me');
   const res = pool.filter(id => !T[id]).map(scoreRole).sort((a, b) => (b.raw ?? b.score) - (a.raw ?? a.score));
+  // écart depuis le dernier choix d'allié / d'adversaire, pour voir l'effet de chaque pick
+  const sig = role + '|' + ROLES.map(r => S.match.ally[r] + '/' + S.match.enemy[r]).join(',');
+  const rk = S._rk || (S._rk = {});
+  if (rk.sig !== sig) { rk.prev = rk.sig && rk.sig.split('|')[0] === role ? rk.cur : null; rk.cur = Object.fromEntries(res.map(r => [r.id, r.score])); rk.sig = sig; }
+  const delta = id => { const p = rk.prev && rk.prev[id], c = rk.cur[id]; return p != null && c != null && c !== p ? c - p : 0; };
   const gone = pool.filter(id => T[id]);
   const hasInfo = allies().length || enemies().length;
   const noData = role !== 'support' && !(S.builds && S.builds.builds);
@@ -361,28 +353,10 @@ function renderRanking() {
         <div class="bar"><i style="width:${r.est ? Math.max(4, (r.score - 42) * 6) : r.score}%"></i></div>
         ${r.reasons.length > 1 ? `<details class="why-more"><summary>Détail du score</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
       </div>
-      <div><div class="pct num">${r.score}%</div>${r.est ? '<div class="note" style="font-size:11px;text-align:center">victoire estimée</div>' : ''}<button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
+      <div><div class="pct num">${r.score}%${delta(r.id) ? `<small class="dlt ${delta(r.id) > 0 ? 'up' : 'down'}">${delta(r.id) > 0 ? '▲' : '▼'}${Math.abs(delta(r.id))}</small>` : ''}</div>${r.est ? '<div class="note" style="font-size:11px;text-align:center">victoire estimée</div>' : ''}<button class="btn small" data-pickme="${r.id}" style="margin-top:6px">${S.match.me === r.id ? 'Choisi' : 'Jouer'}</button></div>
     </div>`).join('') +
     gone.map(id => `<div class="ritem taken">${cimg(id) ? `<img src="${cimg(id)}" alt="">` : '<span class="ph"></span>'}<div style="min-width:0"><div class="nm">${esc(cname(id))}</div><div class="why">Déjà pris par ${T[id] === 'adversaire' ? 'l\'adversaire' : 'un allié'}</div></div><div></div></div>`).join('');
 }
-
-// Draft : counters de n'importe quel champion à ton poste (par défaut ton adversaire direct)
-function renderCounters() {
-  const sel = $('#counterSel'), out = $('#counterOut'); if (!sel || !out) return;
-  const role = myRole(), opp = S.match.enemy[role], P = POS[role];
-  $('#counterTitle').textContent = `Counters en ${ROLE_FR[role]}`;
-  const ids = new Set();
-  Object.keys((S.mu && S.mu.m) || {}).forEach(k => { const [c, p] = k.split('|'); if (p === P) ids.add(c); });
-  Object.keys((S.builds && S.builds.builds) || {}).forEach(k => { const [c, p] = k.split('|'); if (p === P) ids.add(c); });
-  const list = [...ids].filter(c => champ(c)).sort((a, b) => cname(a).localeCompare(cname(b), 'fr'));
-  if (!list.length) { sel.hidden = true; out.innerHTML = '<p class="note">Les counters des meilleurs joueurs sont en cours de calcul, reviens dans un moment.</p>'; return; }
-  sel.hidden = false;
-  if (opp && S.cntFor !== opp + role) { S.cntFor = opp + role; S.cntSel = opp; }
-  if (!list.includes(S.cntSel)) S.cntSel = opp && list.includes(opp) ? opp : null;
-  sel.innerHTML = `<option value="">Choisis un champion…</option>` + list.map(c => `<option value="${c}" ${c === S.cntSel ? 'selected' : ''}>${esc(cname(c))}${c === opp ? ' (en face)' : ''}</option>`).join('');
-  out.innerHTML = S.cntSel ? countersHTML(S.cntSel, role, { pick: S.cntSel === opp }) : `<p class="note">Choisis un champion pour voir ce qui le contre à ton poste (${list.length} champions disponibles).</p>`;
-}
-document.addEventListener('change', e => { if (e.target.id === 'counterSel') { S.cntSel = e.target.value || null; renderCounters(); } });
 
 /* ---------------- Build ---------------- */
 function analyzeEnemies() {
@@ -757,8 +731,6 @@ const ADC_DO = {
 function renderBot() {
   renderBotInner();
   const role = myRole(), opp = S.match.enemy[role], me = S.match.me, lc = laneCounter(me && BUILD(me), opp), out = $('#botOut');
-  const dOpp = role === 'adc' || role === 'support' ? S.match.enemy[role] : opp;
-  if (dOpp && out) out.insertAdjacentHTML('beforeend', `<div class="card"><h3>Counters de ${esc(cname(dOpp))}</h3>${countersHTML(dOpp, role, { max: 6, maxL: 4 })}</div>`);
   if (lc.length && out) out.insertAdjacentHTML('afterbegin', `<div class="card"><h3>Objet clé contre ${esc(cname(opp))}</h3>${lc.map(x => `<div class="item"><img src="${iimg(x.id)}" alt="" loading="lazy"><div><b>${esc(iname(x.id))}</b><small>${esc(x.why)}</small>${x.tip ? `<small class="tip">${esc(x.tip)}</small>` : ''}</div></div>`).join('')}<p class="note">Déjà placé dans ton build (onglet Build).</p></div>`);
 }
 function renderBotInner() {
@@ -1196,7 +1168,7 @@ function renderSettings() {
   $('#optSound').checked = S.settings.sound; $('#optVibrate').checked = S.settings.vibrate; $('#optNotif').checked = S.settings.notif; $('#optLead').value = String(S.settings.lead);
   const live = gamePatch(S.version);
   $('#metaInfo').innerHTML = `Patch en jeu : <b>${esc(live || 'inconnu')}</b> (Data Dragon ${esc(S.version || '?')}). Données méta : patch <b>${esc(S.meta.patch)}</b>, mises à jour le ${esc(S.meta.updated || '?')}.` + (live && live !== S.meta.patch ? `<br><span style="color:var(--warn)">Nouveau patch détecté : les champions et objets sont déjà à jour, les tiers et timings le seront à la prochaine mise à jour des données.</span>` : '');
-  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / GM / Master (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.${S.mu ? ` Counters : ${S.mu.games} parties, mis à jour chaque jour.` : ''}` : 'Builds des meilleurs joueurs : en cours de calcul.';
+  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / GM / Master (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.${S.mu ? ` Duels et synergies : ${S.mu.games} parties sur les derniers patchs, mis à jour chaque semaine.` : ''}` : 'Builds des meilleurs joueurs : en cours de calcul.';
   $('#metaSources').innerHTML = 'Sources : ' + (S.meta.sources || []).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join(' · ');
 }
 $('#editPool').onclick = editPool;
@@ -1243,7 +1215,7 @@ function renderAll() {
   const live = gamePatch(S.version), b = $('#patchBadge');
   b.textContent = 'Patch ' + (live || S.meta.patch); b.classList.toggle('stale', !!(live && live !== S.meta.patch));
   b.title = live && live !== S.meta.patch ? `Données méta du patch ${S.meta.patch}` : 'Données à jour';
-  renderSlots(); renderRanking(); renderCounters(); renderBuild(); renderBot(); renderSettings();
+  renderSlots(); renderRanking(); renderBuild(); renderBot(); renderSettings();
   if (S.view === 'home') show('home');
   if (S.view === 'time') renderTimeline();
 }
