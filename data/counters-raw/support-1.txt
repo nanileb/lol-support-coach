@@ -1,0 +1,885 @@
+## nautilus|support|16.21|EMERALD+
+Taric;45.04;2129
+Rell;45.05;6790
+Braum;46.66;12204
+Twisted Fate;46.95;311
+Renata Glasc;46.97;3138
+K'Sante;47.13;157
+Leona;47.27;12370
+Shen;47.75;1022
+Hwei;47.84;811
+Alistar;47.92;10303
+Rakan;48.15;5742
+Thresh;48.62;21486
+Anivia;48.96;627
+Zac;49.21;380
+Swain;49.48;3929
+Gragas;49.66;290
+Amumu;49.68;787
+Blitzcrank;49.72;9262
+Janna;49.75;5793
+Galio;49.9;1018
+Maokai;49.98;2001
+Sona;50.16;3070
+Annie;50.27;376
+Morgana;50.56;7043
+Zilean;50.63;3403
+Seraphine;50.68;8155
+Senna;50.8;7191
+Kennen;51;100
+Vel'Koz;51.05;4545
+Soraka;51.05;5569
+Syndra;51.06;282
+Tahm Kench;51.38;3262
+Lulu;51.49;16056
+Poppy;51.54;2604
+Neeko;51.57;2001
+Nami;51.73;10571
+Taliyah;51.87;241
+Sion;51.89;318
+Jarvan IV;52.09;526
+Elise;52.13;963
+Bard;52.52;5699
+Milio;52.53;7392
+Singed;52.54;118
+Zyra;52.7;2702
+Rengar;52.85;123
+Brand;53;2932
+Teemo;53.01;549
+Malzahar;53.39;118
+Pantheon;53.72;4501
+Sett;53.77;424
+Master Yi;53.78;119
+Lux;53.96;8458
+Fiddlesticks;54.02;535
+Zoe;54.16;1034
+Pyke;54.35;7857
+Lissandra;54.44;270
+Shaco;54.71;1358
+Karma;54.72;10349
+Heimerdinger;54.78;314
+Zed;55.31;179
+Ivern;55.35;159
+Rammus;55.56;126
+Ekko;55.78;147
+Camille;55.82;1281
+LeBlanc;56.2;1048
+Xerath;56.2;4110
+Veigar;56.39;477
+Ahri;56.39;133
+Sylas;56.46;1766
+Trundle;56.49;131
+Jax;56.6;159
+Yuumi;56.85;7851
+Wukong;56.88;109
+Nidalee;57.95;264
+Locke;58.71;155
+Qiyana;59.35;214
+Ziggs;59.41;101
+Cho'Gath;59.56;225
+Darius;59.63;109
+Ashe;59.66;870
+Skarner;60.66;244
+Lee Sin;60.78;283
+Vi;61.48;135
+Twitch;61.79;424
+Miss Fortune;62.81;527
+Mel;62.84;479
+Ezreal;63.03;357
+Malphite;63.17;353
+Nunu & Willump;63.52;159
+Jhin;68.18;110
+Katarina;69.44;108
+Yasuo;77.19;114
+## alistar|support|16.21|EMERALD+
+Syndra;46.43;140
+Hwei;47.73;419
+Soraka;48.83;2896
+Janna;49.02;3972
+Poppy;49.45;2635
+Taric;49.47;1314
+Zilean;49.89;1864
+Vel'Koz;49.89;1870
+Senna;50.04;3563
+Swain;50.41;2466
+Morgana;50.44;3162
+Galio;50.64;778
+Rakan;50.93;4875
+Gragas;51.19;293
+Seraphine;51.22;3786
+Leona;51.24;9359
+Milio;51.27;3827
+Anivia;51.7;323
+Thresh;51.78;13342
+Sona;51.86;1587
+Renata Glasc;51.91;1986
+Teemo;51.95;333
+Braum;51.96;5279
+Amumu;52.29;654
+Maokai;52.45;1510
+Nami;52.5;5215
+Lulu;52.58;8150
+Rell;52.74;5224
+Karma;52.82;4714
+Skarner;52.86;227
+Bard;52.95;3001
+Pyke;52.96;4849
+Taliyah;53.02;149
+Zyra;53.36;1621
+Brand;53.42;1492
+Tahm Kench;53.5;1955
+Cho'Gath;53.52;142
+Lux;53.54;3265
+Blitzcrank;53.62;7501
+Xerath;53.65;1495
+Neeko;53.74;1256
+Nidalee;54.02;174
+Zoe;54.71;605
+Nautilus;54.93;10451
+Sion;55.05;198
+LeBlanc;55.14;622
+Camille;55.21;922
+Lissandra;55.23;172
+Annie;55.39;204
+Sylas;55.59;1243
+Zac;55.6;268
+Trundle;55.88;102
+Shaco;55.96;897
+Locke;56;100
+Shen;56.17;673
+Pantheon;56.6;3090
+Elise;56.65;632
+Yuumi;57.19;4279
+Fiddlesticks;57.36;401
+Qiyana;57.66;137
+Heimerdinger;57.98;119
+Twisted Fate;58.58;169
+Veigar;58.75;257
+Sett;58.8;216
+Ivern;59.23;130
+Nunu & Willump;59.43;106
+Jarvan IV;59.74;385
+Rengar;60.34;116
+Lee Sin;60.71;168
+Ashe;61.28;390
+Jax;61.95;113
+Twitch;62.33;215
+Miss Fortune;62.44;221
+Malphite;62.98;235
+Mel;68.9;254
+Ezreal;72.14;140
+## lulu|support|16.21|EMERALD+
+Twisted Fate;45.45;121
+Jarvan IV;46.63;178
+Braum;47.36;2251
+Hwei;47.93;242
+Amumu;48.01;377
+Tahm Kench;48.34;931
+Rell;48.38;1819
+Thresh;48.43;7054
+Leona;48.75;3233
+Senna;48.76;2654
+Blitzcrank;48.93;3769
+Vel'Koz;49.48;1429
+Sona;49.56;1374
+Maokai;49.59;607
+Seraphine;49.6;3121
+Alistar;49.62;2130
+Janna;49.67;2569
+Bard;49.69;1950
+Nami;49.95;5161
+Fiddlesticks;50.27;183
+Annie;50.35;141
+Zilean;50.52;1356
+Veigar;50.57;174
+Soraka;50.84;2490
+Lissandra;50.85;118
+Rakan;50.9;1713
+Xerath;51.14;1099
+Elise;51.18;338
+Zoe;51.27;394
+Pyke;51.63;2338
+Nautilus;51.79;4503
+Milio;51.86;4049
+Taric;51.93;491
+Lux;52.3;2782
+Shen;52.54;335
+Yuumi;52.59;3535
+Zyra;52.72;1138
+Renata Glasc;52.77;866
+Karma;53.33;3810
+Brand;53.89;887
+LeBlanc;53.96;328
+Galio;54.23;319
+Poppy;54.46;538
+Pantheon;54.87;1407
+Morgana;55.37;1452
+Camille;55.51;454
+Neeko;56.01;707
+Sylas;56.25;592
+Teemo;56.25;192
+Shaco;56.6;477
+Twitch;57.72;123
+Anivia;58.06;186
+Ashe;58.36;305
+Zac;58.78;131
+Swain;58.96;1077
+Malphite;60.68;117
+Miss Fortune;63.3;188
+Mel;65.1;149
+## bard|support|16.21|EMERALD+
+Elise;39.89;183
+Tahm Kench;46.61;339
+Leona;46.66;1438
+Shen;46.7;182
+LeBlanc;47.14;140
+Renata Glasc;47.28;368
+Blitzcrank;47.28;1379
+Janna;47.3;1186
+Nautilus;47.42;1915
+Amumu;47.55;143
+Braum;47.57;822
+Sona;47.7;501
+Thresh;48.27;3064
+Brand;48.35;393
+Zilean;48.35;637
+Rakan;48.66;820
+Rell;49.04;730
+Milio;49.32;1168
+Senna;49.36;1015
+Nami;49.55;1665
+Karma;49.7;1670
+Alistar;49.74;963
+Swain;49.89;471
+Hwei;50;106
+Taric;50.45;224
+Poppy;50.48;313
+Maokai;50.5;303
+Seraphine;51.14;1136
+Soraka;51.18;848
+Pyke;51.36;1178
+Zyra;51.68;476
+Yuumi;51.82;1100
+Galio;52.1;167
+Vel'Koz;52.12;637
+Lulu;52.2;2316
+Zoe;52.41;166
+Camille;52.61;287
+Sylas;52.73;275
+Morgana;52.94;646
+Lux;53.01;1179
+Shaco;53.02;215
+Mel;53.33;105
+Xerath;53.69;542
+Pantheon;54.25;647
+Neeko;57.59;382
+Ashe;59.2;125
+## rakan|support|16.20|EMERALD+
+Taric;45.62;765
+Zilean;47.65;1599
+Neeko;48.9;951
+Poppy;49.02;1685
+Sona;49.07;1284
+Lissandra;49.1;222
+Janna;49.31;3346
+Rell;49.32;2366
+Senna;49.63;2720
+Zac;49.69;163
+Renata Glasc;49.72;1060
+Morgana;49.97;1989
+Seraphine;50.78;3058
+Swain;50.82;1340
+Nami;50.86;4538
+Leona;51.03;3900
+Soraka;51.18;2253
+Zyra;51.41;1173
+Fiddlesticks;51.41;249
+Thresh;51.46;9276
+Lux;51.98;2674
+Amumu;52;325
+Elise;52.18;481
+Lulu;52.35;6477
+Alistar;52.48;3590
+Milio;52.52;3507
+Galio;52.58;426
+Veigar;52.65;245
+Vel'Koz;52.89;1246
+Xerath;52.95;1103
+Bard;53.19;2523
+Karma;53.2;3564
+LeBlanc;53.51;385
+Braum;53.65;3476
+Maokai;53.69;881
+Zoe;53.85;429
+Teemo;54.07;246
+Hwei;54.26;282
+Nautilus;54.44;4934
+Pantheon;54.5;1622
+Twisted Fate;54.63;108
+Tahm Kench;54.7;1245
+Blitzcrank;54.92;3871
+Skarner;55.04;129
+Shen;55.07;365
+Brand;55.15;952
+Pyke;55.17;4551
+Shaco;55.21;634
+Jarvan IV;56.21;169
+Yuumi;56.4;2929
+Sylas;56.47;657
+Anivia;56.65;233
+Camille;57.68;820
+Gragas;57.72;149
+Sion;58.62;145
+Annie;59.52;126
+Nidalee;60.19;103
+Mel;61.41;184
+Ashe;61.64;305
+Malphite;64.47;152
+Twitch;68.7;131
+Ezreal;70.91;110
+## rell|support|16.21|EMERALD+
+Maokai;47.63;886
+Gragas;47.9;167
+Janna;49.17;2823
+Taric;49.27;751
+Alistar;49.38;5182
+Senna;50.16;2554
+Hwei;50.18;285
+Poppy;50.25;1628
+Soraka;50.63;1983
+Zac;50.68;146
+Sona;51.17;1069
+Renata Glasc;51.18;1272
+Milio;51.3;2797
+Nami;51.32;3515
+Zilean;51.33;1241
+Braum;51.35;3028
+Zoe;51.37;329
+Zyra;51.44;1145
+Neeko;51.54;714
+Leona;51.67;4397
+Seraphine;51.81;2648
+Thresh;52.39;7860
+Rakan;52.4;2359
+Anivia;52.49;221
+Lulu;53.11;6472
+Bard;53.29;1946
+Blitzcrank;53.29;3263
+Sion;53.54;127
+LeBlanc;53.6;347
+Vel'Koz;53.63;1268
+Swain;53.66;1161
+Skarner;53.85;130
+Galio;54.32;440
+Fiddlesticks;54.37;206
+Camille;54.65;505
+Brand;54.65;849
+Karma;54.66;3538
+Xerath;54.72;954
+Lux;54.81;2337
+Tahm Kench;55.67;1446
+Pyke;55.83;3077
+Teemo;55.87;213
+Morgana;55.97;1908
+Shen;56.32;419
+Sett;56.43;140
+Pantheon;56.6;1484
+Jarvan IV;56.85;197
+Shaco;57.02;570
+Veigar;57.24;152
+Yuumi;57.63;3047
+Nautilus;57.9;6915
+Elise;58.14;473
+Amumu;58.28;326
+Twitch;60;115
+Sylas;62.55;550
+Ashe;62.59;270
+Miss Fortune;62.84;148
+Mel;63.04;138
+Malphite;68.75;128
+## leona|support|16.21|EMERALD+
+Soraka;49.16;1314
+Braum;49.52;2419
+Vel'Koz;50.05;983
+Rell;50.26;1321
+Taric;50.42;478
+Seraphine;50.5;1691
+Janna;50.6;1656
+Elise;50.89;224
+Neeko;50.96;416
+Zilean;51.17;727
+Thresh;51.44;5043
+Galio;51.87;268
+Milio;51.95;1975
+Sona;51.97;660
+Morgana;51.97;1857
+Alistar;52.14;2434
+Senna;52.28;1513
+Rakan;52.49;1223
+Twitch;52.78;108
+Nami;52.88;2587
+Poppy;53.13;798
+Swain;53.16;869
+Fiddlesticks;53.19;141
+Teemo;53.28;122
+Camille;53.54;325
+Brand;53.77;690
+Shaco;53.89;373
+Karma;54.03;1675
+Blitzcrank;54.2;2633
+Anivia;54.38;160
+Lulu;54.48;3304
+Pyke;54.62;1970
+Lux;54.71;1700
+Tahm Kench;54.79;814
+Maokai;54.94;506
+Renata Glasc;55.01;529
+Zyra;55.15;767
+LeBlanc;55.2;250
+Nautilus;55.46;3462
+Xerath;55.65;805
+Hwei;55.79;190
+Bard;55.93;1232
+Amumu;56.94;209
+Shen;56.99;272
+Sylas;57.88;387
+Pantheon;58.01;1043
+Veigar;58.21;134
+Zoe;58.26;242
+Zac;59.43;106
+Yuumi;60.29;1967
+Ashe;60.47;172
+Jarvan IV;62.79;129
+Miss Fortune;64.08;142
+Mel;66;150
+## thresh|support|16.21|EMERALD+
+Hwei;46.17;418
+Skarner;47.52;141
+Amumu;48.85;520
+Lissandra;49.34;152
+Rakan;49.52;2815
+Syndra;49.64;139
+Fiddlesticks;49.68;310
+Braum;50.32;5250
+Rell;50.49;2931
+Soraka;50.85;3058
+Zilean;50.93;1783
+Morgana;50.94;3946
+Poppy;51.14;1054
+Janna;51.15;3392
+Alistar;51.17;4389
+Twisted Fate;51.22;164
+Seraphine;51.29;4313
+Renata Glasc;51.32;1323
+Leona;51.48;5936
+Elise;51.7;501
+Blitzcrank;51.73;6404
+Nidalee;51.95;154
+Jarvan IV;52.31;260
+Taric;52.36;974
+Vel'Koz;52.43;2199
+Maokai;52.49;1105
+Galio;52.7;575
+Zyra;52.79;1813
+Shen;52.81;570
+Xerath;52.81;2011
+Swain;53.21;2308
+Nami;53.41;5653
+Sona;53.46;1474
+Brand;53.49;1862
+Bard;53.64;3063
+Karma;53.82;4935
+Milio;54.02;4289
+LeBlanc;54.15;615
+Zoe;54.22;533
+Taliyah;54.23;142
+Neeko;54.32;1134
+Shaco;54.56;812
+Tahm Kench;54.59;1742
+Lulu;54.63;8461
+Senna;54.67;3633
+Lux;54.76;4439
+Pyke;54.77;4484
+Nautilus;55.08;7529
+Heimerdinger;55.74;183
+Camille;55.85;675
+Veigar;56.39;305
+Cho'Gath;56.43;140
+Pantheon;56.84;2389
+Anivia;56.85;343
+Yuumi;56.97;3567
+Malphite;57.02;228
+Sion;57.05;149
+Gragas;57.3;185
+Mel;57.38;549
+Annie;57.42;155
+Qiyana;57.48;127
+Sett;57.58;165
+Teemo;58.31;331
+Ivern;59.63;109
+Miss Fortune;60;320
+Zac;60.77;209
+Ashe;61.34;476
+Lee Sin;61.36;176
+Sylas;63.38;781
+Ezreal;65.68;169
+Twitch;65.77;222
+## karma|support|16.21|EMERALD+
+Ivern;43.48;138
+Fiddlesticks;44.3;395
+Nunu & Willump;46;100
+Sona;46.44;2735
+Braum;46.57;4007
+Maokai;47;1232
+Taric;47.17;814
+Blitzcrank;47.52;6374
+Rell;47.57;3269
+Nautilus;47.6;9681
+Rakan;47.89;3978
+Zilean;47.91;2820
+Janna;48.22;4612
+Soraka;48.24;4364
+Nami;48.36;9543
+Amumu;48.61;541
+Lulu;48.62;13156
+Thresh;48.64;13698
+Qiyana;48.94;141
+Jarvan IV;49.13;346
+Poppy;49.35;1001
+Leona;49.38;5689
+Alistar;49.4;4354
+Senna;49.41;5341
+Milio;49.48;6293
+Yuumi;49.7;4678
+Bard;49.93;4420
+Vel'Koz;50.26;3070
+Pyke;50.32;4620
+Seraphine;50.49;6892
+LeBlanc;50.64;778
+Shen;50.95;528
+Elise;50.96;677
+Nidalee;51.05;190
+Zac;51.05;237
+Renata Glasc;51.07;2156
+Skarner;51.15;174
+Brand;51.24;2096
+Taliyah;51.28;156
+Annie;51.33;263
+Sylas;51.34;1042
+Tahm Kench;51.51;1656
+Zyra;51.52;2473
+Syndra;51.66;151
+Neeko;51.66;1775
+Heimerdinger;51.75;143
+Gragas;51.87;187
+Shaco;52.45;999
+Zoe;52.46;793
+Camille;52.55;881
+Pantheon;52.67;2865
+Galio;52.9;620
+Anivia;53.19;408
+Veigar;53.35;343
+Lux;53.38;6770
+Sion;53.85;156
+Swain;54.06;2288
+Twisted Fate;54.19;203
+Hwei;54.29;536
+Xerath;54.35;2802
+Ashe;54.41;680
+Zed;54.55;143
+Morgana;54.6;3954
+Sett;55.91;127
+Miss Fortune;57.83;313
+Teemo;58.22;359
+Lissandra;58.6;157
+Mel;58.81;369
+Cho'Gath;59.35;123
+Locke;59.63;109
+Twitch;61.42;254
+Malphite;63.67;245
+Lee Sin;65.12;172
+Ezreal;68.37;196
+## renata|support|16.21|EMERALD+
+Maokai;42.54;134
+Zilean;44.92;236
+Vel'Koz;46.58;234
+Braum;47.65;426
+Leona;47.83;667
+Karma;48.01;629
+Lulu;48.12;1145
+Zyra;48.63;183
+Taric;48.7;115
+Senna;49;449
+Alistar;49.41;506
+Nami;49.49;683
+Brand;49.6;125
+Milio;49.65;566
+Soraka;49.86;355
+Lux;49.87;389
+Thresh;50.23;1294
+Sona;50.79;191
+Poppy;51.04;192
+Blitzcrank;51.25;480
+Pantheon;52.63;285
+Rell;53.59;362
+Morgana;53.61;263
+Janna;54.44;428
+Seraphine;54.46;538
+Rakan;54.49;345
+Tahm Kench;54.55;165
+Yuumi;54.93;426
+Nautilus;55.22;786
+Swain;55.24;210
+Bard;55.31;358
+Xerath;55.47;137
+Neeko;55.48;155
+Pyke;58.09;482
+## pyke|support|16.21|EMERALD+
+Lissandra;42.7;185
+Cho'Gath;45.83;120
+Teemo;46.48;327
+Rell;46.77;3079
+Annie;46.89;177
+Renata Glasc;47.3;1759
+Rakan;47.64;4475
+Amumu;48.06;516
+Thresh;48.32;11967
+Taliyah;48.48;132
+Leona;48.62;6407
+Nidalee;48.67;150
+Sion;48.7;154
+Soraka;48.88;3836
+Nautilus;49.25;7886
+Elise;49.29;704
+Blitzcrank;49.42;5407
+Nami;49.46;5633
+Maokai;49.51;1529
+Janna;49.55;3193
+Sona;49.6;1496
+Alistar;49.64;4837
+Poppy;49.97;1753
+Braum;50.22;3927
+Fiddlesticks;50.3;330
+Veigar;50.68;294
+Shaco;50.75;928
+LeBlanc;50.77;711
+Neeko;50.79;1146
+Milio;50.82;3837
+Locke;50.85;118
+Galio;51.26;517
+Bard;51.3;3300
+Taric;51.38;761
+Lulu;51.39;7784
+Camille;51.73;897
+Zilean;51.77;1775
+Qiyana;51.77;141
+Sylas;51.95;1051
+Morgana;51.96;2854
+Karma;51.96;4923
+Senna;52.28;3682
+Seraphine;52.35;4243
+Shen;52.57;603
+Pantheon;52.66;3344
+Gragas;52.72;184
+Tahm Kench;52.84;1620
+Zoe;53.04;658
+Anivia;53.07;326
+Jarvan IV;53.15;333
+Zed;53.38;133
+Vel'Koz;53.43;2126
+Zyra;53.59;1573
+Zac;53.68;190
+Swain;54.01;1920
+Yuumi;54.03;4285
+Twisted Fate;54.22;166
+Syndra;54.23;142
+Lux;54.75;5297
+Brand;55.09;1659
+Heimerdinger;55.56;162
+Xerath;56.06;2335
+Hwei;56.29;421
+Mel;57.34;518
+Sett;58.52;176
+Ashe;58.92;572
+Skarner;59.69;129
+Twitch;59.78;271
+Lee Sin;60.09;218
+Ezreal;60.23;176
+Malphite;60.54;299
+Miss Fortune;63.77;276
+## blitzcrank|support|16.21|EMERALD+
+Ivern;40.57;106
+Braum;48.5;6253
+Alistar;48.76;7399
+Leona;49.07;8767
+Taric;49.09;1155
+Syndra;49.14;175
+Rell;49.42;3248
+Elise;49.57;581
+Rakan;50;4094
+Zilean;50.24;2490
+Teemo;50.33;453
+Zac;50.79;252
+Thresh;50.8;17088
+Galio;50.81;738
+Poppy;50.93;1231
+Maokai;51.33;1387
+Renata Glasc;51.4;1827
+Jarvan IV;51.6;376
+Qiyana;51.63;153
+Amumu;51.91;601
+Gragas;52.15;186
+Janna;52.31;4770
+Neeko;52.37;1348
+Anivia;52.62;439
+Tahm Kench;52.73;2143
+Seraphine;52.74;6043
+Morgana;52.87;5644
+Soraka;52.98;4641
+Nautilus;53.03;9312
+Taliyah;53.06;147
+Lulu;53.1;12838
+Zyra;53.12;1939
+Shen;53.19;720
+Swain;53.32;2226
+Annie;53.39;221
+Hwei;53.4;573
+Shaco;53.46;954
+Nami;53.74;7670
+Pyke;54.06;5337
+Senna;54.24;5376
+Milio;54.24;6213
+Pantheon;54.46;3072
+Sona;54.51;2172
+Vel'Koz;54.56;3622
+Jax;54.69;128
+Bard;54.81;3855
+Twisted Fate;54.82;197
+Sylas;54.96;1210
+Karma;54.99;6898
+Brand;55.19;2169
+Fiddlesticks;55.24;420
+Xerath;55.39;3340
+Yuumi;55.68;5140
+Zoe;55.88;825
+Ornn;55.93;118
+Lux;56.32;7381
+Sett;56.54;283
+Sion;56.7;224
+Camille;56.9;826
+Malphite;57.02;242
+Lissandra;57.65;170
+Veigar;57.82;358
+Vi;57.84;102
+Locke;58.1;105
+Mel;58.14;989
+LeBlanc;58.16;772
+Nidalee;58.28;163
+Ahri;58.82;102
+Zed;59.42;138
+Skarner;59.88;167
+Heimerdinger;60;215
+Ashe;60.67;717
+Ekko;60.78;102
+Twitch;62.14;280
+Miss Fortune;62.32;353
+Lee Sin;65.63;192
+Ezreal;65.83;240
+Cho'Gath;67.67;133
+## poppy|support|16.21|EMERALD+
+Braum;43.23;303
+Nami;46.93;375
+Morgana;47.55;204
+Lulu;47.74;530
+Renata Glasc;48.61;144
+Janna;49.25;268
+Soraka;49.4;168
+Leona;49.43;793
+Lux;49.8;253
+Zyra;50.48;105
+Thresh;50.75;861
+Senna;51.37;255
+Rell;51.95;512
+Alistar;51.98;656
+Seraphine;52.09;263
+Pantheon;52.38;378
+Zilean;52.59;116
+Vel'Koz;53.13;128
+Karma;53.82;314
+Nautilus;54.14;724
+Pyke;54.58;546
+Bard;54.76;252
+Swain;55;160
+Yuumi;55.19;337
+Rakan;55.65;478
+Blitzcrank;56.32;364
+Milio;56.43;241
+Xerath;57.02;121
+Tahm Kench;57.14;147
+Sylas;59.41;101
+Camille;66.49;191
+## braum|support|16.21|EMERALD+
+Senna;47.5;1181
+Vel'Koz;47.59;519
+Zilean;47.63;506
+Sona;47.93;386
+Soraka;48.28;756
+Rakan;48.35;1094
+Janna;49.31;947
+Rell;49.34;979
+Nami;51.1;1722
+Alistar;51.12;1565
+Pyke;51.12;1334
+Seraphine;51.4;1144
+Zyra;51.5;468
+Taric;51.75;286
+Brand;52.24;425
+Thresh;52.27;4907
+Morgana;52.61;844
+Neeko;52.7;296
+Miss Fortune;53.15;111
+Elise;53.19;141
+Leona;53.64;2621
+Milio;53.73;1299
+Bard;53.91;755
+Renata Glasc;54.2;393
+LeBlanc;54.27;164
+Amumu;54.27;164
+Swain;54.7;574
+Shaco;54.73;201
+Xerath;54.91;397
+Karma;54.92;1271
+Zoe;55.21;163
+Blitzcrank;55.42;2140
+Lux;55.59;867
+Yuumi;55.69;1020
+Lulu;56.22;2526
+Nautilus;56.79;3904
+Pantheon;56.8;868
+Camille;57.21;222
+Maokai;57.76;393
+Tahm Kench;57.92;530
+Galio;58.52;135
+Sylas;58.8;233
+Poppy;59.88;334
+Ashe;60.47;129
+Shen;61.69;201
+## janna|support|FAIL
+## senna|support|FAIL
+## neeko|support|FAIL
+## nami|support|FAIL
+## zoe|support|FAIL
+## sona|support|FAIL
+## soraka|support|FAIL
+## milio|support|FAIL
+## seraphine|support|FAIL
+## maokai|support|FAIL
+## zilean|support|FAIL
+## yuumi|support|FAIL
+## lux|support|FAIL
+## morgana|support|FAIL
+## zyra|support|FAIL
+## brand|support|FAIL
+## xerath|support|FAIL
+## velkoz|support|FAIL
+## taric|support|FAIL

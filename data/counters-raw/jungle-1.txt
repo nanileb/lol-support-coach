@@ -1,0 +1,1131 @@
+## leesin|jungle|16.22|EMERALD+
+Riven;44.44;108
+Mordekaiser;44.79;163
+Gwen;45.04;564
+Volibear;45.65;644
+Skarner;45.92;723
+Rek'Sai;45.94;1430
+Zaahen;46.23;623
+Elise;46.88;2389
+Cho'Gath;46.94;3862
+Udyr;47.16;1092
+Lillia;47.31;3644
+Darius;47.43;738
+Bel'Veth;47.7;1568
+Zac;47.74;1967
+Shyvana;47.82;2248
+Taliyah;47.83;3247
+Briar;47.89;2861
+Naafiri;47.91;4703
+Zyra;48.02;1562
+Shaco;48.33;3348
+Sion;48.41;347
+Maokai;48.46;648
+Aatrox;48.48;658
+Wukong;48.55;5753
+Sejuani;48.61;1401
+Pantheon;48.68;1140
+Evelynn;48.81;2352
+Malphite;48.89;630
+Talon;49;3610
+Jax;49.04;573
+Xin Zhao;49.09;3288
+Ekko;49.21;3241
+Nocturne;49.23;3390
+Nidalee;49.26;3061
+Jarvan IV;49.49;8210
+Ivern;49.53;531
+Sylas;49.69;5955
+Quinn;49.77;641
+Diana;49.88;2404
+Master Yi;49.97;4633
+Gragas;50;868
+Fiddlesticks;50.04;1195
+Nunu & Willump;50.07;1370
+Graves;50.14;7786
+Vi;50.15;5350
+Kha'Zix;50.16;5102
+Warwick;50.44;2062
+Kindred;50.46;2061
+Camille;50.47;107
+Tryndamere;50.6;166
+Hecarim;50.78;3828
+Olaf;50.83;242
+Ambessa;50.92;601
+Kayn;50.97;4516
+Rumble;50.98;102
+Rammus;50.99;912
+Viego;51.3;6788
+Dr. Mundo;51.48;237
+Rengar;51.67;2628
+Zed;51.7;2623
+Locke;51.87;563
+Karthus;52.07;964
+Poppy;52.52;535
+Qiyana;52.56;7407
+Shen;52.68;467
+Brand;53.57;140
+Teemo;53.85;351
+Amumu;53.94;1092
+Jayce;54.21;3230
+Trundle;54.7;607
+Fizz;56.94;504
+Morgana;57.89;171
+Twitch;59.29;113
+## qiyana|jungle|16.16|EMERALD+
+Lee Sin;50.63;158
+Graves;52.56;156
+## jarvaniv|jungle|16.21|EMERALD+
+Mordekaiser;47.56;307
+Poppy;47.57;576
+Tryndamere;47.68;237
+Gragas;47.87;775
+Zaahen;48.31;532
+Zyra;48.45;2289
+Gwen;48.75;1036
+Karthus;48.81;1350
+Wukong;48.84;7689
+Bel'Veth;48.87;2341
+Briar;48.95;4192
+Elise;49.11;3354
+Kindred;49.22;2619
+Master Yi;49.39;5768
+Diana;49.41;3586
+Nidalee;49.56;2835
+Xin Zhao;49.66;3931
+Nunu & Willump;49.71;2227
+Fiddlesticks;49.84;1842
+Sejuani;49.93;2151
+Ekko;49.95;4871
+Rek'Sai;49.96;1327
+Aatrox;50;910
+Talon;50.06;5280
+Sylas;50.08;6949
+Kha'Zix;50.14;6763
+Zac;50.14;2545
+Evelynn;50.2;2691
+Viego;50.24;8348
+Cho'Gath;50.3;5590
+Skarner;50.37;951
+Shyvana;50.49;3749
+Ambessa;50.58;692
+Taliyah;50.6;1996
+Hecarim;50.79;5257
+Locke;50.81;931
+Ivern;50.91;1204
+Vi;50.92;5037
+Udyr;50.96;1870
+Rammus;51.12;1293
+Volibear;51.22;904
+Graves;51.4;8418
+Lillia;51.45;5277
+Naafiri;51.49;2781
+Quinn;51.88;1012
+Amumu;52.17;1867
+Dr. Mundo;52.37;422
+Darius;52.39;1193
+Warwick;52.43;2611
+Sion;52.51;518
+Lee Sin;52.52;15054
+Zed;52.53;2667
+Morgana;52.55;314
+Teemo;52.76;652
+Trundle;52.79;699
+Shaco;52.89;4235
+Kayn;53.18;6952
+Malphite;53.22;838
+Jax;53.91;805
+Rengar;54.08;3680
+Fizz;54.12;643
+Maokai;54.18;502
+Rumble;54.76;126
+Olaf;54.76;347
+Jayce;54.78;2282
+Nocturne;54.83;4585
+Shen;55.07;296
+Riven;55.26;114
+Qiyana;55.3;7524
+Pantheon;56.03;987
+Brand;56.06;264
+Camille;56.6;106
+Nasus;61.43;140
+Twitch;65.82;158
+## khazix|jungle|16.21|EMERALD+
+Skarner;45.42;808
+Rek'Sai;46.77;1144
+Naafiri;46.8;3656
+Ivern;47.22;917
+Sion;48.15;378
+Nunu & Willump;48.44;1600
+Dr. Mundo;48.45;291
+Aatrox;48.61;646
+Zac;48.66;1753
+Gragas;48.67;602
+Malphite;48.73;669
+Rengar;48.81;4581
+Zyra;48.95;1471
+Nidalee;48.99;2678
+Cho'Gath;49.02;4621
+Wukong;49.31;4942
+Shaco;49.41;3645
+Talon;49.73;5282
+Rammus;49.74;1134
+Bel'Veth;49.78;2001
+Elise;49.92;3087
+Poppy;50;262
+Briar;50.12;3438
+Hecarim;50.22;4622
+Nocturne;50.23;3414
+Lillia;50.57;4040
+Diana;50.6;2907
+Warwick;50.73;2342
+Sejuani;50.83;1804
+Amumu;50.94;1335
+Evelynn;51.07;2667
+Ekko;51.24;4124
+Darius;51.32;871
+Shen;51.34;187
+Karthus;51.42;1270
+Quinn;51.42;1023
+Shyvana;51.52;2706
+Fiddlesticks;51.55;1521
+Graves;51.66;7931
+Maokai;51.79;336
+Udyr;51.94;1288
+Kindred;51.95;2304
+Kayn;51.97;6527
+Vi;52.02;3516
+Pantheon;52.24;670
+Gwen;52.39;628
+Xin Zhao;52.5;2825
+Sylas;52.54;4768
+Jarvan IV;52.58;6770
+Master Yi;52.58;6328
+Volibear;52.66;733
+Olaf;52.68;205
+Taliyah;52.7;1702
+Fizz;53.32;497
+Viego;53.46;7895
+Lee Sin;53.54;11804
+Trundle;53.58;433
+Ambessa;53.59;502
+Mordekaiser;53.7;216
+Locke;53.77;783
+Zed;53.84;2537
+Tryndamere;54.19;179
+Qiyana;54.58;6447
+Morgana;55.4;213
+Teemo;56.28;494
+Zaahen;56.67;270
+Jayce;57.94;1676
+Brand;58.2;189
+Jax;60.49;529
+Twitch;69.29;140
+## taliyah|jungle|16.22|EMERALD+
+Zyra;40.59;505
+Gwen;42.19;128
+Fizz;43.97;116
+Trundle;44.95;109
+Zed;45.11;481
+Gragas;46.77;124
+Rammus;47.32;224
+Volibear;47.54;122
+Skarner;47.67;193
+Shyvana;47.88;520
+Pantheon;48.36;213
+Ivern;48.62;181
+Nidalee;48.78;572
+Warwick;48.9;362
+Rengar;49.54;539
+Talon;49.68;936
+Ekko;49.72;714
+Malphite;50;116
+Bel'Veth;50;452
+Hecarim;50.12;860
+Master Yi;50.21;727
+Kha'Zix;50.3;1004
+Karthus;50.34;290
+Sejuani;50.47;321
+Shaco;50.52;576
+Lillia;50.63;877
+Kayn;50.68;884
+Nunu & Willump;50.73;343
+Quinn;50.85;118
+Viego;50.92;1247
+Kindred;51.13;485
+Nocturne;51.36;627
+Wukong;51.57;1148
+Briar;51.76;597
+Elise;51.76;512
+Evelynn;52.34;491
+Darius;52.41;187
+Zac;52.46;448
+Zaahen;52.76;127
+Diana;52.94;493
+Jayce;52.96;676
+Jarvan IV;53.03;1403
+Jax;53.04;115
+Cho'Gath;53.09;695
+Udyr;53.31;242
+Sylas;53.45;1160
+Rek'Sai;53.57;336
+Graves;53.64;1482
+Locke;53.78;119
+Xin Zhao;54.1;549
+Ambessa;54.42;147
+Amumu;54.44;259
+Lee Sin;54.82;3254
+Naafiri;54.98;933
+Vi;55.1;893
+Fiddlesticks;55.14;292
+Qiyana;55.31;1430
+Aatrox;56.3;135
+Shen;59.29;140
+Maokai;62.68;142
+## naafiri|jungle|16.20|EMERALD+
+Rammus;43.47;467
+Gwen;43.72;199
+Diana;44.57;1151
+Maokai;44.76;143
+Fizz;46.02;226
+Zyra;46.13;349
+Wukong;46.3;2214
+Fiddlesticks;46.47;566
+Sejuani;46.5;572
+Teemo;46.53;144
+Kayn;46.54;2344
+Hecarim;46.83;1576
+Taliyah;47.06;221
+Shyvana;47.13;923
+Talon;47.39;1861
+Lillia;47.46;1395
+Rek'Sai;48.11;397
+Darius;48.59;142
+Briar;48.7;1154
+Quinn;49.33;375
+Jarvan IV;49.35;1913
+Poppy;49.55;111
+Bel'Veth;49.75;595
+Zac;49.78;697
+Udyr;49.88;417
+Evelynn;50;668
+Viego;50.33;2307
+Qiyana;50.35;2409
+Nocturne;50.36;1259
+Karthus;50.37;403
+Cho'Gath;50.41;1698
+Ekko;50.45;1217
+Master Yi;50.57;1592
+Skarner;50.94;267
+Vi;51.17;1321
+Elise;51.28;973
+Xin Zhao;51.43;560
+Gragas;51.43;245
+Warwick;51.52;755
+Malphite;51.74;201
+Kindred;51.83;739
+Nidalee;51.94;1059
+Amumu;52.14;443
+Trundle;52.82;142
+Volibear;52.99;251
+Shaco;53.25;1230
+Nunu & Willump;53.26;552
+Ivern;53.35;313
+Lee Sin;53.86;5932
+Jax;53.88;232
+Zed;54.04;890
+Aatrox;54.13;218
+Kha'Zix;54.39;3238
+Dr. Mundo;54.72;106
+Sylas;55.22;1916
+Locke;55.71;210
+Pantheon;56.16;276
+Graves;56.41;2854
+Jayce;56.71;633
+Ambessa;57.06;170
+Rengar;57.28;1264
+## nidalee|jungle|16.21|EMERALD+
+Ivern;40.72;307
+Dr. Mundo;44.95;109
+Fiddlesticks;45.86;495
+Udyr;46.44;407
+Elise;46.71;1366
+Jax;46.84;158
+Evelynn;46.87;879
+Amumu;46.89;450
+Rammus;47.12;399
+Nunu & Willump;47.35;716
+Taliyah;47.58;973
+Rek'Sai;47.92;553
+Warwick;48.14;700
+Diana;48.18;1098
+Zyra;48.28;988
+Lillia;49.18;1576
+Zac;49.36;853
+Cho'Gath;49.39;1403
+Shaco;49.52;1347
+Wukong;49.54;1637
+Poppy;49.6;125
+Sejuani;49.82;554
+Shyvana;50;748
+Naafiri;50.09;1074
+Maokai;50.59;170
+Briar;50.69;1166
+Vi;50.79;1524
+Karthus;50.84;476
+Darius;50.93;269
+Volibear;51.17;213
+Ekko;51.28;1365
+Master Yi;51.58;1873
+Talon;51.66;2054
+Fizz;51.68;238
+Bel'Veth;51.73;692
+Sylas;51.87;2084
+Xin Zhao;51.95;1359
+Skarner;52.22;293
+Hecarim;52.29;2006
+Sion;52.48;101
+Gragas;52.5;240
+Gwen;52.58;194
+Jarvan IV;52.8;2822
+Kindred;52.96;1167
+Kha'Zix;53.26;2651
+Graves;53.66;3457
+Rengar;53.67;1185
+Quinn;53.96;328
+Nocturne;54;1250
+Kayn;54.23;1820
+Lee Sin;54.39;6965
+Viego;54.41;2586
+Zed;55.6;831
+Pantheon;55.65;345
+Locke;55.68;361
+Teemo;56;175
+Qiyana;56.03;2727
+Jayce;56.38;1082
+Aatrox;56.46;271
+Malphite;57.21;229
+Ambessa;57.21;229
+Trundle;59.87;152
+## talon|jungle|16.22|EMERALD+
+Rek'Sai;44.36;399
+Skarner;45.04;282
+Maokai;46.09;230
+Malphite;47.34;207
+Teemo;47.97;123
+Darius;48.08;339
+Sion;48.34;151
+Zac;48.41;659
+Cho'Gath;48.55;1310
+Nunu & Willump;48.62;578
+Trundle;48.63;183
+Hecarim;48.84;1552
+Warwick;48.95;713
+Bel'Veth;48.98;686
+Sejuani;49.23;583
+Zyra;49.7;497
+Amumu;49.78;458
+Volibear;50;206
+Shen;50;202
+Shyvana;50.22;904
+Fiddlesticks;50.65;464
+Elise;50.74;810
+Rengar;50.77;1237
+Zaahen;50.82;183
+Lillia;50.92;1086
+Udyr;51.11;405
+Ekko;51.12;1291
+Ivern;51.18;254
+Nocturne;51.35;999
+Sylas;51.75;1602
+Aatrox;51.79;224
+Wukong;51.79;1624
+Gragas;51.88;239
+Diana;51.9;973
+Fizz;51.93;181
+Kindred;52.09;647
+Vi;52.09;1342
+Evelynn;52.14;1076
+Nidalee;52.17;759
+Kayn;52.25;1866
+Pantheon;52.26;310
+Shaco;52.41;1284
+Taliyah;52.42;826
+Briar;52.48;1067
+Rammus;52.67;393
+Qiyana;52.81;2566
+Kha'Zix;52.82;1916
+Jarvan IV;53.02;2216
+Viego;53.05;2260
+Master Yi;53.11;1542
+Xin Zhao;53.14;781
+Graves;53.19;2085
+Zed;53.27;871
+Naafiri;53.4;1337
+Lee Sin;53.66;3224
+Locke;53.88;219
+Ambessa;54.82;228
+Karthus;54.86;370
+Jayce;55.18;801
+Gwen;55.61;187
+Quinn;55.7;237
+Jax;56.21;153
+## vi|jungle|16.22|EMERALD+
+Sion;44.09;127
+Zyra;44.42;502
+Aatrox;44.95;198
+Trundle;46.18;262
+Darius;46.62;311
+Rammus;46.76;355
+Wukong;47.03;2288
+Shyvana;47.1;1136
+Udyr;47.17;424
+Taliyah;47.65;894
+Bel'Veth;47.75;668
+Olaf;47.97;123
+Zac;47.99;698
+Dr. Mundo;48.06;129
+Ekko;48.07;1319
+Kindred;48.48;658
+Fizz;48.8;166
+Volibear;48.91;274
+Lillia;48.97;1360
+Graves;48.97;1997
+Zaahen;49.34;227
+Kha'Zix;49.4;1585
+Sejuani;49.48;576
+Karthus;49.65;282
+Hecarim;49.78;1344
+Nidalee;49.78;683
+Xin Zhao;49.9;1032
+Talon;50;1522
+Gragas;50;226
+Nocturne;50.04;1245
+Elise;50.06;775
+Cho'Gath;50.21;1412
+Shen;50.22;229
+Rek'Sai;50.43;347
+Diana;50.68;961
+Maokai;50.72;209
+Warwick;50.76;790
+Poppy;50.85;118
+Master Yi;51.03;1789
+Nunu & Willump;51.05;572
+Briar;51.16;1167
+Kayn;51.25;1803
+Shaco;51.48;1113
+Viego;51.93;2207
+Ivern;52.12;259
+Jarvan IV;52.16;2617
+Sylas;52.18;1970
+Lee Sin;52.65;5396
+Evelynn;52.81;1013
+Gwen;53.02;215
+Jax;53.47;245
+Malphite;53.52;213
+Amumu;53.96;530
+Rengar;54.07;1082
+Fiddlesticks;54.12;473
+Pantheon;54.18;347
+Teemo;54.36;149
+Naafiri;54.49;1404
+Skarner;54.58;251
+Qiyana;54.68;2363
+Ambessa;55.95;227
+Locke;55.96;193
+Jayce;56.03;837
+Zed;56.1;795
+Quinn;56.37;259
+## viego|jungle|16.21|EMERALD+
+Rek'Sai;45.23;1300
+Rammus;47.61;2115
+Bel'Veth;48.13;2975
+Evelynn;48.38;2894
+Shen;48.52;305
+Ivern;48.67;1054
+Nidalee;48.69;2590
+Elise;48.81;3534
+Sejuani;48.92;2271
+Wukong;49;6920
+Talon;49.04;5855
+Nasus;49.09;165
+Darius;49.14;1455
+Udyr;49.17;1867
+Taliyah;49.49;1861
+Briar;49.58;4552
+Zyra;49.83;1816
+Warwick;50.05;3281
+Zac;50.08;2568
+Kha'Zix;50.27;7853
+Fizz;50.51;586
+Ekko;50.53;5278
+Aatrox;50.55;999
+Amumu;50.6;2002
+Fiddlesticks;50.64;1880
+Naafiri;50.67;2402
+Shyvana;50.77;4014
+Zaahen;50.79;441
+Morgana;50.97;257
+Kindred;51.17;2472
+Cho'Gath;51.34;5594
+Rumble;51.35;111
+Maokai;51.41;426
+Jax;51.42;1163
+Shaco;51.5;4427
+Nunu & Willump;51.72;2146
+Skarner;51.74;891
+Rengar;51.8;4214
+Sion;51.8;471
+Hecarim;51.86;5835
+Graves;51.9;8178
+Xin Zhao;51.91;3477
+Lillia;51.93;5045
+Karthus;51.98;1237
+Gragas;52.04;786
+Tryndamere;52.08;265
+Malphite;52.09;935
+Kayn;52.13;8560
+Jayce;52.15;1764
+Master Yi;52.38;6865
+Olaf;52.51;339
+Lee Sin;52.62;14190
+Jarvan IV;52.68;8424
+Quinn;52.81;1208
+Ambessa;52.97;708
+Zed;53.02;3014
+Mordekaiser;53.28;351
+Diana;53.33;3934
+Riven;53.33;135
+Dr. Mundo;53.49;387
+Gwen;53.54;945
+Qiyana;53.58;7434
+Sylas;53.81;6774
+Trundle;53.87;724
+Nocturne;53.93;4413
+Vi;53.94;4770
+Pantheon;54.29;943
+Locke;54.97;955
+Volibear;55.43;1142
+Poppy;55.7;298
+Teemo;56.17;543
+Twitch;57.33;150
+Brand;63.64;220
+## graves|jungle|16.22|EMERALD+
+Poppy;44.72;123
+Zyra;45.62;811
+Brand;45.63;103
+Tryndamere;45.71;105
+Evelynn;45.88;1493
+Ivern;46.38;304
+Rek'Sai;46.76;494
+Sion;46.77;248
+Taliyah;46.83;1388
+Nidalee;46.96;1367
+Rammus;47.21;591
+Fiddlesticks;47.8;682
+Darius;48.01;552
+Shyvana;48.33;1403
+Udyr;48.41;690
+Zac;48.51;940
+Naafiri;48.57;1894
+Dr. Mundo;49.46;186
+Master Yi;49.66;2811
+Lillia;49.67;1943
+Wukong;49.71;2714
+Diana;49.72;1436
+Gwen;49.84;319
+Talon;49.84;2189
+Nunu & Willump;49.88;818
+Sejuani;50.17;881
+Shen;50.37;270
+Ekko;50.55;1644
+Zaahen;50.56;269
+Elise;50.74;1082
+Amumu;50.75;666
+Hecarim;50.78;2450
+Rengar;50.94;1655
+Viego;50.95;3649
+Trundle;50.97;310
+Malphite;51.04;384
+Maokai;51.35;296
+Kha'Zix;51.44;3054
+Bel'Veth;51.47;1154
+Teemo;51.49;235
+Cho'Gath;51.52;2042
+Jarvan IV;51.67;3933
+Skarner;52.08;336
+Warwick;52.13;1009
+Kindred;52.21;1402
+Quinn;52.27;352
+Ambessa;52.27;308
+Xin Zhao;52.32;1206
+Pantheon;52.5;440
+Kayn;52.66;2761
+Fizz;53.05;262
+Lee Sin;53.08;7477
+Jayce;53.1;1612
+Briar;53.28;1586
+Volibear;53.3;349
+Sylas;53.32;2618
+Jax;53.63;358
+Shaco;53.67;1716
+Zed;53.77;1248
+Karthus;53.83;561
+Vi;54.01;1909
+Aatrox;54.45;371
+Nocturne;54.55;1738
+Qiyana;54.66;3273
+Gragas;54.75;305
+Locke;55.37;298
+Olaf;56.1;123
+Mordekaiser;58.88;107
+## xinzhao|jungle|16.22|EMERALD+
+Amumu;41.23;114
+Ekko;45.04;262
+Hecarim;45.54;336
+Shyvana;47.08;240
+Fiddlesticks;47.15;123
+Warwick;47.2;214
+Bel'Veth;47.97;148
+Talon;49.09;328
+Master Yi;49.42;344
+Wukong;49.54;549
+Shaco;49.59;242
+Nidalee;50.24;205
+Zac;50.29;173
+Rengar;50.55;271
+Kha'Zix;50.63;397
+Diana;50.69;217
+Kindred;50.9;167
+Graves;51.1;454
+Sejuani;51.52;132
+Kayn;51.58;411
+Sylas;51.58;442
+Elise;51.66;211
+Taliyah;51.72;203
+Viego;51.75;485
+Udyr;52.1;119
+Zyra;52.59;135
+Lillia;52.9;310
+Lee Sin;52.91;1204
+Briar;53.05;262
+Nocturne;53.31;242
+Jayce;54.37;206
+Nunu & Willump;54.42;147
+Jarvan IV;54.62;692
+Naafiri;54.81;312
+Rek'Sai;55.05;109
+Trundle;55.17;116
+Cho'Gath;55.45;330
+Vi;55.62;347
+Zed;56.88;160
+Evelynn;57.48;254
+Qiyana;59.25;508
+## kindred|jungle|16.22|EMERALD+
+Briar;45.45;121
+Sylas;46.1;154
+Cho'Gath;47.85;163
+Ekko;48.33;120
+Lillia;48.97;145
+Talon;49.62;131
+Master Yi;51.05;143
+Qiyana;51.74;172
+Graves;51.74;259
+Nidalee;52.34;107
+Viego;52.34;214
+Wukong;52.89;121
+Jarvan IV;53.31;242
+Lee Sin;54.67;364
+Hecarim;55.31;179
+Kha'Zix;55.75;174
+Evelynn;57.28;103
+Naafiri;57.28;103
+Vi;58.12;117
+Kayn;58.92;185
+Shaco;59.22;103
+Jayce;59.46;111
+Rengar;62.73;110
+## rengar|jungle|16.22|EMERALD+
+Pantheon;41.95;379
+Rek'Sai;42.62;298
+Volibear;42.86;301
+Warwick;43.96;803
+Master Yi;43.99;1557
+Shen;44.38;169
+Naafiri;44.45;1100
+Skarner;45.24;252
+Rammus;45.41;425
+Kindred;45.88;582
+Wukong;45.93;1770
+Darius;46.71;289
+Nunu & Willump;47.01;551
+Bel'Veth;47.02;655
+Fiddlesticks;47.11;450
+Amumu;47.11;450
+Briar;47.14;1084
+Gwen;47.2;161
+Aatrox;47.66;214
+Hecarim;47.89;1280
+Sejuani;47.93;507
+Dr. Mundo;48;125
+Ekko;48.05;1153
+Cho'Gath;48.06;1265
+Jarvan IV;48.5;1872
+Sion;48.65;185
+Zac;48.69;571
+Shaco;48.8;1166
+Xin Zhao;48.84;692
+Vi;49.02;1069
+Diana;49.2;872
+Udyr;49.21;445
+Poppy;49.23;130
+Karthus;49.4;334
+Gragas;49.42;172
+Ambessa;49.48;192
+Nidalee;49.5;503
+Jax;49.57;230
+Sylas;49.76;1230
+Elise;50;670
+Shyvana;50.15;993
+Zaahen;50.28;181
+Ivern;50.53;283
+Nocturne;50.62;964
+Trundle;50.77;195
+Lee Sin;50.92;2610
+Quinn;50.95;263
+Malphite;51.17;213
+Viego;51.28;1995
+Talon;51.3;1427
+Kayn;51.44;1765
+Lillia;51.49;975
+Graves;51.96;1790
+Kha'Zix;52.28;2108
+Zed;52.86;647
+Taliyah;53.07;522
+Maokai;53.19;188
+Evelynn;54.17;1091
+Fizz;55;120
+Teemo;55.47;137
+Zyra;56.42;335
+Jayce;56.74;527
+Qiyana;57.16;2108
+Locke;60.31;131
+## hecarim|jungle|16.21|EMERALD+
+Mordekaiser;43.5;223
+Darius;45.6;1114
+Cho'Gath;46.5;3839
+Sion;46.62;281
+Zaahen;46.65;328
+Sylas;46.71;5318
+Aatrox;47.24;633
+Udyr;47.25;1346
+Ivern;47.71;809
+Brand;47.77;157
+Olaf;48.09;262
+Lillia;48.13;4255
+Bel'Veth;48.16;1848
+Evelynn;48.2;1830
+Rek'Sai;48.38;957
+Shyvana;48.57;2907
+Morgana;48.66;187
+Sejuani;48.85;1386
+Kindred;48.86;1934
+Briar;48.9;2738
+Rammus;48.97;974
+Fizz;48.98;392
+Taliyah;49.24;1251
+Zac;49.61;1681
+Skarner;49.69;640
+Nunu & Willump;49.76;1483
+Zyra;49.85;1316
+Nidalee;49.95;1982
+Wukong;50.12;4050
+Warwick;50.14;1841
+Gwen;50.18;562
+Amumu;50.31;1288
+Elise;50.38;2223
+Fiddlesticks;50.51;1176
+Ekko;50.58;3191
+Diana;50.77;2348
+Xin Zhao;50.88;2105
+Graves;50.98;5271
+Jarvan IV;50.99;5246
+Viego;51.01;5746
+Kayn;51.18;4830
+Pantheon;51.29;583
+Vi;51.42;2826
+Quinn;51.51;730
+Jax;51.57;415
+Master Yi;51.61;3947
+Kha'Zix;51.84;4585
+Lee Sin;51.84;7483
+Shaco;51.87;2963
+Talon;52.11;3928
+Maokai;52.43;288
+Volibear;52.56;723
+Jayce;53.17;1134
+Nocturne;53.31;2630
+Locke;53.42;584
+Dr. Mundo;53.47;245
+Ambessa;53.67;449
+Malphite;53.78;463
+Trundle;53.9;551
+Gragas;53.97;517
+Shen;54.04;161
+Zed;54.38;1440
+Teemo;54.43;316
+Karthus;54.85;917
+Rengar;55.48;2931
+Nasus;55.56;108
+Naafiri;56.15;1715
+Qiyana;57.34;5122
+Poppy;59.15;164
+Tryndamere;60.39;154
+## zyra|jungle|16.21|EMERALD+
+Ivern;48.15;297
+Karthus;48.3;528
+Bel'Veth;48.55;517
+Rammus;48.79;330
+Skarner;49.06;212
+Rengar;49.75;794
+Xin Zhao;50.11;882
+Sejuani;50.21;474
+Maokai;50.43;117
+Gwen;50.53;188
+Amumu;50.94;371
+Morgana;51;100
+Lillia;51.08;1339
+Evelynn;51.21;621
+Talon;51.38;1343
+Elise;51.63;798
+Briar;51.83;928
+Taliyah;52.09;647
+Udyr;52.15;349
+Shaco;52.54;965
+Nunu & Willump;52.62;515
+Kha'Zix;52.81;1386
+Hecarim;52.94;1209
+Diana;53.3;788
+Ekko;53.38;1079
+Warwick;53.6;569
+Zac;53.61;651
+Jarvan IV;53.66;2104
+Wukong;53.71;1428
+Viego;53.78;1705
+Nidalee;53.86;932
+Zed;53.86;570
+Fizz;53.89;180
+Kindred;54.02;659
+Locke;54.11;207
+Gragas;54.42;147
+Fiddlesticks;54.43;406
+Nocturne;54.58;949
+Aatrox;54.84;217
+Rek'Sai;54.88;379
+Cho'Gath;54.9;1204
+Darius;54.92;264
+Master Yi;55.06;1155
+Naafiri;55.15;747
+Vi;55.16;1173
+Shyvana;55.19;781
+Trundle;55.38;130
+Lee Sin;55.58;3460
+Graves;56.02;1967
+Volibear;56.06;198
+Sylas;56.12;1406
+Pantheon;56.12;237
+Qiyana;56.16;1649
+Kayn;56.38;1731
+Teemo;56.74;141
+Ambessa;57.79;154
+Jayce;58.32;655
+Jax;58.91;129
+Malphite;61.08;167
+Quinn;63.95;233
+## sylas|jungle|16.22|EMERALD+
+Olaf;40.16;127
+Gwen;44.87;263
+Volibear;45.76;354
+Zyra;45.89;669
+Poppy;46.22;119
+Briar;46.74;1333
+Gragas;46.83;331
+Ivern;47.12;312
+Zac;47.34;957
+Taliyah;47.79;1130
+Elise;48.12;956
+Rek'Sai;48.57;455
+Naafiri;48.77;1624
+Sion;48.82;211
+Bel'Veth;48.87;798
+Viego;49.02;3227
+Udyr;49.03;514
+Wukong;49.3;2485
+Lillia;49.37;1837
+Trundle;49.41;253
+Sejuani;49.55;890
+Zaahen;49.64;276
+Cho'Gath;49.68;2498
+Rammus;49.79;476
+Warwick;49.8;978
+Graves;49.91;2739
+Darius;50.14;353
+Kha'Zix;50.31;1952
+Kayn;50.33;2301
+Kindred;50.33;914
+Dr. Mundo;50.36;137
+Talon;50.4;1855
+Shaco;50.58;1216
+Diana;50.71;1408
+Jax;50.74;270
+Karthus;50.92;487
+Master Yi;50.93;1887
+Fizz;51.18;254
+Vi;51.36;1982
+Teemo;51.43;175
+Shen;51.45;311
+Skarner;51.79;336
+Evelynn;51.9;1393
+Nidalee;52.01;871
+Rengar;52.06;1235
+Locke;52.36;275
+Aatrox;52.36;296
+Ekko;52.4;2042
+Nunu & Willump;52.46;852
+Fiddlesticks;52.48;808
+Pantheon;52.61;479
+Jarvan IV;52.86;3477
+Quinn;53.21;280
+Xin Zhao;53.28;1282
+Jayce;53.4;1191
+Lee Sin;53.52;5945
+Zed;53.56;1025
+Nocturne;53.86;1580
+Maokai;53.98;339
+Qiyana;53.99;3243
+Amumu;54.5;956
+Hecarim;55.17;2632
+Ambessa;55.56;297
+Shyvana;58.59;1746
+Mordekaiser;60;105
+Malphite;61.64;391
+## lillia|jungle|16.22|EMERALD+
+Briar;46.06;406
+Maokai;46.61;118
+Zyra;46.85;222
+Darius;49.31;144
+Kayn;49.46;651
+Elise;49.68;316
+Master Yi;49.68;475
+Amumu;50;228
+Jarvan IV;50.18;817
+Viego;50.45;771
+Xin Zhao;50.5;301
+Nunu & Willump;50.66;229
+Kindred;50.69;290
+Taliyah;50.88;342
+Kha'Zix;51.25;642
+Rek'Sai;51.63;153
+Vi;52.11;522
+Skarner;52.38;126
+Cho'Gath;52.51;676
+Rammus;52.72;184
+Karthus;52.73;110
+Fiddlesticks;52.75;182
+Hecarim;53.04;707
+Ekko;53.15;429
+Shyvana;53.16;427
+Shaco;53.2;500
+Rengar;53.42;322
+Nidalee;53.47;245
+Sylas;53.51;656
+Evelynn;53.72;363
+Jayce;54.21;297
+Graves;54.41;737
+Zac;54.44;349
+Naafiri;54.71;435
+Diana;54.91;326
+Lee Sin;55.41;1267
+Wukong;55.84;822
+Talon;55.89;492
+Bel'Veth;55.9;288
+Warwick;56.2;363
+Qiyana;56.27;638
+Volibear;57.14;105
+Udyr;57.25;255
+Nocturne;57.6;408
+Shen;59.52;126
+Sejuani;60.68;295
+Zed;60.7;229
+## elise|jungle|16.21|EMERALD+
+Rammus;45.45;187
+Sejuani;46.39;319
+Udyr;46.94;245
+Rek'Sai;46.96;230
+Shaco;48.6;607
+Amumu;48.8;291
+Talon;49.1;943
+Darius;49.13;230
+Karthus;49.32;219
+Fiddlesticks;49.62;266
+Quinn;49.66;149
+Zed;49.87;385
+Zac;49.88;407
+Naafiri;50.11;437
+Gwen;50.41;121
+Taliyah;50.66;302
+Zyra;50.77;323
+Lillia;50.81;807
+Kha'Zix;51.12;1248
+Nunu & Willump;51.87;347
+Hecarim;51.89;871
+Xin Zhao;51.9;553
+Shyvana;52.18;527
+Fizz;52.25;111
+Rengar;52.41;580
+Ekko;52.46;814
+Bel'Veth;52.5;400
+Wukong;52.5;901
+Warwick;52.51;379
+Kayn;52.56;1056
+Skarner;52.63;152
+Kindred;52.66;414
+Evelynn;52.7;389
+Vi;52.77;595
+Qiyana;53.38;1081
+Cho'Gath;53.54;734
+Diana;53.66;492
+Nocturne;53.79;554
+Briar;53.92;664
+Master Yi;54.12;898
+Pantheon;54.2;131
+Ivern;54.34;173
+Ambessa;54.46;101
+Jarvan IV;54.59;1046
+Jayce;54.8;250
+Lee Sin;55.05;2058
+Nidalee;55.27;512
+Graves;55.51;1144
+Sylas;55.74;888
+Aatrox;56.92;130
+Viego;57.49;1275
+Volibear;57.76;116
+Locke;60.47;129
+## wukong|jungle|FAIL
+## reksai|jungle|FAIL
+## shaco|jungle|FAIL
+## diana|jungle|FAIL
+## nunu|jungle|FAIL
+## skarner|jungle|FAIL
+## belveth|jungle|FAIL
+## briar|jungle|FAIL
+## amumu|jungle|FAIL
+## sejuani|jungle|FAIL
+## maokai|jungle|FAIL
+## volibear|jungle|FAIL
+## warwick|jungle|FAIL
+## ivern|jungle|FAIL
+## evelynn|jungle|FAIL
+## kayn|jungle|FAIL
+## masteryi|jungle|FAIL
+## udyr|jungle|FAIL

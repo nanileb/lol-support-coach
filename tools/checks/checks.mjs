@@ -55,15 +55,14 @@ for (const s of SC) {
   if (A.ad >= 4 && !first4.some(id => it(id) && it(id).arm) && !(boots && it(boots).arm) && !/3047\.png/.test(html)) fail(s.id, `${me} : aucune armure contre ${A.ad} AD`);
   if (A.ap >= 4 && !first4.some(id => it(id) && it(id).mr) && !/3111\.png/.test(html)) fail(s.id, `${me} : aucune résistance magique contre ${A.ap} AP`);
 }
-// 5. Duels : le même duel donne le même résultat vu des deux côtés (données des counters)
-for (const role of ['top', 'jungle', 'mid', 'adc', 'support']) {
-  const bad = run(`(() => { S.settings.role=${JSON.stringify(role)}; const out = [], P = POS[myRole()];
-    for (const k of Object.keys((S.mu&&S.mu.m)||{}).filter(k => k.endsWith('|'+P))) { const c = k.split('|')[0], st = STAT(c);
-      (st.opp||[]).filter(x => x[1] >= 20).forEach(x => { const d = duelResult(c, x[0], myRole()), e = duelResult(x[0], c, myRole());
-        if (d.wr == null || e.wr == null || Math.abs(d.wr + e.wr - 100) > 1) out.push(c + ' / ' + x[0] + ' : ' + d.wr + ' % et ' + e.wr + ' %'); }); }
-    return out.slice(0, 5); })()`);
-  bad.forEach(b => fail('duels ' + role, b));
-}
+// 5. Base de counters : noms reconnus, taux plausibles (les deux pages d'un duel peuvent différer : échantillons différents)
+{ const r = run(`(() => { const out = [], L = (S.cnt && S.cnt.lanes) || {};
+    for (const [lane, M] of Object.entries(L)) for (const [c, e] of Object.entries(M)) {
+      if (!champ(c)) out.push(lane + ' : champion inconnu ' + c);
+      for (const [o, [wr, n]] of Object.entries(e.vs)) { if (!champ(o)) out.push(lane + ' : adversaire inconnu ' + o + ' (' + c + ')'); if (!(wr > 20 && wr < 80) || !(n >= 1)) out.push(lane + ' : ' + c + ' contre ' + o + ' = ' + wr + ' % / ' + n); } }
+    return { out: out.slice(0, 8), has: !!S.cnt }; })()`);
+  if (!r.has) warns.push('counters.json absent : duels estimés par profils');
+  r.out.forEach(x => fail('counters', x)); }
 if (warns.length) console.log('À regarder (avis, pas une erreur) :\n- ' + warns.join('\n- '));
 console.log(fails.length ? `${fails.length} problème(s) :\n- ` + fails.join('\n- ') : 'Tous les garde-fous passent.');
 process.exitCode = fails.length ? 1 : 0;

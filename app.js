@@ -96,19 +96,19 @@ async function loadBuilds() {
   catch (e) { S.builds = LS.get('builds', null); }
 }
 const BUILD = (id, role) => (S.builds && S.builds.builds && S.builds.builds[id + '|' + POS[role || myRole()]]) || null;
-// Counters et synergies : grand échantillon de parties (matchups.json, plusieurs patchs, mis à jour chaque semaine), sinon les parties des builds
-async function loadMatchups() { try { S.mu = await getJSON('matchups.json', { cache: 'no-cache' }); S._st = {}; } catch (e) { S.mu = S.mu || null; } }
-function STAT(id, role) {
-  role = role || myRole(); const key = id + '|' + POS[role], b = BUILD(id, role), mm = S.mu && S.mu.m && S.mu.m[key];
-  if (!mm) return b;
-  S._st = S._st || {}; if (S._st[key]) return S._st[key];
-  const pct = x => Math.round(x[1] / x[0] * 100), list = o => Object.entries(o).map(([c, x]) => [c, x[0], pct(x)]).sort((a, c) => c[1] - a[1]);
-  const byChamp = (o, pos) => { const r = {}; for (const [k, x] of Object.entries(o)) { const [c, p] = k.split('|'); if (pos && p !== pos) continue; const y = r[c] = r[c] || [0, 0]; y[0] += x[0]; y[1] += x[1]; } return r; };
-  const duoPos = role === 'adc' ? 'UTILITY' : role === 'support' ? 'BOTTOM' : null;
-  // pour chaque paire, la source qui a le plus de parties (builds cumulés ou collecte des counters)
-  const merge = (a, c) => { const r = new Map(); [...(a || []), ...(c || [])].forEach(x => { const y = r.get(x[0]); if (!y || x[1] > y[1]) r.set(x[0], x); }); return [...r.values()].sort((x, y) => y[1] - x[1]); };
-  const big = !b || mm[0] >= b.n;
-  return (S._st[key] = { ...(b || {}), n: big ? mm[0] : b.n, wr: big ? pct(mm) : b.wr, opp: merge(b && b.opp, list(mm[2])), vsAll: merge(b && b.vsAll, list(byChamp(mm[3]))), with: merge(b && b.with, list(byChamp(mm[4]))), duo: duoPos ? merge(b && b.duo, list(byChamp(mm[4], duoPos))) : [], big: true });
+// Synergies et résultats d'équipe : parties des meilleurs joueurs (builds.json)
+const STAT = (id, role) => BUILD(id, role);
+// Counters de lane : base fixe tirée d'un site spécialisé (counters.json, Lolalytics Émeraude+), mise à jour à la main
+// lors d'une refonte ou d'un nouveau champion. Utilisée seulement pour le % du pool et le verdict de lane.
+const CLANE = { top: 'top', jungle: 'jungle', mid: 'middle', adc: 'bottom', support: 'support' };
+async function loadCounters() { try { S.cnt = await getJSON('counters.json', { cache: 'no-cache' }); } catch (e) { S.cnt = S.cnt || null; } }
+function counterDuel(me, opp, role) {
+  const L = S.cnt && S.cnt.lanes && S.cnt.lanes[CLANE[role || myRole()]]; if (!L || !me || !opp) return null;
+  const a = L[me] && L[me].vs[opp], o = L[opp] && L[opp].vs[me];
+  const x = a && (!o || a[1] >= o[1]) ? [a[0], a[1]] : o ? [Math.round((100 - o[0]) * 100) / 100, o[1]] : null;
+  if (!x) return null;
+  const avg = L[me] ? L[me].avg : o && L[opp] ? 100 - L[opp].avg : 50;
+  return { wr: x[0], n: x[1], avg: Math.round(avg * 10) / 10 };
 }
 const gamePatch = v => { if (!v) return null; const [a, b] = v.split('.').map(Number); return (a >= 10 && a < 20 ? a + 10 : a) + '.' + b; };
 const champ = id => S.champs[id];
@@ -284,10 +284,16 @@ function scoreRole(id) {
   // adversaires : duel direct d'abord, puis le reste de l'équipe
   ROLES.forEach(r => {
     const e = m.enemy[r]; if (!e) return;
-    const direct = r === role, w = W(r, true), find = finder(w, direct), x = (direct && find(b.opp, e)) || find(b.vsAll, e);
+    const direct = r === role, w = W(r, true), find = finder(w, direct);
+    if (direct) { // duel de lane : base de counters du site spécialisé, sinon estimation par profils
+      const cd = counterDuel(id, e, role);
+      if (cd) add((shrink(cd.wr, cd.n, 200, cd.avg) - cd.avg) * 1.3, `${Math.round(cd.wr)} % contre ${cname(e)} (duel) au lieu de ${Math.round(cd.avg)} % (${cd.n} parties ${S.cnt.rank}, ${S.cnt.source})`);
+      else { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, duel absent de la base de counters)'); }
+      return;
+    }
+    const x = find(b.vsAll, e);
     if (x) add(pairDelta(x, b.wr, w) * (direct ? 1.3 : 1), `${x[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} au lieu de ${b.wr} % (${x[1]} parties${wtag(w)})`, w);
-    else if (direct && !(STAT(e, r) && find(STAT(e, r).opp, id))) { const h = duelHeuristic(id, e); if (h) add(h[0], h[1] + ' (estimation, pas assez de parties sur ce duel)'); }
-    else { const eb = STAT(e, r), y = eb && (find(direct ? eb.opp : null, id) || find(eb.vsAll, id)); if (y) add((eb.wr - shrink(y[2], y[1], CFG[w].k, eb.wr)) * w * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties${wtag(w)})`, w); }
+    else { const eb = STAT(e, r), y = eb && find(eb.vsAll, id); if (y) add((eb.wr - shrink(y[2], y[1], CFG[w].k, eb.wr)) * w * (direct ? 1.3 : 1), `${100 - y[2]} % contre ${cname(e)}${direct ? ' (duel)' : ''} (${y[1]} parties${wtag(w)})`, w); }
   });
   { const tot = off.reduce((a2, x) => a2 + x[0], 0), k2 = Math.abs(tot) > 4 ? 4 / Math.abs(tot) : 1;
     off.forEach(([v, txt, w]) => { v *= k2; if (Math.abs(v) < 0.3) return; s += v; parts.push([v, txt, w]); }); }
@@ -754,12 +760,12 @@ function renderBotInner() {
   // Résultat réel des meilleurs joueurs s'il existe (≥ 20 parties) : il recale les phases et le verdict
   const myC = m.me, mb = STAT(myC), dOpp = isAdc ? ea : es, oOpp = isAdc ? es : ea;
   const fd = (l, c) => (l || []).find(x => x[0] === c && x[1] >= 20);
-  const xd = mb && fd(mb.opp, dOpp), xo = mb && fd(mb.vsAll, oOpp);
+  const cd = counterDuel(myC, dOpp), xd = cd && cd.n >= 20 ? cd : null, xo = mb && fd(mb.vsAll, oOpp);
   let w = null; const src = [];
   if (xd || xo) {
-    w = mb.wr;
-    if (xd) { w += shrink(xd[2], xd[1], 100, mb.wr) - mb.wr; src.push(`${xd[2]} % contre ${cname(dOpp)} (${xd[1]} parties)`); }
-    if (xo) { w += shrink(xo[2], xo[1], 100, mb.wr) - mb.wr; src.push(`${xo[2]} % contre ${cname(oOpp)} (${xo[1]} parties)`); }
+    const base = xd ? xd.avg : mb.wr; w = base;
+    if (xd) { w += shrink(xd.wr, xd.n, 200, xd.avg) - xd.avg; src.push(`${Math.round(xd.wr)} % contre ${cname(dOpp)} (${xd.n} parties ${S.cnt.rank}, ${S.cnt.source})`); }
+    if (xo && mb) { w += shrink(xo[2], xo[1], 100, mb.wr) - mb.wr; src.push(`${xo[2]} % contre ${cname(oOpp)} (${xo[1]} parties)`); }
     w = Math.round(w);
   }
   const tone = w == null ? null : w >= 53 ? 'aggro' : w <= 47 ? 'safe' : 'even', shift = w == null ? 0 : (w - 50) / 5;
@@ -771,7 +777,7 @@ function renderBotInner() {
   let verdict, verdictSrc;
   if (w != null) {
     verdict = w >= 53 ? ['good', `Lane favorable : ${w} % estimés`] : w <= 47 ? ['bad', `Lane difficile : ${w} % estimés, sécurité d'abord`] : ['warn', `Lane équilibrée : ${w} % estimés`];
-    verdictSrc = `Résultats Challenger / GM / Master de ${cname(myC)} : ${src.join(', ')}. Les phases ci-dessous combinent ces résultats et les profils des champions.`;
+    verdictSrc = `${cname(myC)} : ${src.join(', ')}. Les phases ci-dessous combinent ces résultats et les profils des champions.`;
   } else {
     verdict = total > 1.5 ? ['good', 'Vous avez l\'avantage'] : total < -1.5 ? ['bad', 'Lane difficile : sécurité d\'abord'] : ['warn', 'Lane équilibrée : tout se joue sur les sorts'];
     verdictSrc = 'Moins de 20 parties chez les meilleurs joueurs sur ce duel : verdict estimé à partir des profils des champions.';
@@ -823,12 +829,10 @@ function coherentPlan(DO, tone) {
   }
   return out;
 }
-// Résultat d'un duel chez les meilleurs joueurs (≥ 20 parties), des deux côtés de la paire
+// Résultat d'un duel d'après la base de counters (site spécialisé)
 function duelResult(me, opp, role) {
-  const b = STAT(me, role), ob = STAT(opp, role), o = b && (b.opp || []).find(x => x[0] === opp), r2 = ob && (ob.opp || []).find(x => x[0] === me);
-  const x = o && (!r2 || o[1] >= r2[1]) ? [o[2], o[1]] : r2 ? [100 - r2[2], r2[1]] : null;
-  if (!x || x[1] < 20) return { wr: null, n: x ? x[1] : 0 };
-  return { wr: Math.round(shrink(x[0], x[1], 30)), n: x[1] };
+  const cd = counterDuel(me, opp, role);
+  return cd && cd.n >= 20 ? { wr: Math.round(cd.wr), n: cd.n, avg: cd.avg } : { wr: null, n: cd ? cd.n : 0 };
 }
 // Top, mid, jungle : ton champion contre ton adversaire direct
 function renderDuel() {
@@ -837,7 +841,7 @@ function renderDuel() {
   loadSpells(opp);
   const { wr, n } = duelResult(me, opp, role); // au moins 20 parties, ramené vers 50 % quand il y en a peu
   const tone = wr == null ? null : wr >= 53 ? 'aggro' : wr <= 47 ? 'safe' : 'even';
-  const verdict = wr == null ? ['warn', `Pas assez de parties sur ce duel${n ? ` (${n})` : ''}`] : wr >= 53 ? ['good', `Duel favorable : ${wr} % (${n} parties)`] : wr <= 47 ? ['bad', `Duel difficile : ${wr} % (${n} parties)`] : ['warn', `Duel équilibré : ${wr} % (${n} parties)`];
+  const verdict = wr == null ? ['warn', 'Duel absent de la base de counters'] : wr >= 53 ? ['good', `Duel favorable : ${wr} % (${n} parties)`] : wr <= 47 ? ['bad', `Duel difficile : ${wr} % (${n} parties)`] : ['warn', `Duel équilibré : ${wr} % (${n} parties)`];
   // fiches de sorts : seulement celles écrites pour ce poste (les fiches botlane ne servent pas en top / mid)
   const L = S.meta.lane[opp + '|' + POS[role]] || {};
   const rows = L.s ? L.s.map(x => spellRow(opp, x[0], x[1])) : ['Q', 'W', 'E', 'R'].map(k => spellRow(opp, k, ((SPELLS[opp] || {})[k] || {}).desc || (k === 'R' ? 'Ultime : joue prudemment quand il est disponible.' : 'Punis-le quand ce sort est en recharge.')));
@@ -877,7 +881,7 @@ function renderDuel() {
   }
   if (L.do) L.do.forEach(x => DO.push(x)); if (L.dont) L.dont.forEach(x => DONT.push(x));
   if (role !== 'jungle' && jp) DONT.push(`Avancer sans ward : ${cname(ejg)} ${jp.note}`);
-  out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><p class="note" style="margin-top:6px">${wr == null ? `Moins de 20 parties Challenger / GM / Master où ${esc(cname(me))} affronte ${esc(cname(opp))} : conseils tirés des profils des champions.` : `Résultat des parties Challenger / GM / Master où ${esc(cname(me))} affronte ${esc(cname(opp))}.`}</p></div>
+  out.innerHTML = `<div class="card"><div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span></div><p class="note" style="margin-top:6px">${wr == null ? `Pas de données sur ${esc(cname(me))} contre ${esc(cname(opp))} : conseils tirés des profils des champions.` : `Taux de victoire de ${esc(cname(me))} contre ${esc(cname(opp))} : ${esc(S.cnt.source)}, ${esc(S.cnt.rank)}.`}</p></div>
     <div class="card"><h3>Sorts de ${esc(cname(opp))}</h3><div class="spells">${rows.join('')}</div><p class="note">Recharges du patch en cours, du niveau 1 au rang max.</p></div>
     <div class="card dolist"><h3>Pour gagner</h3><ul class="checks do">${coherentPlan([...new Set(DO)], tone).slice(0, 6).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
     <div class="card dolist"><h3>À éviter</h3><ul class="checks dont">${[...new Set(DONT)].slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
@@ -1169,7 +1173,7 @@ function renderSettings() {
   $('#optSound').checked = S.settings.sound; $('#optVibrate').checked = S.settings.vibrate; $('#optNotif').checked = S.settings.notif; $('#optLead').value = String(S.settings.lead);
   const live = gamePatch(S.version);
   $('#metaInfo').innerHTML = `Patch en jeu : <b>${esc(live || 'inconnu')}</b> (Data Dragon ${esc(S.version || '?')}). Données méta : patch <b>${esc(S.meta.patch)}</b>, mises à jour le ${esc(S.meta.updated || '?')}.` + (live && live !== S.meta.patch ? `<br><span style="color:var(--warn)">Nouveau patch détecté : les champions et objets sont déjà à jour, les tiers et timings le seront à la prochaine mise à jour des données.</span>` : '');
-  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / GM / Master (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.${S.mu ? ` Duels et synergies : ${S.mu.games} parties sur les derniers patchs, mis à jour chaque semaine.` : ''}` : 'Builds des meilleurs joueurs : en cours de calcul.';
+  $('#buildsInfo').innerHTML = S.builds ? `Builds : ${S.builds.games} parties Challenger / GM / Master (EUW + Corée), calculés le ${esc(new Date(S.builds.generated).toLocaleDateString('fr-FR'))}, mis à jour chaque semaine.${S.cnt ? ` Counters de lane : ${esc(S.cnt.source)} (${esc(S.cnt.rank)}, patch ${esc(gamePatch(S.cnt.patch) || S.cnt.patch)}).` : ''}` : 'Builds des meilleurs joueurs : en cours de calcul.';
   $('#metaSources').innerHTML = 'Sources : ' + (S.meta.sources || []).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join(' · ');
 }
 $('#editPool').onclick = editPool;
@@ -1227,7 +1231,7 @@ function renderAll() {
   S.builds = LS.get('builds', null);
   renderAll();
   show(S.settings.role ? 'home' : 'role');
-  await Promise.all([loadDD(false), loadBuilds(), loadMatchups()]);
+  await Promise.all([loadDD(false), loadBuilds(), loadCounters()]);
   renderAll();
   if (S.timer.start) markPastFired();
   setInterval(() => tick(false), 500);
