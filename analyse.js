@@ -1,4 +1,4 @@
-/* Coach Support — analyse.js : analyse des parties passées (match-v5 + timeline via le relais).
+/* Coach LoL — analyse.js : analyse des parties passées (match-v5 + timeline via le relais).
    Utilise les globales d'app.js (S, RELAY, $, esc, cname, cimg, iimg, LS, fmt, toast). */
 'use strict';
 

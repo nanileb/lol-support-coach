@@ -1,4 +1,4 @@
-// Relais Riot pour Coach Support (Cloudflare Worker).
+// Relais Riot pour Coach LoL (Cloudflare Worker).
 // Garde la clé Riot côté serveur (secret RIOT_KEY) et n'expose que 3 lectures :
 //   /live?riotId=&platform=             partie en cours
 //   /matches?riotId=&platform=&count=   dernières parties classées (ids)

@@ -1,4 +1,4 @@
-/* Coach Support — app.js
+/* Coach LoL — app.js
    Données : Data Dragon (patch, champions, objets, en français) + meta.json (tiers, profils, duos, timers du patch).
    Partie en direct : relais Cloudflare (worker/riot-proxy.js) qui garde la clé Riot. */
 'use strict';
@@ -1288,7 +1288,7 @@ function show(v) {
   document.body.classList.toggle('in-game', GAME_TABS.includes(v));
   if (v === 'time') renderTimeline();
   if (v === 'bot') renderBot();
-  { const h = $('#hdrRole'); if (h) h.textContent = S.settings.role ? ROLE_FR[myRole()] : 'LoL'; }
+  // titre fixe « Coach LoL » (le poste est affiché sur l'accueil)
   if (v === 'home') { const a = $('#homeAcc'); if (a) a.textContent = S.settings.riotId ? 'Compte : ' + S.settings.riotId : 'Ajoute ton Riot ID dans les Réglages.'; $('#homeRole').textContent = ROLE_FR[myRole()]; $('#homeGameSub').textContent = `Draft · Build · ${LANE_TAB[myRole()]} · Timings`; }
   if (v === 'analyse' && typeof renderAnalyse === 'function') { renderAnalyse(); if (Date.now() - AN.updated > 10 * 60000 || AN.role !== myRole()) loadAnalyse(false); }
   window.scrollTo(0, 0);

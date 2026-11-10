@@ -1,4 +1,4 @@
-# Coach Support
+# Coach LoL
 
 App mobile (PWA) pour progresser en support sur League of Legends : choix du support dans ton pool selon la synergie, build adapté à l'équipe adverse, analyse de la botlane et chronologie des wards / objectifs avec alertes.
 

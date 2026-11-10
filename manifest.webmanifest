@@ -1,7 +1,7 @@
 {
-  "name": "Coach Support",
-  "short_name": "Coach Support",
-  "description": "Synergie, build, botlane et timings pour les supports de League of Legends.",
+  "name": "Coach LoL",
+  "short_name": "Coach LoL",
+  "description": "Draft, build, lane et timings pour tous les postes de League of Legends.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
