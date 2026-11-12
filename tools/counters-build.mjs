@@ -3,7 +3,8 @@
 // Base fixe : à refaire seulement lors d'une refonte, d'un nouveau champion ou d'un gros patch.
 // Usage : node tools/counters-build.mjs
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
-const champs = (await (await fetch('https://ddragon.leagueoflegends.com/cdn/16.22.1/data/en_US/champion.json')).json()).data;
+const DDV = (await (await fetch('https://ddragon.leagueoflegends.com/api/versions.json')).json())[0];
+const champs = (await (await fetch(`https://ddragon.leagueoflegends.com/cdn/${DDV}/data/en_US/champion.json`)).json()).data;
 const norm = s => s.toLowerCase().normalize('NFD').replace(/[^a-z]/g, '');
 const byKey = {};
 for (const c of Object.values(champs)) { byKey[norm(c.id)] = c.id; byKey[norm(c.name)] = c.id; }

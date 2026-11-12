@@ -8,6 +8,8 @@ Sur iPhone : Safari > Partager > « Sur l'écran d'accueil ». Sur Android : Chr
 ## Données et mises à jour de patch
 
 - **Patch, champions, objets** : lus en direct sur Data Dragon (Riot), en français. Un nouveau champion ou un objet retiré est pris en compte tout seul.
+- **Builds des meilleurs joueurs** (`builds.json` : builds, taux de victoire par poste, duos) : recollectés chaque mardi, et dès qu'un nouveau patch sort. Le workflow `builds.yml` vérifie chaque jour à 4 h UTC le numéro de patch Data Dragon (`tools/patch-check.mjs`) et lance la collecte seulement s'il diffère de celui de `builds.json`.
+- **Counters** (`counters.json`, Lolalytics) et **méta** : relevés à la main. Quand le patch du moment est plus récent, la vérification quotidienne ouvre un ticket GitHub « Patch X : données à revoir à la main » (un seul par patch).
 - **Méta** (`meta.json`) : tiers et taux de victoire des supports, profils des champions, duos connus, counters, profils des junglers, timers des objectifs, règles du support (quête de rôle, pénalité de roam). À mettre à jour à chaque patch ; l'app signale quand le patch en jeu est plus récent que ces données.
 
 ## Partie en direct (clé Riot)

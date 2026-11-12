@@ -1,7 +1,8 @@
 name: Builds des meilleurs joueurs
 on:
   schedule:
-    - cron: '0 3 * * 2'   # chaque mardi 3:00 UTC
+    - cron: '0 3 * * 2'   # chaque mardi 3:00 UTC : collecte complète
+    - cron: '0 4 * * *'   # chaque jour 4:00 UTC : vérifie juste le numéro de patch, collecte seulement s'il a changé
   workflow_dispatch:
     inputs:
       matches:
@@ -9,9 +10,40 @@ on:
         default: '2500'
 permissions:
   contents: write
+  issues: write   # ticket « counters / règles à revoir » quand un nouveau patch sort
 concurrency: riot   # même clé Riot que les counters : jamais en même temps
 jobs:
+  patch:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+      patch: ${{ steps.check.outputs.patch }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - id: check
+        run: node tools/patch-check.mjs
+      - name: Ticket pour les données relevées à la main (counters, règles de meta.json)
+        if: steps.check.outputs.counters_late == 'true' || steps.check.outputs.meta_late == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          P: ${{ steps.check.outputs.patch }}
+          C: ${{ steps.check.outputs.counters_late }}
+          M: ${{ steps.check.outputs.meta_late }}
+        run: |
+          T="Patch $P : données à revoir à la main"
+          if gh issue list --state all --search "\"$T\" in:title" --json title -q '.[].title' | grep -qxF "$T"; then echo "Ticket déjà ouvert"; exit 0; fi
+          B="Le patch $P est sorti. builds.json (tier list, builds, synergies) est recollecté automatiquement ; ces fichiers sont relevés à la main :"
+          [ "$C" = true ] && B="$B"$'\n'"- [ ] counters.json : duels Lolalytics à relever au patch $P (data/counters-raw puis node tools/counters-build.mjs)"
+          [ "$M" = true ] && B="$B"$'\n'"- [ ] meta.json : règles, tiers support et notes à vérifier avec les notes de patch officielles"
+          gh issue create --title "$T" --body "$B"
   collect:
+    needs: patch
+    # mardi et lancement à la main : toujours ; vérification quotidienne : seulement si le patch a changé
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 3 * * 2' || needs.patch.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 300
     steps:

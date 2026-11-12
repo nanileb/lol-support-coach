@@ -10,6 +10,8 @@ const REGIONS = (process.env.REGIONS || 'euw1,kr').split(',');
 const PLAYERS = Number(process.env.PLAYERS || 500);
 const STORE = 'data/samples.json.gz'; // parties déjà analysées sur ce patch, cumulées d'une collecte à l'autre
 const DD = 'https://ddragon.leagueoflegends.com';
+// Compare deux patchs numériquement (16.10 après 16.9, 17.1 après 16.24)
+const cmpVer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); return (x[0] - y[0]) || (x[1] - y[1]); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 
@@ -84,13 +86,13 @@ for (const [id, pf] of ids) {
   const m = await relay(`/match?id=${id}&platform=${pf}`, 2);
   if (!m || m.queueId !== 420 || m.gameDuration < 900 || !m.events) continue;
   const ver = (m.gameVersion || '').split('.').slice(0, 2).join('.');
-  if (!newest || ver > newest) newest = ver;
+  if (!newest || cmpVer(ver, newest) > 0) newest = ver;
   games.push({ ...m, ver, id: m.id || id });
   if (games.length % 100 === 0) log('parties', games.length, '· patch récent', onNewest());
 }
 // garder le patch le plus récent, compléter avec le précédent si trop peu de parties
 const byVer = {}; games.forEach(g => (byVer[g.ver] = byVer[g.ver] || []).push(g));
-const vers = Object.keys(byVer).sort().reverse();
+const vers = Object.keys(byVer).sort((x, y) => cmpVer(y, x));
 let used = byVer[vers[0]] || [];
 if (used.length < 1500 && vers[1]) used = used.concat(byVer[vers[1]]);
 log('patchs', vers.slice(0, 3).map(v => v + ':' + byVer[v].length).join(' '), '→ utilisées', used.length);
