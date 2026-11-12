@@ -1,7 +1,8 @@
 name: Builds des meilleurs joueurs
+# Collecte automatique arrêtée : DraftMaster fait désormais sa propre collecte (nanileb/Draftmaster, collect.yml),
+# avec la même clé Riot. Lancement à la main encore possible (Actions > Builds des meilleurs joueurs > Run workflow).
+# Pour la relancer chaque semaine, remettre :  schedule: - cron: '0 3 * * 2'
 on:
-  schedule:
-    - cron: '0 3 * * 2'   # chaque mardi 3:00 UTC
   workflow_dispatch:
     inputs:
       matches:
