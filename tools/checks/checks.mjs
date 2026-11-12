@@ -9,6 +9,13 @@ const it = id => run(`S.items[${JSON.stringify(String(id))}]`);
 const ROLE_ITEMS = run(`0`); void ROLE_ITEMS;
 // Tanks / mages AP qui doivent compter comme AP
 for (const c of ['Galio', 'Maokai', 'Amumu', 'Zac', 'Malphite', 'Sejuani', 'Rell', 'Nautilus', 'Leona']) if (!run(`isAP(${JSON.stringify(c)})`)) fail('isAP', `${c} n'est pas compté comme dégâts magiques`);
+for (const c of ['Thresh', 'Blitzcrank']) if (!run(`isAP(${JSON.stringify(c)})`)) fail('isAP', `${c} n'est pas compté comme dégâts magiques (sorts magiques)`);
+if (run(`isAP('Poppy')`)) fail('isAP', `Poppy est comptée AP alors que ses sorts sont physiques`);
+// Duels : l'écart d'un champion à sa moyenne est l'opposé de celui de l'adversaire, quel que soit le côté lu (recette DraftMaster P1-1)
+{ const bad = run(`(() => { const out = []; Object.entries((S.cnt && S.cnt.lanes) || {}).forEach(([lane, M]) => { const role = Object.keys(CLANE).find(k => CLANE[k] === lane);
+  Object.keys(M).forEach(a => Object.keys(M[a].vs).forEach(b => { if (a >= b) return; const x = counterDuel(a, b, role), y = counterDuel(b, a, role); if (!x || !y) return;
+    const d = (x.wr - x.avg) + (y.wr - y.avg); if (Math.abs(d) > 0.5) out.push(lane + ' ' + a + '/' + b + ' : ' + d.toFixed(1)); })); }); return out; })()`);
+  if (bad.length) fail('duels', `${bad.length} duels non symétriques, ex. ${bad.slice(0, 3).join(' ; ')}`); }
 for (const s of SC) {
   run(`S.settings.role=${JSON.stringify(s.role)}; S.settings.pools[${JSON.stringify(s.role)}]=${JSON.stringify(s.pool)}; S.match=defMatch(); Object.assign(S.match.ally, ${JSON.stringify(s.ally)}); Object.assign(S.match.enemy, ${JSON.stringify(s.enemy)}); S.match.me=null;`);
   const rank = run(`myPool().filter(id=>!takenChamps('me')[id]).map(scoreRole).sort((a,b)=>b.score-a.score)`);

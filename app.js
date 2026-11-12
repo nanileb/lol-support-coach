@@ -124,9 +124,12 @@ async function loadCounters() { try { S.cnt = await getJSON('counters.json', { c
 function counterDuel(me, opp, role) {
   const L = S.cnt && S.cnt.lanes && S.cnt.lanes[CLANE[role || myRole()]]; if (!L || !me || !opp) return null;
   const a = L[me] && L[me].vs[opp], o = L[opp] && L[opp].vs[me];
-  const x = a && (!o || a[1] >= o[1]) ? [a[0], a[1]] : o ? [Math.round((100 - o[0]) * 100) / 100, o[1]] : null;
+  // Ligne la plus fournie (à égalité : ordre alphabétique, pour que les deux côtés lisent la même ligne)
+  const own = !!a && (!o || a[1] > o[1] || (a[1] === o[1] && me < opp));
+  const x = own ? [a[0], a[1]] : o ? [Math.round((100 - o[0]) * 100) / 100, o[1]] : null;
   if (!x) return null;
-  const avg = L[me] ? L[me].avg : o && L[opp] ? 100 - L[opp].avg : 50;
+  // Ligne de l'adversaire retournée : la comparer à 100 − sa moyenne à lui (les % Lolalytics sont gonflés des deux côtés)
+  const avg = own ? L[me].avg : L[opp] ? 100 - L[opp].avg : 50;
   return { wr: x[0], n: x[1], avg: Math.round(avg * 10) / 10 };
 }
 const gamePatch = v => { if (!v) return null; const [a, b] = v.split('.').map(Number); return (a >= 10 && a < 20 ? a + 10 : a) + '.' + b; };
@@ -154,8 +157,8 @@ function supProfile(id) {
 const earlyOf = id => { const p = S.meta.adcs[id] || S.meta.supports[id]; return p && p.early != null ? p.early : null; };
 function adcProfile(id) { return S.meta.adcs[id] || { style: 'utility', early: 2, allin: 2, scale: 2, range: 'mid' }; }
 // Type de dégâts réel (pour l'AP/AD de la compo). Les tanks qui frappent en magique comptent AP.
-const MAGIC_TANKS = ['Galio', 'Maokai', 'Amumu', 'Zac', 'Malphite', 'Sejuani', 'Rell', 'Nautilus', 'Leona', 'Alistar', 'Rammus', 'Nunu', 'Gragas', 'Chogath', 'Braum', 'Taric', 'Poppy', 'Ornn', 'TahmKench', 'Skarner', 'Zyra'];
-const PHYS_TANKS = ['Sion', 'KSante', 'Thresh', 'Blitzcrank', 'Pyke'];
+const MAGIC_TANKS = ['Galio', 'Maokai', 'Amumu', 'Zac', 'Malphite', 'Sejuani', 'Rell', 'Nautilus', 'Leona', 'Alistar', 'Rammus', 'Nunu', 'Gragas', 'Chogath', 'Braum', 'Taric', 'Ornn', 'TahmKench', 'Skarner', 'Zyra', 'Thresh', 'Blitzcrank'];
+const PHYS_TANKS = ['Sion', 'KSante', 'Poppy', 'Pyke'];
 // Part d'objets AP / AD réellement achetés (pool de builds.json) : au poste joué dans la partie, sinon tous postes cumulés.
 const roleIn = id => { const m = S.match || {}; if (m.me === id) return myRole(); for (const r of ROLES) { if ((m.ally || {})[r] === id || (m.enemy || {})[r] === id) return r; } return null; };
 function dmgShare(id, role) {
